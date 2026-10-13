@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111613">
+  <meta name="description" content="대한민국 어딘가에서 다시 태어나는 가상 인생 시뮬레이션">
+  <title>5000만 분의 1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="ambient-grid" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="5000만 분의 1 처음으로">
+      <span class="brand-mark">1</span>
+      <span>5000만 분의 1</span>
+    </a>
+    <div class="system-status">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span>가상 시뮬레이션</span>
+      <span class="system-year">2026</span>
+    </div>
+  </header>
+
+  <main>
+    <section id="intro-view" class="view intro-view" aria-labelledby="intro-title">
+      <div class="intro-copy">
+        <p class="eyebrow"><span>대한민국</span> RANDOM BIRTH SIMULATION</p>
+        <h1 id="intro-title">다시 태어난다면,<br><em>어디에서 시작할까요?</em></h1>
+        <p class="intro-lead">사는 곳도, 가족도, 형편도 고를 수 없습니다.<br>당신에게 주어진 단 하나의 시작을 확인해 보세요.</p>
+        <button id="birth-button" class="primary-button hero-button" type="button">
+          <span>태어나기</span>
+          <span class="button-arrow" aria-hidden="true">↗</span>
+        </button>
+        <p class="disclaimer">현재 결과는 실제 인구통계가 아닌 체험용 가상 시뮬레이션입니다.</p>
+      </div>
+
+      <div class="intro-visual" aria-hidden="true">
+        <div class="orbit orbit-one"></div>
+        <div class="orbit orbit-two"></div>
+        <div class="coordinate-label coordinate-label-top">37.5665° N<br>126.9780° E</div>
+        <div class="coordinate-label coordinate-label-bottom">POPULATION<br>50,000,000</div>
+        <div class="life-core">
+          <span class="core-index">01</span>
+          <span class="core-title">BIRTH<br>UNKNOWN</span>
+        </div>
+        <div class="region-points">
+          <i style="--x: 50%; --y: 9%"></i><i style="--x: 38%; --y: 17%"></i>
+          <i style="--x: 56%; --y: 22%"></i><i style="--x: 31%; --y: 28%"></i>
+          <i style="--x: 48%; --y: 33%"></i><i style="--x: 64%; --y: 36%"></i>
+          <i style="--x: 35%; --y: 43%"></i><i style="--x: 54%; --y: 47%"></i>
+          <i style="--x: 27%; --y: 52%"></i><i style="--x: 46%; --y: 58%"></i>
+          <i style="--x: 67%; --y: 57%"></i><i style="--x: 32%; --y: 65%"></i>
+          <i style="--x: 56%; --y: 70%"></i><i style="--x: 72%; --y: 73%"></i>
+          <i style="--x: 41%; --y: 79%"></i><i style="--x: 61%; --y: 84%"></i>
+          <i style="--x: 35%; --y: 94%"></i>
+        </div>
+      </div>
+
+      <div class="intro-facts" aria-label="시뮬레이션 특징">
+        <div><strong>17</strong><span>시·도</span></div>
+        <div><strong>∞</strong><span>시작의 조합</span></div>
+        <div><strong>0</strong><span>서버 저장</span></div>
+      </div>
+    </section>
+
+    <section id="profile-view" class="view profile-view" aria-labelledby="profile-title" hidden>
+      <div class="profile-kicker">
+        <span class="profile-index">BIRTH RECORD / <span data-field="id-short">000000</span></span>
+        <span class="profile-ready"><i aria-hidden="true"></i> 출생 신고 완료</span>
+      </div>
+
+      <div class="profile-layout">
+        <article class="birth-certificate">
+          <div class="certificate-noise" aria-hidden="true"></div>
+          <div class="certificate-topline">
+            <span data-field="birth-year">2026</span>
+            <span data-field="region-code">KOR</span>
+          </div>
+          <div class="birth-place">
+            <p data-field="region">대한민국</p>
+            <h1 id="profile-title" data-field="district">어딘가</h1>
+          </div>
+          <p class="birth-summary" data-field="summary">새로운 삶이 시작됩니다.</p>
+          <div class="birth-id">
+            <span>IDENTIFICATION</span>
+            <strong data-field="id">KR-2026-KOR-000000</strong>
+          </div>
+          <div class="certificate-stamp" aria-hidden="true">
+            <span>대한민국</span>
+            <strong>출생</strong>
+            <small>REPUBLIC OF KOREA</small>
+          </div>
+        </article>
+
+        <div class="profile-details">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">YOUR STARTING CONDITIONS</p>
+              <h2>당신에게 주어진 조건</h2>
+            </div>
+            <span class="condition-count">05 CONDITIONS</span>
+          </div>
+
+          <div class="condition-grid">
+            <article class="condition-card condition-card-wide">
+              <span class="card-number">01</span>
+              <div>
+                <p class="card-label">가족 구성</p>
+                <strong data-field="family-type">양부모 가정</strong>
+                <div class="guardian-list" data-field="guardians"></div>
+              </div>
+            </article>
+            <article class="condition-card">
+              <span class="card-number">02</span>
+              <div><p class="card-label">가정 형편</p><strong data-field="finance">보통</strong></div>
+            </article>
+            <article class="condition-card">
+              <span class="card-number">03</span>
+              <div><p class="card-label">주거 형태</p><strong data-field="housing">전세 주택</strong></div>
+            </article>
+            <article class="condition-card condition-card-wide condition-card-last">
+              <span class="card-number">04</span>
+              <div><p class="card-label">형제자매</p><strong data-field="siblings">형제자매 1명</strong></div>
+              <span class="location-chip"><i aria-hidden="true"></i><span data-field="location-chip">서울 · 마포구</span></span>
+            </article>
+          </div>
+
+          <section class="stats-panel" aria-labelledby="stats-title">
+            <div class="stats-intro">
+              <p class="eyebrow">INITIAL TENDENCIES</p>
+              <h2 id="stats-title">삶의 시작점</h2>
+              <p>이 수치는 시작의 경향일 뿐,<br>당신의 미래를 결정하지 않습니다.</p>
+            </div>
+            <div class="stats-list">
+              <div class="stat-row">
+                <div><span>건강</span><strong data-field="stat-health">00</strong></div>
+                <div class="meter"><span class="meter-fill" data-meter="health"></span></div>
+              </div>
+              <div class="stat-row">
+                <div><span>안정</span><strong data-field="stat-stability">00</strong></div>
+                <div class="meter"><span class="meter-fill" data-meter="stability"></span></div>
+              </div>
+              <div class="stat-row">
+                <div><span>교육 기회</span><strong data-field="stat-education">00</strong></div>
+                <div class="meter"><span class="meter-fill" data-meter="education"></span></div>
+              </div>
+              <div class="stat-row">
+                <div><span>관계</span><strong data-field="stat-relationships">00</strong></div>
+                <div class="meter"><span class="meter-fill" data-meter="relationships"></span></div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <p class="disclaimer profile-disclaimer">현재 결과는 실제 인구통계가 아닌 체험용 가상 시뮬레이션입니다.</p>
+
+      <div class="action-bar" aria-label="출생 프로필 동작">
+        <button id="previous-button" class="text-button" type="button" disabled>← 이전 인생</button>
+        <button id="reroll-button" class="secondary-button" type="button"><span class="reroll-icon" aria-hidden="true">↻</span> 다시 태어나기</button>
+        <button id="accept-button" class="primary-button" type="button">이 인생 시작하기 <span aria-hidden="true">→</span></button>
+      </div>
+    </section>
+
+    <section id="future-view" class="view future-view" aria-labelledby="future-title" hidden>
+      <p class="eyebrow">THE LIFE AHEAD</p>
+      <h1 id="future-title">이제, 이 삶을<br><em>살아갈 차례입니다.</em></h1>
+      <p class="future-lead"><span data-field="future-location">대한민국 어딘가</span>에서 시작된 당신의 다음 선택들이 기다리고 있습니다.</p>
+
+      <div class="future-timeline" aria-label="예정된 성장 단계">
+        <article class="timeline-step timeline-step-active">
+          <span>00</span><div><small>완료</small><strong>출생</strong><p data-field="future-birth-summary">출생 조건이 정해졌습니다.</p></div>
+        </article>
+        <article class="timeline-step">
+          <span>17</span><div><small>NEXT</small><strong>고등학교</strong><p>일반고, 특성화고, 마이스터고, 자사고, 특목고, 예술·체육고</p></div>
+        </article>
+        <article class="timeline-step">
+          <span>20</span><div><small>SOON</small><strong>진로</strong><p>진학, 취업, 훈련, 새로운 도전</p></div>
+        </article>
+        <article class="timeline-step">
+          <span>25</span><div><small>SOON</small><strong>직업</strong><p>직업군과 세부 직업 선택</p></div>
+        </article>
+      </div>
+
+      <div class="future-note"><span aria-hidden="true">＋</span><p><strong>성장 시뮬레이션은 다음 업데이트에서 이어집니다.</strong><br>이번에는 당신의 시작을 정하는 것까지 체험할 수 있어요.</p></div>
+      <button id="back-button" class="secondary-button future-back" type="button">← 다른 인생 뽑기</button>
+    </section>
+  </main>
+
+  <p id="live-region" class="sr-only" aria-live="polite"></p>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
