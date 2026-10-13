@@ -1,0 +1,206 @@
+import { FOCUS_BY_ID } from '../data/focuses.js';
+import { createRng, hashSeed } from './random.js';
+
+const STAT_KEYS = ['health', 'happiness', 'knowledge', 'relationships'];
+
+const clamp = (value, min = 0, max = 100) => {
+  const number = Number(value);
+  return Math.min(max, Math.max(min, Math.round(Number.isFinite(number) ? number : min)));
+};
+
+const finite = (value, fallback = 0) => {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.round(number) : fallback;
+};
+
+const financeBase = (finance) => {
+  if (finance?.includes('여유')) return 32000000;
+  if (finance?.includes('안정')) return 16000000;
+  if (finance?.includes('빠듯')) return 3500000;
+  return 8000000;
+};
+
+export function createLife(profile, seed = profile?.id) {
+  const initialSeed = String(seed ?? profile?.id ?? 'one-in-50m');
+  const initialCash = financeBase(profile?.finance);
+  const family = (profile?.guardians ?? []).map((guardian, index) => ({
+    id: `guardian-${index + 1}`,
+    name: guardian.label,
+    relation: guardian.label,
+    occupation: guardian.occupation,
+  }));
+
+  return normalizeLife({
+    version: 2,
+    seed: initialSeed,
+    rngState: hashSeed(initialSeed),
+    profile: structuredClone(profile),
+    age: 0,
+    year: finite(profile?.birthYear, new Date().getFullYear()),
+    status: 'living',
+    stats: {
+      health: profile?.stats?.health ?? 64,
+      happiness: profile?.stats?.stability ?? 58,
+      knowledge: profile?.stats?.education ?? 55,
+      relationships: profile?.stats?.relationships ?? 62,
+    },
+    economy: {
+      cash: initialCash,
+      income: 0,
+      fixedCosts: 0,
+      debt: 0,
+      deposit: 0,
+      homeValue: 0,
+      netWorth: initialCash,
+    },
+    education: { level: 'childhood', status: 'not-started', schoolType: null, skills: [] },
+    career: {
+      groupId: null,
+      careerId: null,
+      title: null,
+      status: 'none',
+      years: 0,
+      annualIncome: 0,
+      history: [],
+    },
+    relationships: { family, friends: [], partner: null, children: [] },
+    housing: {
+      type: 'with-family',
+      region: profile?.region?.name ?? '대한민국',
+      district: profile?.district ?? '',
+    },
+    focusId: 'balance',
+    pendingDecisionId: null,
+    decisions: {},
+    history: [{
+      id: 'birth',
+      age: 0,
+      year: finite(profile?.birthYear, new Date().getFullYear()),
+      type: 'birth',
+      text: profile?.summary ?? '대한민국에서 새로운 삶이 시작되었습니다.',
+    }],
+    milestones: [{ age: 0, type: 'birth', label: '출생' }],
+    statHistory: [],
+    recentEventIds: [],
+    processedTickIds: [],
+  });
+}
+
+export function normalizeLife(life) {
+  const copy = structuredClone(life ?? {});
+  copy.version = 2;
+  copy.seed = String(copy.seed ?? copy.profile?.id ?? 'one-in-50m');
+  copy.rngState = finite(copy.rngState, hashSeed(copy.seed)) >>> 0;
+  copy.age = clamp(copy.age, 0, 90);
+  copy.year = finite(copy.year, finite(copy.profile?.birthYear, 2026) + copy.age);
+  copy.status = copy.age >= 90 || copy.status === 'review' ? 'review' : 'living';
+  copy.stats = Object.fromEntries(STAT_KEYS.map((key) => [key, clamp(copy.stats?.[key], 0, 100)]));
+
+  const economy = copy.economy ?? {};
+  copy.economy = {
+    cash: finite(economy.cash),
+    income: finite(economy.income),
+    fixedCosts: Math.max(0, finite(economy.fixedCosts)),
+    debt: Math.max(0, finite(economy.debt)),
+    deposit: Math.max(0, finite(economy.deposit)),
+    homeValue: Math.max(0, finite(economy.homeValue)),
+    netWorth: finite(economy.netWorth),
+  };
+  copy.economy.netWorth = finite(
+    copy.economy.cash + copy.economy.deposit + copy.economy.homeValue - copy.economy.debt,
+  );
+
+  copy.education = {
+    level: copy.education?.level ?? 'childhood',
+    status: copy.education?.status ?? 'not-started',
+    schoolType: copy.education?.schoolType ?? null,
+    skills: Array.isArray(copy.education?.skills) ? [...copy.education.skills] : [],
+  };
+  copy.career = {
+    groupId: copy.career?.groupId ?? null,
+    careerId: copy.career?.careerId ?? null,
+    title: copy.career?.title ?? null,
+    status: copy.career?.status ?? 'none',
+    years: Math.max(0, finite(copy.career?.years)),
+    annualIncome: Math.max(0, finite(copy.career?.annualIncome)),
+    history: Array.isArray(copy.career?.history) ? [...copy.career.history] : [],
+  };
+  copy.relationships = {
+    family: Array.isArray(copy.relationships?.family) ? [...copy.relationships.family] : [],
+    friends: Array.isArray(copy.relationships?.friends) ? [...copy.relationships.friends] : [],
+    partner: copy.relationships?.partner ?? null,
+    children: Array.isArray(copy.relationships?.children) ? [...copy.relationships.children] : [],
+  };
+  copy.housing = {
+    type: copy.housing?.type ?? 'with-family',
+    region: copy.housing?.region ?? copy.profile?.region?.name ?? '대한민국',
+    district: copy.housing?.district ?? copy.profile?.district ?? '',
+  };
+  copy.focusId = FOCUS_BY_ID[copy.focusId] ? copy.focusId : 'balance';
+  copy.pendingDecisionId = copy.pendingDecisionId ?? null;
+  copy.decisions = copy.decisions && typeof copy.decisions === 'object' ? { ...copy.decisions } : {};
+  copy.history = Array.isArray(copy.history) ? [...copy.history] : [];
+  copy.milestones = Array.isArray(copy.milestones) ? [...copy.milestones] : [];
+  copy.statHistory = Array.isArray(copy.statHistory) ? [...copy.statHistory] : [];
+  copy.recentEventIds = Array.isArray(copy.recentEventIds) ? [...copy.recentEventIds].slice(-10) : [];
+  copy.processedTickIds = Array.isArray(copy.processedTickIds)
+    ? [...new Set(copy.processedTickIds.map(String))].slice(-8)
+    : [];
+  return copy;
+}
+
+export function setFocus(life, focusId) {
+  if (!FOCUS_BY_ID[focusId]) return normalizeLife(life);
+  return normalizeLife({ ...structuredClone(life), focusId });
+}
+
+export function advanceYear(life, tickId = `age-${Number(life?.age ?? 0) + 1}`) {
+  const current = normalizeLife(life);
+  const normalizedTickId = String(tickId);
+  if (current.status !== 'living' || current.pendingDecisionId) return current;
+  if (current.processedTickIds.includes(normalizedTickId)) return current;
+
+  const nextAge = current.age + 1;
+  const rng = createRng(`${current.seed}:${current.rngState}:${nextAge}`);
+  const focus = FOCUS_BY_ID[current.focusId];
+  const stats = { ...current.stats };
+  for (const key of STAT_KEYS) stats[key] += focus.effects?.[key] ?? 0;
+  stats.health += nextAge > 55 ? -1 : 0;
+  stats.happiness += rng.int(-1, 1);
+  stats.knowledge += nextAge <= 24 ? 1 : 0;
+
+  const economy = { ...current.economy };
+  const annualIncome = current.career.annualIncome || (economy.income * 12);
+  const annualCosts = economy.fixedCosts * 12;
+  const careerBonus = current.focusId === 'career' ? Math.round(annualIncome * (focus.economyEffect ?? 0)) : 0;
+  economy.cash += annualIncome + careerBonus - annualCosts;
+  economy.netWorth = economy.cash + economy.deposit + economy.homeValue - economy.debt;
+
+  return normalizeLife({
+    ...current,
+    age: nextAge,
+    year: current.year + 1,
+    status: nextAge >= 90 ? 'review' : 'living',
+    rngState: rng.snapshot(),
+    stats,
+    economy,
+    career: {
+      ...current.career,
+      years: current.career.status === 'employed' ? current.career.years + 1 : current.career.years,
+    },
+    history: [...current.history, {
+      id: `year-${nextAge}`,
+      age: nextAge,
+      year: current.year + 1,
+      type: nextAge >= 90 ? 'review' : 'year',
+      text: nextAge >= 90 ? '지나온 삶을 천천히 돌아봅니다.' : `${nextAge}세의 한 해가 흘렀습니다.`,
+    }],
+    statHistory: [...current.statHistory, { age: nextAge, ...stats }],
+    processedTickIds: [...current.processedTickIds, normalizedTickId].slice(-8),
+  });
+}
+
+export function isLifeComplete(life) {
+  const current = normalizeLife(life);
+  return current.status === 'review' || current.age >= 90;
+}
