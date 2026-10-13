@@ -633,10 +633,10 @@ Sites 로컬 프리뷰 지침을 읽고 정적 서버를 연다. 다음을 직�
 Run: `git add tests/full-life.test.mjs dist/engine/life.js docs/superpowers && git commit -m "feat: complete Korean life simulation" && git push origin main && git status --short --branch`
 Expected: branch is up to date with `origin/main`; only execution-ledger scratch may remain untracked or modified
 
-- [ ] **Step 6: Sites 소스 패키징과 private 배포**
+- [x] **Step 6: Sites 소스 패키징과 private 배포**
 
 기존 Sites `project_id`로 새 source write credential을 만든다. `site-workflow.mjs`에 credential, `commands: [["npm", "test"]]`, 절대 archive 경로를 stdin JSON으로 전달한다. 반환된 `commit_sha`와 archive를 `save_version_and_deploy_private`에 전달하고 terminal `succeeded`를 확인한다.
 
-- [ ] **Step 7: 배포 화면 전달**
+- [x] **Step 7: 배포 화면 전달**
 
 배포 URL을 Codex 브라우저 패널에 열고 deliverable로 유지한다. GitHub 저장소 URL과 배포 URL, 테스트 수, 구현된 생애 단계를 사용자에게 전달한다.
