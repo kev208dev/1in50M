@@ -39,3 +39,35 @@ export function memoryStorage(initial = {}) {
     },
   };
 }
+
+export function fakeClock() {
+  let now = 0;
+  let nextId = 1;
+  const tasks = new Map();
+  return {
+    now: () => now,
+    schedule(callback, delay) {
+      const id = nextId;
+      nextId += 1;
+      tasks.set(id, { id, callback, at: now + delay });
+      return id;
+    },
+    cancel(id) {
+      tasks.delete(id);
+    },
+    advance(milliseconds) {
+      const target = now + milliseconds;
+      while (true) {
+        const task = [...tasks.values()].sort((a, b) => a.at - b.at || a.id - b.id)[0];
+        if (!task || task.at > target) break;
+        tasks.delete(task.id);
+        now = task.at;
+        task.callback();
+      }
+      now = target;
+    },
+    pendingCount() {
+      return tasks.size;
+    },
+  };
+}

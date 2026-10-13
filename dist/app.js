@@ -1,28 +1,46 @@
 import { createBirthProfile, validateProfile } from './simulator.js';
-import { readSavedState, writeSavedState, createHistoryState, canStartDraw, getSafeStorage } from './storage.js';
+import { CAREER_GROUPS } from './data/careers.js';
+import { createLife } from './engine/life.js';
+import { getDecision, getChoices } from './engine/decisions.js';
+import { createLifeSummary } from './engine/summary.js';
+import {
+  getSafeStorage,
+  saveCurrentLife,
+  loadCurrentLife,
+  clearCurrentLife,
+  archiveLife,
+  listPastLives,
+} from './storage.js';
+import { createSimulationController } from './ui/controls.js';
+import { renderLife, renderDecision, renderResult, formatWon } from './ui/render.js';
 
-const views = {
-  intro: document.querySelector('#intro-view'),
-  profile: document.querySelector('#profile-view'),
-  future: document.querySelector('#future-view'),
-};
+const viewNames = ['intro', 'profile', 'future', 'life', 'result', 'past-lives'];
+const views = Object.fromEntries(viewNames.map((name) => [name, document.querySelector(`#${name}-view`)]));
+const storage = getSafeStorage(window);
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const liveRegion = document.querySelector('#live-region');
+const main = document.querySelector('main');
 
 const controls = {
   birth: document.querySelector('#birth-button'),
+  continue: document.querySelector('#continue-button'),
   reroll: document.querySelector('#reroll-button'),
   previous: document.querySelector('#previous-button'),
   accept: document.querySelector('#accept-button'),
   back: document.querySelector('#back-button'),
+  play: document.querySelector('#play-button'),
+  skip: document.querySelector('#skip-button'),
+  auto: document.querySelector('#auto-button'),
+  career: document.querySelector('#career-select-button'),
 };
 
-const liveRegion = document.querySelector('#live-region');
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-const storage = getSafeStorage(window);
-let state = readSavedState(storage);
+const decisionDialog = document.querySelector('#decision-dialog');
+const careerDialog = document.querySelector('#career-dialog');
+let candidateProfile = null;
+let previousCandidate = null;
+let controller = null;
 let isDrawing = false;
-
-if (!validateProfile(state.current)) state = createHistoryState(null, null);
-if (state.previous && !validateProfile(state.previous)) state.previous = null;
+let lastFocused = null;
 
 function setText(field, value) {
   document.querySelectorAll(`[data-field="${field}"]`).forEach((node) => {
@@ -39,17 +57,9 @@ function renderGuardians(guardians) {
   }));
 }
 
-function renderStat(name, value) {
-  setText(`stat-${name}`, String(value).padStart(2, '0'));
-  const meter = document.querySelector(`[data-meter="${name}"]`);
-  meter.style.setProperty('--value', `${value}%`);
-  meter.parentElement.setAttribute('aria-label', `${value}점`);
-}
-
 function renderProfile(profile) {
   if (!validateProfile(profile)) return;
-  const idShort = profile.id.split('-').at(-1);
-  setText('id-short', idShort);
+  setText('id-short', profile.id.split('-').at(-1));
   setText('id', profile.id);
   setText('birth-year', profile.birthYear);
   setText('region-code', profile.region.code);
@@ -64,89 +74,298 @@ function renderProfile(profile) {
   setText('future-location', `${profile.region.name} ${profile.district}`);
   setText('future-birth-summary', `${profile.birthYear}년 ${profile.region.short}, ${profile.familyType}`);
   renderGuardians(profile.guardians);
-  ['health', 'stability', 'education', 'relationships'].forEach((name) => renderStat(name, profile.stats[name]));
+  const source = { health: 'health', stability: 'stability', education: 'education', relationships: 'relationships' };
+  for (const [field, key] of Object.entries(source)) {
+    setText(`stat-${field}`, String(profile.stats[key]).padStart(2, '0'));
+    const meter = document.querySelector(`[data-meter="${field}"]`);
+    meter.style.setProperty('--value', `${profile.stats[key]}%`);
+    meter.parentElement.setAttribute('aria-label', `${profile.stats[key]}점`);
+  }
 }
 
 function showView(name) {
-  Object.entries(views).forEach(([key, view]) => {
-    view.hidden = key !== name;
-  });
+  for (const [key, view] of Object.entries(views)) {
+    if (view) view.hidden = key !== name;
+  }
   document.body.dataset.view = name;
   window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
-}
-
-function setControlsDisabled(disabled) {
-  controls.birth.disabled = disabled;
-  controls.reroll.disabled = disabled;
-  controls.accept.disabled = disabled;
-  controls.previous.disabled = disabled || !state.previous;
-  document.body.classList.toggle('is-drawing', disabled);
 }
 
 function wait(milliseconds) {
   return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 }
 
-async function drawLife() {
-  if (!canStartDraw(isDrawing)) return;
-  isDrawing = true;
-  showView('profile');
-  setControlsDisabled(true);
-  views.profile.classList.add('is-shuffling');
-
-  const duration = reduceMotion.matches ? 0 : 900;
-  const startedAt = performance.now();
-  if (duration > 0) {
-    while (performance.now() - startedAt < duration) {
-      renderProfile(createBirthProfile());
-      await wait(90);
-    }
-  }
-
-  const nextProfile = createBirthProfile();
-  state = createHistoryState(nextProfile, state.current);
-  writeSavedState(storage, state);
-  renderProfile(nextProfile);
-  views.profile.classList.remove('is-shuffling');
-  isDrawing = false;
-  setControlsDisabled(false);
-  liveRegion.textContent = `${nextProfile.region.name} ${nextProfile.district}에서 새로운 인생이 시작되었습니다.`;
+function setDrawDisabled(disabled) {
+  isDrawing = disabled;
+  controls.birth.disabled = disabled;
+  controls.reroll.disabled = disabled;
+  controls.accept.disabled = disabled;
+  controls.previous.disabled = disabled || !previousCandidate;
+  document.body.classList.toggle('is-drawing', disabled);
 }
 
-function restorePrevious() {
-  if (isDrawing || !state.previous) return;
-  state = createHistoryState(state.previous, state.current);
-  writeSavedState(storage, state);
-  renderProfile(state.current);
+async function drawLife() {
+  if (isDrawing) return;
+  previousCandidate = candidateProfile;
+  setDrawDisabled(true);
+  showView('profile');
+  views.profile.classList.add('is-shuffling');
+  const duration = reduceMotion.matches ? 0 : 750;
+  const startedAt = performance.now();
+  while (performance.now() - startedAt < duration) {
+    renderProfile(createBirthProfile());
+    await wait(75);
+  }
+  candidateProfile = createBirthProfile();
+  renderProfile(candidateProfile);
+  views.profile.classList.remove('is-shuffling');
+  setDrawDisabled(false);
+  liveRegion.textContent = `${candidateProfile.region.name} ${candidateProfile.district}에서 새로운 출생 조건이 정해졌습니다.`;
+}
+
+function restorePreviousCandidate() {
+  if (!previousCandidate || isDrawing) return;
+  [candidateProfile, previousCandidate] = [previousCandidate, candidateProfile];
+  renderProfile(candidateProfile);
   controls.previous.disabled = false;
-  liveRegion.textContent = `이전 인생, ${state.current.region.name} ${state.current.district}을 다시 불러왔습니다.`;
+}
+
+function updatePlayback() {
+  if (!controller) return;
+  const playing = controller.isPlaying();
+  controls.play.textContent = playing ? 'Ⅱ' : '▶';
+  controls.play.setAttribute('aria-label', playing ? '삶 일시정지' : '삶 재생');
+  document.querySelectorAll('[data-speed]').forEach((button) => {
+    button.setAttribute('aria-pressed', String(Number(button.dataset.speed) === controller.getSpeed()));
+  });
+  controls.auto.setAttribute('aria-pressed', String(controller.isAutoDecision()));
+}
+
+function updateMoment(life) {
+  document.querySelector('#moment-age').textContent = String(life.age);
+  const latest = life.history.at(-1);
+  document.querySelector('#moment-copy').textContent = latest?.text ?? '새로운 삶이 시작되었습니다.';
+  controls.career.hidden = life.age < 19 || Boolean(life.career.careerId) || life.status !== 'living';
+}
+
+function renderCurrentLife(life) {
+  renderLife(views.life, life);
+  updateMoment(life);
+  updatePlayback();
+  saveCurrentLife(storage, life);
+  controls.continue.hidden = false;
+}
+
+function unlockBackground(dialog, focus = true) {
+  main.inert = false;
+  if (dialog.open) dialog.close();
+  if (focus && lastFocused?.isConnected) lastFocused.focus();
+}
+
+function openDecision(decision, life) {
+  if (!decision || decisionDialog.open) return;
+  lastFocused = document.activeElement;
+  renderDecision(decisionDialog, decision, getChoices(life, decision.id));
+  main.inert = true;
+  decisionDialog.showModal();
+  document.querySelector('#decision-title').focus();
+}
+
+function finishLife(life) {
+  controller?.pause();
+  archiveLife(storage, life);
+  clearCurrentLife(storage);
+  controls.continue.hidden = true;
+  renderResult(views.result, createLifeSummary(life));
+  showView('result');
+  liveRegion.textContent = `${life.age}세의 생애가 회고 단계에 도착했습니다.`;
+}
+
+function startLife(life) {
+  controller?.destroy();
+  controller = createSimulationController({
+    initialLife: life,
+    onState: renderCurrentLife,
+    onDecision: openDecision,
+    onComplete: finishLife,
+  });
+  const current = controller.getState();
+  renderCurrentLife(current);
+  showView('life');
+  if (current.status === 'review') {
+    finishLife(current);
+    return;
+  }
+  if (current.pendingDecisionId) openDecision(getDecision(current), current);
+}
+
+function beginCandidateLife() {
+  if (!candidateProfile || isDrawing) return;
+  startLife(createLife(candidateProfile, candidateProfile.id));
+  liveRegion.textContent = '선택한 출생 조건으로 삶을 시작했습니다.';
+}
+
+function renderCareerPicker() {
+  if (!controller) return;
+  const offers = controller.getCareerOffers(100);
+  const byId = new Map(offers.map((offer) => [offer.career.id, offer]));
+  const container = document.querySelector('#career-groups');
+  container.replaceChildren(...CAREER_GROUPS.map((group) => {
+    const section = document.createElement('section');
+    section.className = 'career-group';
+    const title = document.createElement('h3');
+    title.textContent = group.label;
+    const list = document.createElement('div');
+    list.className = 'career-list';
+    list.replaceChildren(...group.careers.map((career) => {
+      const offer = byId.get(career.id);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'career-option';
+      button.dataset.careerId = career.id;
+      button.disabled = !offer?.eligible;
+      const copy = document.createElement('span');
+      const name = document.createElement('strong');
+      name.textContent = career.title;
+      const note = document.createElement('small');
+      note.textContent = offer?.eligible ? `안정 ${career.stability} · 스트레스 ${career.stress}` : offer?.reason ?? '현재 선택할 수 없습니다.';
+      copy.append(name, note);
+      const salary = document.createElement('b');
+      salary.textContent = offer ? `연 ${formatWon(offer.estimatedSalary)}` : '준비 필요';
+      button.append(copy, salary);
+      return button;
+    }));
+    section.append(title, list);
+    return section;
+  }));
+}
+
+function openCareerPicker() {
+  if (!controller || careerDialog.open) return;
+  controller.pause();
+  updatePlayback();
+  lastFocused = document.activeElement;
+  renderCareerPicker();
+  main.inert = true;
+  careerDialog.showModal();
+  document.querySelector('#career-title').focus();
+}
+
+function showPastLives() {
+  const lives = listPastLives(storage);
+  const list = document.querySelector('#past-lives-list');
+  if (lives.length === 0) {
+    const empty = document.createElement('p');
+    empty.textContent = '아직 끝까지 살아본 삶이 없습니다.';
+    list.replaceChildren(empty);
+  } else {
+    list.replaceChildren(...lives.map((life) => {
+      const article = document.createElement('article');
+      article.className = 'past-life-card';
+      const kicker = document.createElement('p');
+      kicker.className = 'eyebrow';
+      kicker.textContent = `${life.age}세 · ${life.birth}`;
+      const title = document.createElement('h2');
+      title.textContent = life.longestCareer;
+      const copy = document.createElement('p');
+      copy.textContent = life.narrative;
+      article.append(kicker, title, copy);
+      return article;
+    }));
+  }
+  showView('past-lives');
 }
 
 controls.birth.addEventListener('click', drawLife);
 controls.reroll.addEventListener('click', drawLife);
-controls.previous.addEventListener('click', restorePrevious);
-controls.accept.addEventListener('click', () => {
-  if (!state.current || isDrawing) return;
-  renderProfile(state.current);
-  showView('future');
-  liveRegion.textContent = '이 인생을 선택했습니다. 다음 성장 단계를 확인하세요.';
+controls.previous.addEventListener('click', restorePreviousCandidate);
+controls.accept.addEventListener('click', beginCandidateLife);
+controls.continue.addEventListener('click', () => {
+  const saved = loadCurrentLife(storage);
+  if (saved) startLife(saved);
 });
-controls.back.addEventListener('click', () => {
-  showView('profile');
-  controls.reroll.focus();
+controls.back.addEventListener('click', () => showView('profile'));
+controls.play.addEventListener('click', () => {
+  if (!controller) return;
+  if (controller.isPlaying()) controller.pause(); else controller.play();
+  updatePlayback();
 });
+controls.skip.addEventListener('click', () => {
+  controller?.skipToDecision();
+  updatePlayback();
+});
+controls.auto.addEventListener('click', () => {
+  if (!controller) return;
+  const enabled = controller.setAutoDecision(!controller.isAutoDecision());
+  if (enabled && decisionDialog.open) unlockBackground(decisionDialog, false);
+  updatePlayback();
+});
+controls.career.addEventListener('click', openCareerPicker);
+
+document.querySelector('#speed-controls').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-speed]');
+  if (!button || !controller) return;
+  controller.setSpeed(Number(button.dataset.speed));
+  updatePlayback();
+});
+
+document.querySelectorAll('[data-focus]').forEach((button) => {
+  button.addEventListener('click', () => {
+    if (!controller) return;
+    controller.setFocus(button.dataset.focus);
+    document.querySelectorAll('[data-focus]').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+  });
+});
+
+decisionDialog.addEventListener('cancel', (event) => event.preventDefault());
+decisionDialog.querySelector('[data-decision="choices"]').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-choice-id]');
+  if (!button || button.disabled || !controller) return;
+  controller.answerDecision(button.dataset.choiceId);
+  unlockBackground(decisionDialog);
+  updatePlayback();
+});
+
+document.querySelector('#career-close-button').addEventListener('click', () => unlockBackground(careerDialog));
+careerDialog.addEventListener('cancel', (event) => {
+  event.preventDefault();
+  unlockBackground(careerDialog);
+});
+document.querySelector('#career-groups').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-career-id]');
+  if (!button || button.disabled || !controller) return;
+  controller.selectCareer(button.dataset.careerId);
+  unlockBackground(careerDialog);
+  liveRegion.textContent = `${button.querySelector('strong').textContent} 일을 시작했습니다.`;
+});
+
+document.querySelector('#same-life-button').addEventListener('click', () => {
+  if (!controller) return;
+  const previous = controller.getState();
+  startLife(createLife(previous.profile, `${previous.profile.id}-again-${Date.now()}`));
+});
+document.querySelector('#new-life-button').addEventListener('click', () => {
+  candidateProfile = null;
+  previousCandidate = null;
+  showView('intro');
+});
+document.querySelector('#past-lives-button').addEventListener('click', showPastLives);
+document.querySelector('#close-past-lives-button').addEventListener('click', () => showView(controller ? 'result' : 'intro'));
 
 document.querySelector('.brand').addEventListener('click', (event) => {
   event.preventDefault();
+  controller?.pause();
+  updatePlayback();
+  controls.continue.hidden = !loadCurrentLife(storage);
   showView('intro');
-  controls.birth.focus();
 });
 
-if (state.current) {
-  renderProfile(state.current);
-  showView('profile');
-  controls.previous.disabled = !state.previous;
-} else {
-  showView('intro');
-  controls.previous.disabled = true;
-}
+document.addEventListener('visibilitychange', () => controller?.setVisible(!document.hidden));
+window.addEventListener('beforeunload', () => {
+  if (controller) saveCurrentLife(storage, controller.getState());
+});
+
+const savedLife = loadCurrentLife(storage);
+controls.continue.hidden = !savedLife;
+controls.previous.disabled = true;
+showView('intro');

@@ -36,6 +36,7 @@
           <span>태어나기</span>
           <span class="button-arrow" aria-hidden="true">↗</span>
         </button>
+        <button id="continue-button" class="secondary-button continue-button" type="button" hidden>이어 살기 <span aria-hidden="true">→</span></button>
         <p class="disclaimer">현재 결과는 실제 인구통계가 아닌 체험용 가상 시뮬레이션입니다.</p>
       </div>
 
@@ -260,6 +261,7 @@
               <div><dt>학교</dt><dd data-life="education">미취학</dd></div>
               <div><dt>직업</dt><dd data-life="career">아직 정하지 않음</dd></div>
             </dl>
+            <button id="career-select-button" class="panel-action" type="button" hidden>직업군과 직업 선택</button>
           </details>
           <details class="life-panel" open>
             <summary><span>06</span> 사는 곳</summary>
@@ -340,6 +342,15 @@
       <div class="decision-choices" data-decision="choices"></div>
       <p class="decision-footnote">조건을 충족하지 못한 선택도 이유와 함께 표시됩니다.</p>
     </form>
+  </dialog>
+
+  <dialog id="career-dialog" class="decision-dialog career-dialog" aria-labelledby="career-title">
+    <div class="decision-card">
+      <div class="dialog-topline"><p class="eyebrow"><span>CAREER INDEX</span> 12 GROUPS</p><button id="career-close-button" class="text-button" type="button">닫기 ×</button></div>
+      <h2 id="career-title" tabindex="-1">어떤 일을<br>시작할까요?</h2>
+      <p class="decision-prompt">직업군별 세부 직업을 살펴보세요. 조건이 부족한 경로도 준비해야 할 이유와 함께 남아 있습니다.</p>
+      <div id="career-groups" class="career-groups"></div>
+    </div>
   </dialog>
 
   <p id="live-region" class="sr-only" aria-live="polite"></p>
