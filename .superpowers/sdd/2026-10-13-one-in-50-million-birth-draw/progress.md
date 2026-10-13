@@ -16,6 +16,8 @@ Final: minor (deferred): 360px 인트로의 세 가지 팩트 행은 내부 가�
 Final: Ruling: actual browser rendering was reviewed locally after the reviewer declined it — 1440px, 390px, 900px, 840px, reduced motion, persistence, and console errors were checked — cost if wrong: an untested browser engine may render differently.
 Final: Ruling: deployment availability will be verified through the Sites terminal status after packaging — reviewer did not have deployment evidence — cost if wrong: the final URL may be unavailable despite local correctness.
 Final: Ruling: family/finance/housing combinations remain independently weighted because the spec defines no invalid pairings and the MVP labels all output fictional — cost if wrong: a rare combination may feel socially implausible.
+Task 4: complete (Sites version appgver_e552b3ca81808191b8c349442aa80830 deployed private; tests: node --test tests/*.test.mjs → 12/12 pass)
+Final deployment: succeeded at https://one-in-50-million-korea.kev208dev.chatgpt.site
 
 
 
