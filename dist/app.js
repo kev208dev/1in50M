@@ -1,5 +1,5 @@
 import { createBirthProfile, validateProfile } from './simulator.js';
-import { readSavedState, writeSavedState, createHistoryState, canStartDraw, getSafeStorage } from './state.js';
+import { readSavedState, writeSavedState, createHistoryState, canStartDraw, getSafeStorage } from './storage.js';
 
 const views = {
   intro: document.querySelector('#intro-view'),
