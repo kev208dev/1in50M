@@ -32,3 +32,11 @@ test('결과 요약은 점수나 성공 등급을 만들지 않는다', () => {
   assert.equal('grade' in summary, false);
   assert.equal(summary.turningPoints.length, 5);
 });
+
+test('결과 서사는 학교 유형 ID 대신 한국어 이름을 사용한다', () => {
+  const summary = createLifeSummary(makeLifeAtAge(90, {
+    education: { schoolType: 'arts', level: 'high-school' },
+  }));
+  assert.match(summary.narrative, /예술고 경로/);
+  assert.doesNotMatch(summary.narrative, /arts 경로/);
+});

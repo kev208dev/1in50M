@@ -28,6 +28,7 @@ export function formatWon(value) {
 
 export function getVisibleLifeLog(history, limit = 8) {
   return [...(Array.isArray(history) ? history : [])]
+    .reverse()
     .sort((a, b) => (b.age ?? 0) - (a.age ?? 0))
     .slice(0, Math.max(0, limit));
 }
@@ -64,9 +65,10 @@ export function createLifeViewModel(life) {
   };
 }
 
-function setText(root, selector, value) {
-  const node = root.querySelector(selector);
-  if (node) node.textContent = String(value ?? '—');
+export function renderTextFields(root, selector, value) {
+  root.querySelectorAll(selector).forEach((node) => {
+    node.textContent = String(value ?? '—');
+  });
 }
 
 function makeNode(root, tag, className, text) {
@@ -78,18 +80,18 @@ function makeNode(root, tag, className, text) {
 
 export function renderLife(root, life) {
   const model = createLifeViewModel(life);
-  setText(root, '#age-display', model.age);
-  setText(root, '#year-display', model.year);
-  setText(root, '[data-life="location"]', model.location);
-  setText(root, '[data-life="cash"]', model.cash);
-  setText(root, '[data-life="income"]', model.monthlyIncome);
-  setText(root, '[data-life="costs"]', model.fixedCosts);
-  setText(root, '[data-life="debt"]', model.debt);
-  setText(root, '[data-life="net-worth"]', model.netWorth);
-  setText(root, '[data-life="education"]', model.education);
-  setText(root, '[data-life="career"]', model.career);
-  setText(root, '[data-life="housing"]', model.housing);
-  setText(root, '[data-life="focus"]', model.focus);
+  renderTextFields(root, '#age-display', model.age);
+  renderTextFields(root, '#year-display', model.year);
+  renderTextFields(root, '[data-life="location"]', model.location);
+  renderTextFields(root, '[data-life="cash"]', model.cash);
+  renderTextFields(root, '[data-life="income"]', model.monthlyIncome);
+  renderTextFields(root, '[data-life="costs"]', model.fixedCosts);
+  renderTextFields(root, '[data-life="debt"]', model.debt);
+  renderTextFields(root, '[data-life="net-worth"]', model.netWorth);
+  renderTextFields(root, '[data-life="education"]', model.education);
+  renderTextFields(root, '[data-life="career"]', model.career);
+  renderTextFields(root, '[data-life="housing"]', model.housing);
+  renderTextFields(root, '[data-life="focus"]', model.focus);
 
   const stats = root.querySelector('[data-life-list="stats"]');
   if (stats) {
@@ -142,9 +144,9 @@ export function renderLife(root, life) {
 }
 
 export function renderDecision(dialog, decision, choices) {
-  setText(dialog, '[data-decision="kicker"]', `${decision.age}세의 결정`);
-  setText(dialog, '[data-decision="title"]', decision.title);
-  setText(dialog, '[data-decision="prompt"]', decision.prompt);
+  renderTextFields(dialog, '[data-decision="kicker"]', `${decision.age}세의 결정`);
+  renderTextFields(dialog, '[data-decision="title"]', decision.title);
+  renderTextFields(dialog, '[data-decision="prompt"]', decision.prompt);
   const list = dialog.querySelector('[data-decision="choices"]');
   if (!list) return;
   list.replaceChildren(...choices.map((choice, index) => {
@@ -163,12 +165,12 @@ export function renderDecision(dialog, decision, choices) {
 }
 
 export function renderResult(root, summary) {
-  setText(root, '[data-result="age"]', formatAge(summary.age));
-  setText(root, '[data-result="birth"]', summary.birth);
-  setText(root, '[data-result="residence"]', summary.finalResidence);
-  setText(root, '[data-result="career"]', summary.longestCareer);
-  setText(root, '[data-result="net-worth"]', formatWon(summary.netWorth));
-  setText(root, '[data-result="narrative"]', summary.narrative);
+  renderTextFields(root, '[data-result="age"]', formatAge(summary.age));
+  renderTextFields(root, '[data-result="birth"]', summary.birth);
+  renderTextFields(root, '[data-result="residence"]', summary.finalResidence);
+  renderTextFields(root, '[data-result="career"]', summary.longestCareer);
+  renderTextFields(root, '[data-result="net-worth"]', formatWon(summary.netWorth));
+  renderTextFields(root, '[data-result="narrative"]', summary.narrative);
   const points = root.querySelector('[data-result="turning-points"]');
   if (points) {
     points.replaceChildren(...summary.turningPoints.map((point) => {

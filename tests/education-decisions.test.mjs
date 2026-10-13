@@ -29,3 +29,8 @@ test('고등학교 선택이 학력과 기록에 반영된다', () => {
   assert.equal(next.education.schoolType, 'vocational');
   assert.ok(next.history.some((entry) => entry.type === 'decision'));
 });
+
+test('잔액이 음수여도 비용 없는 선택은 활성 상태를 유지한다', () => {
+  const life = makeLifeAtAge(5, { economy: { cash: -1000000 } });
+  assert.ok(getChoices(life, 'first-reflection').every((choice) => choice.enabled));
+});

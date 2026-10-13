@@ -1,4 +1,5 @@
 import { normalizeLife } from './life.js';
+import { EDUCATION_BY_ID } from '../data/education.js';
 
 function turningPoints(life) {
   const candidates = [
@@ -39,7 +40,8 @@ export function createLifeSummary(life) {
   const longestCareer = [...current.career.history]
     .reverse()
     .find((entry) => entry.title)?.title ?? current.career.title ?? '아직 정하지 않음';
-  const school = current.education.schoolType ?? '일반';
+  const schoolId = current.education.schoolType;
+  const school = EDUCATION_BY_ID[schoolId]?.label ?? '일반';
   const region = current.profile?.region?.name ?? '대한민국';
   const district = current.profile?.district ?? '';
   const finalRegion = `${current.housing.region}${current.housing.district ? ` ${current.housing.district}` : ''}`;

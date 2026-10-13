@@ -579,7 +579,7 @@ Expected: `main -> main`
 - Consumes: complete static site and all simulation modules
 - Produces: verified GitHub `main`, private Sites version, user-visible deployed URL
 
-- [ ] **Step 1: 자동 완주 실패 테스트 작성**
+- [x] **Step 1: 자동 완주 실패 테스트 작성**
 
 ```js
 import test from 'node:test';
@@ -599,14 +599,14 @@ test('100개 seed가 선택지 고갈이나 NaN 없이 완주한다', () => {
 });
 ```
 
-- [ ] **Step 2: RED 확인 후 자동 완주 구현**
+- [x] **Step 2: RED 확인 후 자동 완주 구현**
 
 Run: `node --test tests/full-life.test.mjs`
 Expected: FAIL because `simulateAutomatically` is not exported
 
 `simulateAutomatically(profile, seed)`는 모든 결정을 `chooseAutomatically()`로 처리하고 90세 또는 `status: 'review'`까지 진행한다. 120회 반복을 넘으면 명시적 오류를 던진다.
 
-- [ ] **Step 3: 전체 자동 검증**
+- [x] **Step 3: 전체 자동 검증**
 
 Run: `npm test`
 Expected: all tests PASS with 0 failures and 0 warnings
@@ -614,7 +614,7 @@ Expected: all tests PASS with 0 failures and 0 warnings
 Run: `git diff --check`
 Expected: no output
 
-- [ ] **Step 4: 로컬 브라우저 QA**
+- [x] **Step 4: 로컬 브라우저 QA**
 
 Sites 로컬 프리뷰 지침을 읽고 정적 서버를 연다. 다음을 직접 확인한다.
 
@@ -628,7 +628,7 @@ Sites 로컬 프리뷰 지침을 읽고 정적 서버를 연다. 다음을 직�
 8. 모션 감소에서 스캔·숫자 애니메이션 생략
 9. 콘솔 오류 0건
 
-- [ ] **Step 5: 최종 커밋과 GitHub 푸시**
+- [x] **Step 5: 최종 커밋과 GitHub 푸시**
 
 Run: `git add tests/full-life.test.mjs dist/engine/life.js docs/superpowers && git commit -m "feat: complete Korean life simulation" && git push origin main && git status --short --branch`
 Expected: branch is up to date with `origin/main`; only execution-ledger scratch may remain untracked or modified

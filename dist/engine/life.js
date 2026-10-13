@@ -1,5 +1,10 @@
 import { FOCUS_BY_ID } from '../data/focuses.js';
 import { createRng, hashSeed } from './random.js';
+import { getDecision, chooseAutomatically } from './decisions.js';
+import { getCareerOffers, acceptCareer, advanceCareer } from './career.js';
+import { calculateAnnualEconomy } from './economy.js';
+import { selectAnnualEvents, applyEvent } from './events.js';
+import { updateRelationships } from './relationships.js';
 
 const STAT_KEYS = ['health', 'happiness', 'knowledge', 'relationships'];
 
@@ -203,4 +208,29 @@ export function advanceYear(life, tickId = `age-${Number(life?.age ?? 0) + 1}`) 
 export function isLifeComplete(life) {
   const current = normalizeLife(life);
   return current.status === 'review' || current.age >= 90;
+}
+
+export function simulateAutomatically(profile, seed = profile?.id) {
+  let life = createLife(profile, seed);
+  let iterations = 0;
+  while (life.status === 'living' && iterations < 120) {
+    const decision = getDecision(life);
+    if (decision) life = chooseAutomatically(life, decision.id);
+
+    if (life.age >= 25 && !life.career.careerId) {
+      const offer = getCareerOffers(life).find((item) => item.eligible);
+      if (offer) life = acceptCareer(life, offer.career.id);
+    }
+
+    life = advanceYear(life, `automatic-${iterations}`);
+    life = advanceCareer(life);
+    life = calculateAnnualEconomy(life);
+    for (const event of selectAnnualEvents(life)) life = applyEvent(life, event.id);
+    life = updateRelationships(life);
+    iterations += 1;
+  }
+  if (iterations >= 120 && life.status !== 'review') {
+    throw new Error('자동 생애 시뮬레이션이 120회 안에 종료되지 않았습니다.');
+  }
+  return normalizeLife({ ...life, pendingDecisionId: null });
 }

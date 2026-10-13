@@ -29,3 +29,10 @@ test('일한 해가 쌓이면 경력과 소득이 함께 증가한다', () => {
   assert.equal(next.career.years, 1);
   assert.ok(next.career.annualIncome >= life.career.annualIncome);
 });
+
+test('미성년 시기에는 개인 현금에서 가족 주거비를 차감하지 않는다', () => {
+  const life = makeLifeAtAge(10);
+  const next = calculateAnnualEconomy(life);
+  assert.equal(next.economy.cash, life.economy.cash);
+  assert.equal(next.economy.fixedCosts, 0);
+});

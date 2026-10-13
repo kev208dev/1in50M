@@ -9,7 +9,7 @@ function availability(life, choice) {
     return { enabled: false, reason: `건강 ${choice.minimumHealth} 이상이 필요합니다.` };
   }
   const requiredCash = Math.max(choice.minimumCash ?? 0, choice.cost ?? 0);
-  if (requiredCash > life.economy.cash) {
+  if (requiredCash > 0 && requiredCash > life.economy.cash) {
     return { enabled: false, reason: `${requiredCash.toLocaleString('ko-KR')}원의 여유 자금이 필요합니다.` };
   }
   return { enabled: true, reason: '' };
