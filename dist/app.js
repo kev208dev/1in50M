@@ -10,6 +10,8 @@ import {
   clearCurrentLife,
   archiveLife,
   listPastLives,
+  deletePastLife,
+  clearPastLives,
 } from './storage.js';
 import { createSimulationController } from './ui/controls.js';
 import { renderLife, renderDecision, renderResult, formatWon } from './ui/render.js';
@@ -139,6 +141,10 @@ function updatePlayback() {
     button.setAttribute('aria-pressed', String(Number(button.dataset.speed) === controller.getSpeed()));
   });
   controls.auto.setAttribute('aria-pressed', String(controller.isAutoDecision()));
+  const focusId = controller.getState().focusId;
+  document.querySelectorAll('[data-focus]').forEach((button) => {
+    button.setAttribute('aria-pressed', String(button.dataset.focus === focusId));
+  });
 }
 
 function updateMoment(life) {
@@ -269,7 +275,12 @@ function showPastLives() {
       title.textContent = life.longestCareer;
       const copy = document.createElement('p');
       copy.textContent = life.narrative;
-      article.append(kicker, title, copy);
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'text-button past-life-delete';
+      remove.dataset.pastLifeId = life.id;
+      remove.textContent = '이 기록 삭제';
+      article.append(kicker, title, copy, remove);
       return article;
     }));
   }
@@ -350,7 +361,30 @@ document.querySelector('#new-life-button').addEventListener('click', () => {
   showView('intro');
 });
 document.querySelector('#past-lives-button').addEventListener('click', showPastLives);
+document.querySelector('#intro-past-lives-button').addEventListener('click', showPastLives);
 document.querySelector('#close-past-lives-button').addEventListener('click', () => showView(controller ? 'result' : 'intro'));
+document.querySelector('#clear-past-lives-button').addEventListener('click', () => {
+  clearPastLives(storage);
+  showPastLives();
+});
+document.querySelector('#past-lives-list').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-past-life-id]');
+  if (!button) return;
+  deletePastLife(storage, button.dataset.pastLifeId);
+  showPastLives();
+});
+
+document.querySelector('#life-map').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-age]');
+  if (!button || !controller) return;
+  const age = Number(button.dataset.age);
+  const life = controller.getState();
+  if (age > life.age) return;
+  const memories = life.history.filter((item) => item.age === age);
+  document.querySelector('#moment-age').textContent = String(age);
+  document.querySelector('#moment-copy').textContent = memories.map((item) => item.text).join(' · ') || `${age}세의 기록은 아직 비어 있습니다.`;
+  liveRegion.textContent = `${age}세의 기록을 보고 있습니다.`;
+});
 
 document.querySelector('.brand').addEventListener('click', (event) => {
   event.preventDefault();

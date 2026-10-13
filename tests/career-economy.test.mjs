@@ -36,3 +36,12 @@ test('미성년 시기에는 개인 현금에서 가족 주거비를 차감하�
   assert.equal(next.economy.cash, life.economy.cash);
   assert.equal(next.economy.fixedCosts, 0);
 });
+
+test('대학 재학 중에는 대학 수료가 필요한 직업을 바로 선택할 수 없다', () => {
+  const life = makeLifeAtAge(19, {
+    stats: { knowledge: 100 },
+    education: { level: 'university', status: 'enrolled' },
+  });
+  const offer = getCareerOffers(life, 100).find((item) => item.career.id === 'research-1');
+  assert.equal(offer.eligible, false);
+});

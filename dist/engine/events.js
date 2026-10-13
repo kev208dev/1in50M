@@ -7,7 +7,11 @@ export function selectAnnualEvents(life) {
   const eligible = LIFE_EVENTS.filter((event) => (
     current.age >= event.ageRange[0]
     && current.age <= event.ageRange[1]
-    && !current.recentEventIds.includes(event.id)
+    && (() => {
+      const previous = [...current.history].reverse().find((entry) => entry.eventId === event.id);
+      if (previous) return current.age - previous.age >= event.cooldownYears;
+      return !current.recentEventIds.includes(event.id);
+    })()
   ));
   if (eligible.length === 0) return [];
   const rng = createRng(`${current.seed}:events:${current.age}:${current.rngState}`);

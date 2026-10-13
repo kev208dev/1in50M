@@ -1,4 +1,5 @@
 import { FOCUS_BY_ID } from '../data/focuses.js';
+import { DECISION_BY_ID } from '../data/decisions.js';
 import { createRng, hashSeed } from './random.js';
 import { getDecision, chooseAutomatically } from './decisions.js';
 import { getCareerOffers, acceptCareer, advanceCareer } from './career.js';
@@ -142,11 +143,17 @@ export function normalizeLife(life) {
     district: copy.housing?.district ?? copy.profile?.district ?? '',
   };
   copy.focusId = FOCUS_BY_ID[copy.focusId] ? copy.focusId : 'balance';
-  copy.pendingDecisionId = copy.pendingDecisionId ?? null;
+  copy.pendingDecisionId = DECISION_BY_ID[copy.pendingDecisionId] ? copy.pendingDecisionId : null;
   copy.decisions = copy.decisions && typeof copy.decisions === 'object' ? { ...copy.decisions } : {};
-  copy.history = Array.isArray(copy.history) ? [...copy.history] : [];
-  copy.milestones = Array.isArray(copy.milestones) ? [...copy.milestones] : [];
-  copy.statHistory = Array.isArray(copy.statHistory) ? [...copy.statHistory] : [];
+  copy.history = Array.isArray(copy.history)
+    ? copy.history.filter((item) => item && typeof item === 'object' && typeof item.text === 'string')
+    : [];
+  copy.milestones = Array.isArray(copy.milestones)
+    ? copy.milestones.filter((item) => item && typeof item === 'object' && typeof item.label === 'string')
+    : [];
+  copy.statHistory = Array.isArray(copy.statHistory)
+    ? copy.statHistory.filter((item) => item && typeof item === 'object' && Number.isFinite(Number(item.age)))
+    : [];
   copy.recentEventIds = Array.isArray(copy.recentEventIds) ? [...copy.recentEventIds].slice(-10) : [];
   copy.processedTickIds = Array.isArray(copy.processedTickIds)
     ? [...new Set(copy.processedTickIds.map(String))].slice(-8)
@@ -174,31 +181,30 @@ export function advanceYear(life, tickId = `age-${Number(life?.age ?? 0) + 1}`) 
   stats.happiness += rng.int(-1, 1);
   stats.knowledge += nextAge <= 24 ? 1 : 0;
 
-  const economy = { ...current.economy };
-  const annualIncome = current.career.annualIncome || (economy.income * 12);
-  const annualCosts = economy.fixedCosts * 12;
-  const careerBonus = current.focusId === 'career' ? Math.round(annualIncome * (focus.economyEffect ?? 0)) : 0;
-  economy.cash += annualIncome + careerBonus - annualCosts;
-  economy.netWorth = economy.cash + economy.deposit + economy.homeValue - economy.debt;
+  const education = { ...current.education };
+  const completionAge = { university: 22, college: 20, training: 19 }[education.level];
+  if (education.status === 'enrolled' && completionAge && nextAge >= completionAge) {
+    education.status = 'completed';
+  }
+  const lifeEnded = nextAge >= 45 && stats.health <= 0;
+  const reviewing = nextAge >= 90 || lifeEnded;
 
   return normalizeLife({
     ...current,
     age: nextAge,
     year: current.year + 1,
-    status: nextAge >= 90 ? 'review' : 'living',
+    status: reviewing ? 'review' : 'living',
     rngState: rng.snapshot(),
     stats,
-    economy,
-    career: {
-      ...current.career,
-      years: current.career.status === 'employed' ? current.career.years + 1 : current.career.years,
-    },
+    education,
+    economy: current.economy,
+    career: current.career,
     history: [...current.history, {
       id: `year-${nextAge}`,
       age: nextAge,
       year: current.year + 1,
-      type: nextAge >= 90 ? 'review' : 'year',
-      text: nextAge >= 90 ? '지나온 삶을 천천히 돌아봅니다.' : `${nextAge}세의 한 해가 흘렀습니다.`,
+      type: reviewing ? 'review' : 'year',
+      text: reviewing ? '지나온 삶을 천천히 돌아봅니다.' : `${nextAge}세의 한 해가 흘렀습니다.`,
     }],
     statHistory: [...current.statHistory, { age: nextAge, ...stats }],
     processedTickIds: [...current.processedTickIds, normalizedTickId].slice(-8),

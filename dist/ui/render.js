@@ -56,6 +56,7 @@ export function createLifeViewModel(life) {
     friends: current.relationships.friends,
     partner: current.relationships.partner,
     children: current.relationships.children,
+    statHistory: current.statHistory,
     log: getVisibleLifeLog(current.history),
     lifeMap: Array.from({ length: 91 }, (_, age) => ({
       age,
@@ -140,6 +141,20 @@ export function renderLife(root, life) {
     ];
     family.replaceChildren(...(people.length ? people : ['아직 기록 없음']).map((name) => makeNode(root, 'li', '', name)));
   }
+  const chart = root.querySelector('.mini-chart');
+  if (chart) {
+    const points = model.statHistory.slice(-12);
+    chart.replaceChildren(...points.map((point) => {
+      const bar = makeNode(root, 'i');
+      const average = Math.round((point.health + point.happiness + point.knowledge + point.relationships) / 4);
+      bar.style.setProperty('--h', `${average}%`);
+      bar.title = `${formatAge(point.age)} 평균 ${average}`;
+      return bar;
+    }));
+    chart.setAttribute('aria-label', points.length
+      ? `최근 ${points.length}년의 상태 평균 변화 그래프`
+      : '아직 상태 변화 기록이 없습니다.');
+  }
   return model;
 }
 
@@ -171,6 +186,21 @@ export function renderResult(root, summary) {
   renderTextFields(root, '[data-result="career"]', summary.longestCareer);
   renderTextFields(root, '[data-result="net-worth"]', formatWon(summary.netWorth));
   renderTextFields(root, '[data-result="narrative"]', summary.narrative);
+  renderTextFields(root, '[data-result="family"]', `가까운 관계 ${summary.family.closeRelationships}명 · 동반자 ${summary.family.hasPartner ? '있음' : '없음'} · 자녀 ${summary.family.children}명`);
+  const statChart = root.querySelector('[data-result="stats"]');
+  if (statChart) {
+    statChart.replaceChildren(...Object.entries(STAT_LABELS).map(([key, label]) => {
+      const row = makeNode(root, 'div', 'result-stat-row');
+      const track = makeNode(root, 'span', 'result-stat-track');
+      const fill = makeNode(root, 'i', 'result-stat-fill');
+      fill.style.setProperty('--value', `${summary.finalStats[key]}%`);
+      track.append(fill);
+      row.append(makeNode(root, 'span', '', label), track, makeNode(root, 'strong', '', summary.finalStats[key]));
+      return row;
+    }));
+    statChart.setAttribute('aria-label', Object.entries(STAT_LABELS)
+      .map(([key, label]) => `${label} ${summary.finalStats[key]}점`).join(', '));
+  }
   const points = root.querySelector('[data-result="turning-points"]');
   if (points) {
     points.replaceChildren(...summary.turningPoints.map((point) => {

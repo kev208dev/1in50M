@@ -1,7 +1,11 @@
 import { DECISIONS, DECISION_BY_ID } from '../data/decisions.js';
+import { HOUSING_BY_ID } from '../data/housing.js';
 import { normalizeLife } from './life.js';
 
 function availability(life, choice) {
+  if (choice.requiresPartner && !life.relationships.partner) {
+    return { enabled: false, reason: '함께 돌봄을 나눌 동반자 관계가 필요합니다.' };
+  }
   if ((choice.minimumKnowledge ?? 0) > life.stats.knowledge) {
     return { enabled: false, reason: `지식 ${choice.minimumKnowledge} 이상이 필요합니다.` };
   }
@@ -50,7 +54,7 @@ export function applyDecision(life, decisionId, choiceId) {
     if (key in stats) stats[key] += Number(value) || 0;
   }
   const economy = { ...current.economy };
-  if (selected.cost) economy.cash -= selected.cost;
+  if (selected.cost && !selected.housingType) economy.cash -= selected.cost;
 
   const education = { ...current.education };
   if (selected.educationPath) {
@@ -68,8 +72,35 @@ export function applyDecision(life, decisionId, choiceId) {
     career.status = choiceId === 'retire' || choiceId === 'community' ? 'retired' : choiceId === 'part-time' ? 'part-time' : career.status;
   }
 
-  const housing = selected.housingType ? { ...current.housing, type: selected.housingType } : current.housing;
-  const relationships = relationshipChoice(current.relationships, choiceId, current.year);
+  if (decisionId === 'mid-career' && choiceId === 'change') {
+    career.history = [...career.history, { age: current.age, title: career.title, action: 'left' }];
+    career.groupId = null;
+    career.careerId = null;
+    career.title = null;
+    career.status = 'none';
+    career.years = 0;
+    career.annualIncome = 0;
+    economy.income = 0;
+  }
+
+  let housing = current.housing;
+  if (selected.housingType) {
+    const option = HOUSING_BY_ID[selected.housingType];
+    const recoveredDeposit = current.economy.deposit;
+    economy.cash = economy.cash + recoveredDeposit - option.requiredCash;
+    economy.deposit = option.deposit ?? 0;
+    economy.homeValue = option.homeValue ?? 0;
+    economy.debt = option.debt ?? 0;
+    economy.fixedCosts = option.monthlyCost;
+    housing = { ...current.housing, type: option.id };
+  }
+  let relationships = relationshipChoice(current.relationships, choiceId, current.year);
+  if (decisionId === 'family-path' && choiceId === 'welcome-child') {
+    relationships = {
+      ...relationships,
+      children: [...relationships.children, { id: `child-${current.year}`, name: '자녀', since: current.year }],
+    };
+  }
 
   return normalizeLife({
     ...current,

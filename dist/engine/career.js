@@ -4,7 +4,8 @@ import { normalizeLife } from './life.js';
 
 function educationEligible(life, required) {
   if (required === 'any') return true;
-  return life.education.level === required || life.education.level === 'university';
+  return life.education.status === 'completed'
+    && (life.education.level === required || life.education.level === 'university');
 }
 
 export function getCareerOffers(life, limit = 6) {

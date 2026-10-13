@@ -25,7 +25,25 @@ function turningPoints(life) {
     if (unique.length >= 5) break;
     if (!unique.some((entry) => entry.label === item.label)) unique.push(item);
   }
-  return unique.slice(0, 5);
+  const chronological = unique.sort((a, b) => a.age - b.age);
+  if (chronological.length <= 5) return chronological;
+  return Array.from({ length: 5 }, (_, index) => (
+    chronological[Math.round((index * (chronological.length - 1)) / 4)]
+  ));
+}
+
+function getLongestCareer(life) {
+  const entries = life.career.history.filter((entry) => entry?.title && Number.isFinite(Number(entry.age)));
+  const durations = new Map();
+  for (let index = 0; index < entries.length; index += 1) {
+    const entry = entries[index];
+    if (entry.action !== 'started') continue;
+    const end = entries.slice(index + 1).find((candidate) => candidate.action === 'left' || candidate.action === 'started');
+    const endAge = end?.age ?? life.age;
+    durations.set(entry.title, (durations.get(entry.title) ?? 0) + Math.max(0, endAge - entry.age));
+  }
+  const longest = [...durations.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+  return longest ?? life.career.title ?? '아직 정하지 않음';
 }
 
 export function createLifeSummary(life) {
@@ -37,9 +55,7 @@ export function createLifeSummary(life) {
     knowledge: current.stats.knowledge - (initial.education ?? current.stats.knowledge),
     relationships: current.stats.relationships - (initial.relationships ?? current.stats.relationships),
   };
-  const longestCareer = [...current.career.history]
-    .reverse()
-    .find((entry) => entry.title)?.title ?? current.career.title ?? '아직 정하지 않음';
+  const longestCareer = getLongestCareer(current);
   const schoolId = current.education.schoolType;
   const school = EDUCATION_BY_ID[schoolId]?.label ?? '일반';
   const region = current.profile?.region?.name ?? '대한민국';

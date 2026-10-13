@@ -28,6 +28,12 @@ test('생애 화면과 원작형 컨트롤이 존재한다', () => {
   ]) assert.match(html, new RegExp(`id=["']${id}["']`));
 });
 
+test('인트로에서 전생 기록에 접근하고 결과 그래프와 가족 요약을 볼 수 있다', () => {
+  for (const id of ['intro-past-lives-button', 'clear-past-lives-button', 'result-stats', 'result-family']) {
+    assert.match(html, new RegExp(`id=["']${id}["']`));
+  }
+});
+
 test('가상 데이터 안내가 생애 화면과 결과 화면에 있다', () => {
   const matches = html.match(/체험용 가상 데이터/g) ?? [];
   assert.ok(matches.length >= 2);

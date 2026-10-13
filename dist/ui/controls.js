@@ -59,6 +59,10 @@ export function createSimulationController({
 
   function processYear() {
     if (life.status !== 'living' || life.pendingDecisionId) return;
+    if (autoDecision && life.age >= 25 && !life.career.careerId) {
+      const offer = getCareerOffers(life, 100).find((item) => item.eligible);
+      if (offer) life = acceptCareer(life, offer.career.id);
+    }
     tickCounter += 1;
     life = advanceYear(life, `controller-${life.age}-${tickCounter}`);
     life = advanceCareer(life);

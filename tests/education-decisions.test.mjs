@@ -34,3 +34,28 @@ test('잔액이 음수여도 비용 없는 선택은 활성 상태를 유지한�
   const life = makeLifeAtAge(5, { economy: { cash: -1000000 } });
   assert.ok(getChoices(life, 'first-reflection').every((choice) => choice.enabled));
 });
+
+test('주거 결정은 보증금과 주거비를 공통 주거 모델로 반영한다', () => {
+  const life = makeLifeAtAge(32, { economy: { cash: 100000000 } });
+  const next = applyDecision(life, 'housing-path', 'jeonse');
+  assert.equal(next.housing.type, 'jeonse');
+  assert.equal(next.economy.deposit, 85000000);
+  assert.equal(next.economy.fixedCosts, 650000);
+});
+
+test('가족 결정으로 자녀를 맞이하거나 자녀 없는 삶을 선택할 수 있다', () => {
+  const life = makeLifeAtAge(35, { relationships: { partner: { id: 'partner', name: '동반자' } } });
+  const next = applyDecision(life, 'family-path', 'welcome-child');
+  assert.equal(next.relationships.children.length, 1);
+});
+
+test('직업 전환을 고르면 기존 직업을 내려놓고 다시 선택할 수 있다', () => {
+  const life = makeLifeAtAge(40, {
+    career: { groupId: 'management', careerId: 'management-1', title: '사무원', status: 'employed', annualIncome: 36000000 },
+    economy: { income: 3000000 },
+  });
+  const next = applyDecision(life, 'mid-career', 'change');
+  assert.equal(next.career.careerId, null);
+  assert.equal(next.career.status, 'none');
+  assert.equal(next.economy.income, 0);
+});

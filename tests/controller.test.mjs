@@ -67,3 +67,30 @@ test('조건을 충족하지 못한 직업은 직접 선택할 수 없다', () =
   const unavailable = controller.getCareerOffers(100).find((offer) => !offer.eligible);
   assert.throws(() => controller.selectCareer(unavailable.career.id), /필요/);
 });
+
+test('컨트롤러는 한 해의 경력과 경제를 정확히 한 번만 반영한다', () => {
+  const clock = fakeClock();
+  const initialLife = makeLifeAtAge(31, {
+    career: {
+      groupId: 'management', careerId: 'management-1', title: '사무원', status: 'employed',
+      years: 0, annualIncome: 36000000, history: [],
+    },
+    economy: { cash: 0, income: 3000000, fixedCosts: 1500000, debt: 0, deposit: 0, homeValue: 0 },
+  });
+  const controller = createSimulationController({ clock, initialLife });
+  controller.play();
+  clock.advance(8000);
+  const next = controller.getState();
+  assert.equal(next.career.years, 1);
+  assert.ok(next.economy.cash > 15000000 && next.economy.cash < 22000000);
+});
+
+test('자동 결정은 실제 컨트롤러에서도 가능한 직업을 선택한다', () => {
+  const clock = fakeClock();
+  const controller = createSimulationController({ clock, initialLife: makeLifeAtAge(25) });
+  controller.setAutoDecision(true);
+  controller.play();
+  clock.advance(8000);
+  assert.ok(controller.getState().career.careerId);
+  assert.equal(controller.getState().career.status, 'employed');
+});

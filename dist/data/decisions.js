@@ -1,4 +1,5 @@
 import { EDUCATION_PATHS, POST_SECONDARY_PATHS } from './education.js';
+import { HOUSING_OPTIONS } from './housing.js';
 
 const choice = (id, label, description, effects = {}, tags = []) => ({ id, label, description, effects, tags });
 
@@ -57,6 +58,27 @@ export const DECISIONS = [
       choice('partnership', '동반자 관계를 만든다', '서로의 일상을 나눌 사람과 약속합니다.', { relationships: 5, happiness: 2 }, ['관계에 도움']),
       choice('single', '비혼으로 살아간다', '자신의 생활 방식과 관계망을 가꿉니다.', { happiness: 3, relationships: 1 }, ['자율', '관계 유지']),
       choice('open', '아직 정하지 않는다', '답을 서두르지 않고 현재를 지냅니다.', { happiness: 1 }, ['유보']),
+    ],
+  },
+  {
+    id: 'housing-path', age: 32, title: '어떤 집에서 살까',
+    prompt: '지금 가진 돈과 원하는 생활 방식을 바탕으로 다음 집을 고릅니다.',
+    choices: HOUSING_OPTIONS.map((option) => ({
+      id: option.id,
+      label: option.label,
+      description: option.description,
+      housingType: option.id,
+      minimumCash: option.requiredCash,
+      tags: option.requiredCash > 0 ? ['비용 발생', '주거 변화'] : ['비용 절약'],
+    })),
+  },
+  {
+    id: 'family-path', age: 35, title: '가족의 다음 모습',
+    prompt: '자녀 유무는 성공의 기준이 아닙니다. 원하는 삶의 모양을 선택합니다.',
+    choices: [
+      { ...choice('welcome-child', '자녀를 맞이한다', '동반자와 함께 새로운 가족을 돌봅니다.', { relationships: 4, happiness: 1 }, ['돌봄', '비용 발생']), requiresPartner: true },
+      choice('community-care', '다른 방식으로 돌본다', '조카나 가까운 아이, 공동체와 돌봄을 나눕니다.', { relationships: 3 }, ['관계에 도움']),
+      choice('child-free', '자녀 없이 살아간다', '현재의 관계와 생활을 소중히 이어 갑니다.', { happiness: 2 }, ['자율']),
     ],
   },
   {

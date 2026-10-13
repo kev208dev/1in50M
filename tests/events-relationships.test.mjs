@@ -33,3 +33,13 @@ test('사건과 관계 갱신은 원본을 바꾸지 않고 기록을 남긴다'
   assert.ok(afterEvent.history.some((entry) => entry.eventId === event.id));
   assert.ok(Array.isArray(afterRelationship.relationships.friends));
 });
+
+test('사건은 쿨다운이 지난 뒤 다시 후보가 될 수 있다', () => {
+  const life = makeLifeAtAge(70, {
+    recentEventIds: LIFE_EVENTS.filter((event) => event.stage === 'senior').map((event) => event.id),
+    history: LIFE_EVENTS.filter((event) => event.stage === 'senior').map((event, index) => ({
+      id: `old-${event.id}`, eventId: event.id, type: 'event', age: 60 + index, year: 2086 + index, text: event.text,
+    })),
+  });
+  assert.ok(selectAnnualEvents(life).length > 0);
+});

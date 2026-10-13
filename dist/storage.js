@@ -35,7 +35,12 @@ function repairLife(value) {
 
 export function saveCurrentLife(storage = getSafeStorage(), life) {
   try {
-    storage?.setItem(CURRENT_KEY, JSON.stringify(normalizeLife(life)));
+    const current = normalizeLife(life);
+    if (current.status === 'review') {
+      storage?.removeItem(CURRENT_KEY);
+      return false;
+    }
+    storage?.setItem(CURRENT_KEY, JSON.stringify(current));
     return Boolean(storage);
   } catch {
     return false;
@@ -77,6 +82,26 @@ export function archiveLife(storage = getSafeStorage(), life) {
     const previous = listPastLives(storage).filter((item) => item.id !== summary.id);
     storage.setItem(PAST_KEY, JSON.stringify([summary, ...previous].slice(0, 10)));
     return true;
+  } catch {
+    return false;
+  }
+}
+
+export function deletePastLife(storage = getSafeStorage(), summaryId) {
+  try {
+    if (!storage) return false;
+    const next = listPastLives(storage).filter((item) => item.id !== summaryId);
+    storage.setItem(PAST_KEY, JSON.stringify(next));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function clearPastLives(storage = getSafeStorage()) {
+  try {
+    storage?.removeItem(PAST_KEY);
+    return Boolean(storage);
   } catch {
     return false;
   }
