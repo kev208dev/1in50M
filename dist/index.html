@@ -167,6 +167,146 @@
       </div>
     </section>
 
+    <section id="life-view" class="life-view" aria-label="생애 시뮬레이션" hidden>
+      <header class="life-toolbar">
+        <div class="life-clock" aria-live="polite">
+          <span id="age-display">0세</span>
+          <span class="life-clock-divider"></span>
+          <span id="year-display">2026</span>
+          <small data-life="location">대한민국</small>
+        </div>
+        <div class="playback-controls" aria-label="시간 진행">
+          <button id="play-button" class="play-button" type="button" aria-label="삶 재생">▶</button>
+          <div id="speed-controls" class="speed-controls" role="group" aria-label="진행 속도">
+            <button type="button" data-speed="1" aria-pressed="true">1×</button>
+            <button type="button" data-speed="2" aria-pressed="false">2×</button>
+            <button type="button" data-speed="4" aria-pressed="false">4×</button>
+            <button type="button" data-speed="8" aria-pressed="false">8×</button>
+            <button type="button" data-speed="16" aria-pressed="false">16×</button>
+          </div>
+          <button id="skip-button" class="toolbar-button" type="button">다음 결정까지</button>
+          <button id="auto-button" class="toolbar-button" type="button" aria-pressed="false">자동 결정</button>
+        </div>
+      </header>
+
+      <p class="simulation-notice"><span>SIMULATION 02</span> 모든 확률과 금액은 실제 통계가 아닌 <strong>체험용 가상 데이터</strong>입니다.</p>
+
+      <div class="life-layout">
+        <aside class="life-sidebar life-sidebar-left">
+          <details id="stats-panel" class="life-panel" open>
+            <summary><span>01</span> 현재 상태</summary>
+            <div class="panel-body" data-life-list="stats"></div>
+          </details>
+
+          <details id="money-panel" class="life-panel" open>
+            <summary><span>02</span> 돈과 자산</summary>
+            <dl class="metric-list panel-body">
+              <div><dt>현금</dt><dd data-life="cash">0원</dd></div>
+              <div><dt>월 소득</dt><dd data-life="income">0원</dd></div>
+              <div><dt>월 고정비</dt><dd data-life="costs">0원</dd></div>
+              <div><dt>부채</dt><dd data-life="debt">0원</dd></div>
+              <div class="metric-total"><dt>순자산</dt><dd data-life="net-worth">0원</dd></div>
+            </dl>
+          </details>
+
+          <details class="life-panel focus-panel" open>
+            <summary><span>03</span> 올해의 초점</summary>
+            <div class="panel-body">
+              <strong data-life="focus">휴식과 균형</strong>
+              <div class="focus-options" role="group" aria-label="올해의 초점">
+                <button type="button" data-focus="growth">성장</button>
+                <button type="button" data-focus="health">건강</button>
+                <button type="button" data-focus="relationships">관계</button>
+                <button type="button" data-focus="career">경력</button>
+                <button type="button" data-focus="balance">균형</button>
+              </div>
+            </div>
+          </details>
+        </aside>
+
+        <section class="life-story" aria-label="현재 인생 기록">
+          <div class="current-moment">
+            <div class="moment-scan" aria-hidden="true"></div>
+            <p class="eyebrow"><span>NOW</span> LIFE IN PROGRESS</p>
+            <h1><span id="moment-age">0</span>번째 해가<br><em>흐르고 있습니다.</em></h1>
+            <p id="moment-copy">아직 아무것도 정해지지 않은 첫해입니다. 시간은 천천히, 그러나 멈추지 않고 흐릅니다.</p>
+          </div>
+
+          <section class="map-section" aria-labelledby="map-title">
+            <div class="life-section-heading">
+              <div><p class="eyebrow">LIFE MAP / 00—90</p><h2 id="map-title">인생 지도</h2></div>
+              <span>한 칸은 한 해</span>
+            </div>
+            <div id="life-map" class="life-map" aria-label="0세부터 90세까지의 삶"></div>
+          </section>
+
+          <section class="log-section" aria-labelledby="log-title">
+            <div class="life-section-heading">
+              <div><p class="eyebrow">RECENT MEMORY</p><h2 id="log-title">인생 기록</h2></div>
+              <span>최신 기록부터</span>
+            </div>
+            <div id="life-log" class="life-log"></div>
+          </section>
+        </section>
+
+        <aside class="life-sidebar life-sidebar-right">
+          <details id="family-panel" class="life-panel" open>
+            <summary><span>04</span> 사람들</summary>
+            <ul class="people-list panel-body" data-life-list="family"><li>가족</li></ul>
+          </details>
+          <details class="life-panel" open>
+            <summary><span>05</span> 배움과 일</summary>
+            <dl class="profile-list panel-body">
+              <div><dt>학교</dt><dd data-life="education">미취학</dd></div>
+              <div><dt>직업</dt><dd data-life="career">아직 정하지 않음</dd></div>
+            </dl>
+          </details>
+          <details class="life-panel" open>
+            <summary><span>06</span> 사는 곳</summary>
+            <div class="panel-body housing-panel-copy">
+              <strong data-life="housing">가족과 동거</strong>
+              <p data-life="location">대한민국</p>
+            </div>
+          </details>
+          <details class="life-panel" open>
+            <summary><span>07</span> 상태의 흐름</summary>
+            <div class="panel-body mini-chart" aria-label="상태 변화 그래프">
+              <i style="--h: 34%"></i><i style="--h: 48%"></i><i style="--h: 42%"></i><i style="--h: 64%"></i><i style="--h: 72%"></i><i style="--h: 68%"></i><i style="--h: 82%"></i>
+            </div>
+          </details>
+        </aside>
+      </div>
+    </section>
+
+    <section id="result-view" class="view result-view" aria-labelledby="result-title" hidden>
+      <p class="eyebrow"><span>LIFE REVIEW</span> ONE OF 50,000,000</p>
+      <h1 id="result-title">한 사람의 시간이<br><em data-result="age">90세</em>에 닿았습니다.</h1>
+      <p class="result-narrative" data-result="narrative">한 사람의 삶을 천천히 정리하고 있습니다.</p>
+      <div class="result-grid">
+        <dl class="result-facts">
+          <div><dt>출생</dt><dd data-result="birth">대한민국</dd></div>
+          <div><dt>마지막 거주지</dt><dd data-result="residence">대한민국</dd></div>
+          <div><dt>가장 오래 한 일</dt><dd data-result="career">—</dd></div>
+          <div><dt>최종 순자산</dt><dd data-result="net-worth">0원</dd></div>
+        </dl>
+        <div class="turning-points"><p class="eyebrow">FIVE TURNING POINTS</p><ol data-result="turning-points"></ol></div>
+      </div>
+      <p class="simulation-notice result-notice">이 결과는 미래 예측이나 평가가 아닌 <strong>체험용 가상 데이터</strong>입니다.</p>
+      <div class="result-actions">
+        <button id="same-life-button" class="secondary-button" type="button">같은 조건으로 다시</button>
+        <button id="new-life-button" class="primary-button" type="button">완전히 다른 삶</button>
+        <button id="past-lives-button" class="text-button" type="button">전생 기록 보기</button>
+      </div>
+    </section>
+
+    <section id="past-lives-view" class="view past-lives-view" aria-labelledby="past-lives-title" hidden>
+      <div class="life-section-heading">
+        <div><p class="eyebrow">LOCAL ARCHIVE</p><h1 id="past-lives-title">전생 기록</h1></div>
+        <button id="close-past-lives-button" class="text-button" type="button">닫기 ×</button>
+      </div>
+      <div id="past-lives-list" class="past-lives-list"><p>아직 끝까지 살아본 삶이 없습니다.</p></div>
+    </section>
+
     <section id="future-view" class="view future-view" aria-labelledby="future-title" hidden>
       <p class="eyebrow">THE LIFE AHEAD</p>
       <h1 id="future-title">이제, 이 삶을<br><em>살아갈 차례입니다.</em></h1>
@@ -191,6 +331,16 @@
       <button id="back-button" class="secondary-button future-back" type="button">← 다른 인생 뽑기</button>
     </section>
   </main>
+
+  <dialog id="decision-dialog" class="decision-dialog" aria-labelledby="decision-title">
+    <form method="dialog" class="decision-card">
+      <p class="eyebrow" data-decision="kicker">중요한 결정</p>
+      <h2 id="decision-title" tabindex="-1" data-decision="title">어떤 길을 선택할까요?</h2>
+      <p class="decision-prompt" data-decision="prompt">이 선택은 이후의 삶에 영향을 줍니다.</p>
+      <div class="decision-choices" data-decision="choices"></div>
+      <p class="decision-footnote">조건을 충족하지 못한 선택도 이유와 함께 표시됩니다.</p>
+    </form>
+  </dialog>
 
   <p id="live-region" class="sr-only" aria-live="polite"></p>
   <script type="module" src="./app.js"></script>
