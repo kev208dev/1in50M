@@ -20,7 +20,7 @@ test('연간 경제 계산은 유한한 원화 수치를 만든다', () => {
   life = acceptCareer(life, getCareerOffers(life)[0].career.id);
   const next = calculateAnnualEconomy(life);
   for (const [key, value] of Object.entries(next.economy)) {
-    if (key !== 'assets') assert.ok(Number.isFinite(value), key);
+    if (!['assets', 'transactions', 'lastReturns'].includes(key)) assert.ok(Number.isFinite(value), key);
   }
   for (const [key, value] of Object.entries(next.economy.assets)) {
     assert.ok(Number.isFinite(value), key);
@@ -49,4 +49,17 @@ test('대학 재학 중에는 대학 수료가 필요한 직업을 바로 선택
   });
   const offer = getCareerOffers(life, 100).find((item) => item.career.id === 'research-1');
   assert.equal(offer.eligible, false);
+});
+
+test('연간 경제 계산은 거래 기록과 시장 수익률을 지우지 않는다', () => {
+  const life = makeLifeAtAge(40, {
+    economy: {
+      cash: 10000000,
+      transactions: [{ id: 'tx-1', type: 'buy', amount: 1000000 }],
+      lastReturns: { bonds: 0.02, stocks: -0.1, crypto: 0.3, deposits: 0.02 },
+    },
+  });
+  const next = calculateAnnualEconomy(life);
+  assert.deepEqual(next.economy.transactions, life.economy.transactions);
+  assert.deepEqual(next.economy.lastReturns, life.economy.lastReturns);
 });

@@ -13,6 +13,8 @@ import {
 import { updateRelationships } from './relationships.js';
 import { createProfileInfluence } from './profile-influence.js';
 import { advanceAppearance } from './appearance.js';
+import { advancePortfolio } from './finance.js';
+import { advanceBusiness } from './business.js';
 
 const STAT_KEYS = ['health', 'happiness', 'knowledge', 'relationships'];
 
@@ -73,8 +75,11 @@ export function createLife(profile, seed = profile?.id) {
         crypto: 0,
         businessEquity: 0,
       },
+      transactions: [],
+      lastReturns: { deposits: 0, bonds: 0, stocks: 0, crypto: 0 },
       netWorth: initialCash,
     },
+    business: null,
     education: { level: 'childhood', status: 'not-started', schoolType: null, skills: [] },
     career: {
       groupId: null,
@@ -140,6 +145,13 @@ export function normalizeLife(life) {
     deposit: normalizedAssets.deposits,
     homeValue: Math.max(0, finite(economy.homeValue)),
     assets: normalizedAssets,
+    transactions: Array.isArray(economy.transactions)
+      ? economy.transactions.filter((item) => item && typeof item === 'object').slice(-100)
+      : [],
+    lastReturns: Object.fromEntries(['deposits', 'bonds', 'stocks', 'crypto'].map((key) => {
+      const value = Number(economy.lastReturns?.[key]);
+      return [key, Number.isFinite(value) ? value : 0];
+    })),
     netWorth: finite(economy.netWorth),
   };
   copy.economy.netWorth = finite(
@@ -148,6 +160,21 @@ export function normalizeLife(life) {
       + copy.economy.homeValue
       - copy.economy.debt,
   );
+  if (copy.business && typeof copy.business === 'object') {
+    copy.business = {
+      status: ['operating', 'closed', 'sold'].includes(copy.business.status)
+        ? copy.business.status
+        : 'closed',
+      sector: String(copy.business.sector ?? 'other'),
+      capital: Math.max(0, finite(copy.business.capital)),
+      debt: Math.max(0, finite(copy.business.debt)),
+      equity: Math.max(0, finite(copy.business.equity)),
+      years: Math.max(0, finite(copy.business.years)),
+      lastGrowth: Number.isFinite(Number(copy.business.lastGrowth)) ? Number(copy.business.lastGrowth) : 0,
+    };
+  } else {
+    copy.business = null;
+  }
 
   copy.education = {
     level: copy.education?.level ?? 'childhood',
@@ -300,6 +327,8 @@ export function simulateAutomatically(profile, seed = profile?.id) {
       life = normalizeLife(acknowledgeIdentityDiscovery(life));
     }
     life = advanceCareer(life);
+    life = advancePortfolio(life);
+    life = advanceBusiness(life);
     life = calculateAnnualEconomy(life);
     for (const event of selectAnnualEvents(life)) life = applyEvent(life, event.id);
     life = updateRelationships(life);

@@ -5,6 +5,8 @@ import { calculateAnnualEconomy } from '../engine/economy.js';
 import { selectAnnualEvents, applyEvent } from '../engine/events.js';
 import { acknowledgeIdentityDiscovery } from '../engine/identity.js';
 import { updateRelationships } from '../engine/relationships.js';
+import { advancePortfolio } from '../engine/finance.js';
+import { advanceBusiness } from '../engine/business.js';
 
 const INTERVALS = { 1: 8000, 2: 4000, 4: 2000, 8: 1000, 16: 500 };
 
@@ -78,6 +80,8 @@ export function createSimulationController({
     tickCounter += 1;
     life = advanceYear(life, `controller-${life.age}-${tickCounter}`);
     life = advanceCareer(life);
+    life = advancePortfolio(life);
+    life = advanceBusiness(life);
     life = calculateAnnualEconomy(life);
     for (const event of selectAnnualEvents(life)) life = applyEvent(life, event.id);
     life = updateRelationships(life);

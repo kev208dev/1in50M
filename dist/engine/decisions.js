@@ -3,6 +3,8 @@ import { HOUSING_BY_ID } from '../data/housing.js';
 import { normalizeLife } from './life.js';
 import { createRng } from './random.js';
 import { resolveAgencyChoice } from './agency.js';
+import { applyFinancialAction } from './finance.js';
+import { startBusiness } from './business.js';
 
 function availability(life, choice) {
   if (choice.requiresPartner && !life.relationships.partner) {
@@ -174,7 +176,7 @@ export function applyDecision(life, decisionId, choiceId) {
     };
   }
 
-  return normalizeLife({
+  let next = {
     ...current,
     stats,
     economy,
@@ -196,7 +198,10 @@ export function applyDecision(life, decisionId, choiceId) {
       label: selected.label,
     }],
     milestones: [...current.milestones, { age: current.age, type: 'decision', label: selected.label }],
-  });
+  };
+  if (selected.financialAction) next = applyFinancialAction(next, selected.financialAction);
+  if (selected.businessPlan) next = startBusiness(next, selected.businessPlan);
+  return normalizeLife(next);
 }
 
 export function applyUserDecision(life, decisionId, requestedChoiceId) {

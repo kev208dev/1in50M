@@ -36,6 +36,8 @@ export function calculateAnnualEconomy(life) {
       ...current.economy.assets,
       deposits: deposit,
     },
+    transactions: current.economy.transactions,
+    lastReturns: current.economy.lastReturns,
     netWorth: finite(
       cash
       + deposit

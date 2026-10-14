@@ -122,6 +122,28 @@ test('컨트롤러는 한 해의 경력과 경제를 정확히 한 번만 반영
   assert.ok(next.economy.cash > 15000000 && next.economy.cash < 22000000);
 });
 
+test('컨트롤러는 포트폴리오와 사업을 한 해에 정확히 한 번 진행한다', () => {
+  const clock = fakeClock();
+  const initialLife = makeLifeAtAge(31, {
+    decisions: completedDecisions,
+    economy: {
+      cash: 30000000,
+      assets: { deposits: 0, bonds: 10000000, stocks: 0, crypto: 0, businessEquity: 20000000 },
+      transactions: [],
+    },
+    business: {
+      status: 'operating', sector: 'online', capital: 20000000,
+      debt: 0, equity: 20000000, years: 0,
+    },
+  });
+  const controller = createSimulationController({ clock, initialLife });
+  controller.play();
+  clock.advance(8000);
+  const next = controller.getState();
+  assert.equal(next.economy.transactions.filter((entry) => entry.type === 'market').length, 1);
+  assert.equal(next.business.years, 1);
+});
+
 test('자동 결정은 실제 컨트롤러에서도 가능한 직업을 선택한다', () => {
   const clock = fakeClock();
   const controller = createSimulationController({ clock, initialLife: makeLifeAtAge(25) });

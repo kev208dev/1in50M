@@ -28,9 +28,9 @@ test('18세에는 정체성 후속 장면보다 졸업 진로가 먼저 열린�
   assert.equal(getDecision(life).id, 'after-graduation');
 });
 
-test('생활 장면 30개가 고유한 id와 두 개 이상의 선택지를 가진다', () => {
-  assert.equal(DECISIONS.length, 30);
-  assert.equal(new Set(DECISIONS.map((item) => item.id)).size, 30);
+test('생활 장면 34개 이상이 고유한 id와 두 개 이상의 선택지를 가진다', () => {
+  assert.ok(DECISIONS.length >= 34);
+  assert.equal(new Set(DECISIONS.map((item) => item.id)).size, DECISIONS.length);
   assert.ok(DECISIONS.every((item) => item.choices.length >= 2));
   assert.ok(DECISIONS.every((item) => item.choices.every((choice) => choice.personalityTags.length >= 1)));
 });
