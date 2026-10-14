@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { LIFE_EVENTS } from '../dist/data/life-events.js';
+import { LIFE_EVENTS, PROFILE_EVENTS } from '../dist/data/life-events.js';
 import { selectAnnualEvents, applyEvent } from '../dist/engine/events.js';
 import { changeHousing, updateRelationships } from '../dist/engine/relationships.js';
 import { makeLifeAtAge } from './support/life-fixtures.mjs';
@@ -9,6 +9,21 @@ test('생애 단계별 사건을 합쳐 최소 48개 제공한다', () => {
   assert.ok(LIFE_EVENTS.length >= 48);
   for (const stage of ['childhood', 'school', 'young-adult', 'adult', 'midlife', 'senior']) {
     assert.ok(LIFE_EVENTS.filter((event) => event.stage === stage).length >= 6);
+  }
+});
+
+test('조건형 사건은 조건이나 가중치 또는 실제 상태 변화를 가진다', () => {
+  assert.ok(PROFILE_EVENTS.length >= 29);
+  for (const event of PROFILE_EVENTS) {
+    assert.ok(event.text.length > 0);
+    assert.ok(Array.isArray(event.ageRange));
+    assert.ok(
+      typeof event.when === 'function'
+      || typeof event.weightFor === 'function'
+      || Object.keys(event.effects ?? {}).length > 0
+      || Object.keys(event.economyEffects ?? {}).length > 0
+      || Object.keys(event.appearanceEffects ?? {}).length > 0,
+    );
   }
 });
 

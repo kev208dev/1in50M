@@ -54,14 +54,14 @@ const STAGE_CONFIG = {
     ['community-class', '지역 수업에서 낯선 주제를 배웠습니다.', { knowledge: 2, relationships: 1 }],
     ['family-meal', '가족과 천천히 식사하는 시간을 가졌습니다.', { relationships: 3, happiness: 2 }],
     ['memory-box', '오래된 물건을 정리하며 지난 날을 떠올렸습니다.', { happiness: 2 }],
-    ['health-routine', '무리하지 않는 건강 관리 리듬을 만들었습니다.', { health: 3 }],
+    ['gentle-health-routine', '무리하지 않는 건강 관리 리듬을 만들었습니다.', { health: 3 }],
     ['neighbor-help', '이웃과 작은 도움을 주고받았습니다.', { relationships: 2 }],
     ['quiet-reading', '햇빛 드는 자리에서 한 권의 책을 읽었습니다.', { knowledge: 2, happiness: 1 }],
     ['seasonal-rest', '날씨에 맞춰 활동을 줄이고 충분히 쉬었습니다.', { health: 1, happiness: 2 }],
   ] },
 };
 
-export const LIFE_EVENTS = Object.entries(STAGE_CONFIG).flatMap(([stage, config]) => (
+const BASE_LIFE_EVENTS = Object.entries(STAGE_CONFIG).flatMap(([stage, config]) => (
   config.themes.map(([id, text, effects, economyEffects = {}, milestone = false], index) => ({
     id,
     stage,
@@ -75,5 +75,210 @@ export const LIFE_EVENTS = Object.entries(STAGE_CONFIG).flatMap(([stage, config]
     milestone,
   }))
 ));
+
+const modifier = (life, key) => Number(life?.profileInfluence?.modifiers?.[key]) || 0;
+const hasDisability = (life) => {
+  const disability = life?.profile?.disability;
+  return Boolean(disability && disability.type !== 'none' && disability.label !== '없음');
+};
+const outsideCapitalArea = (life) => !['SEL', 'GGD', 'ICN'].includes(life?.profile?.region?.code);
+const householdPressure = (life) => modifier(life, 'financial-buffer') < 0;
+
+export const PROFILE_EVENTS = [
+  {
+    id: 'academy-offer', stage: 'school', conditionStage: 'childhood', ageRange: [8, 17], weight: 1,
+    cooldownYears: 5, tags: ['education'],
+    weightFor: (life) => 1 + Math.max(0, modifier(life, 'education-access')) / 12,
+    effects: { knowledge: 2, happiness: -1 },
+    text: '주변 친구들이 다니는 학원을 권유받아 시간표와 비용을 함께 따져 보았습니다.',
+  },
+  {
+    id: 'after-school-gap', stage: 'school', conditionStage: 'childhood', ageRange: [7, 13], weight: 0.8,
+    cooldownYears: 5, tags: ['education', 'household'], when: householdPressure,
+    effects: { knowledge: -1, relationships: 1 },
+    text: '방과 후 돌봄과 사교육의 빈자리를 가족과 동네의 도움으로 메웠습니다.',
+  },
+  {
+    id: 'appearance-ranking', stage: 'school', conditionStage: 'childhood', ageRange: [12, 17], weight: 0.8,
+    cooldownYears: 5, tags: ['appearance'], effects: { happiness: -2, relationships: -1 },
+    text: '외모를 순위처럼 말하는 교실 분위기에 놓였습니다.',
+  },
+  {
+    id: 'access-support', stage: 'school', conditionStage: 'childhood', ageRange: [7, 17], weight: 0.7,
+    cooldownYears: 4, tags: ['accessibility'], when: hasDisability,
+    effects: { knowledge: 2, happiness: 1 },
+    text: '학교와 보호자가 필요한 보조기기와 이동 지원을 함께 마련했습니다.',
+  },
+  {
+    id: 'school-status', stage: 'school', conditionStage: 'youth', ageRange: [13, 18], weight: 0.8,
+    cooldownYears: 5, tags: ['school', 'appearance'],
+    weightFor: (life) => 1 + Math.abs(modifier(life, 'first-impression')) / 30,
+    effects: { relationships: 1 },
+    text: '학교 안의 인기와 성적, 집안 이야기가 보이지 않는 서열처럼 오갔습니다.',
+  },
+  {
+    id: 'regional-field-trip', stage: 'school', conditionStage: 'youth', ageRange: [13, 18], weight: 0.7,
+    cooldownYears: 5, tags: ['region'], weightFor: (life) => outsideCapitalArea(life) ? 1.4 : 0.8,
+    effects: { knowledge: 2, happiness: 1 },
+    text: '다른 지역의 학교와 진로 현장을 찾아가 익숙한 생활권 밖을 보았습니다.',
+  },
+  {
+    id: 'fitness-routine', stage: 'school', conditionStage: 'youth', ageRange: [16, 60], weight: 0.7,
+    cooldownYears: 6, tags: ['appearance', 'health'], effects: { health: 2, happiness: 1 },
+    appearanceEffects: { grooming: 4, socialRating: 1 },
+    text: '운동을 꾸준히 하며 체형과 자세가 달라졌습니다.',
+  },
+  {
+    id: 'appearance-pressure', stage: 'school', conditionStage: 'youth', ageRange: [15, 25], weight: 0.7,
+    cooldownYears: 5, tags: ['appearance'], effects: { happiness: -2 },
+    appearanceEffects: { grooming: 2 },
+    text: '사진과 교복 핏을 비교하는 분위기 속에서 외모 관리에 신경을 쓰게 되었습니다.',
+  },
+  {
+    id: 'entrance-coaching', stage: 'school', conditionStage: 'youth', ageRange: [15, 18], weight: 0.9,
+    cooldownYears: 4, tags: ['education'],
+    weightFor: (life) => Math.max(0.35, 1 + modifier(life, 'education-access') / 30),
+    effects: { knowledge: 3, happiness: -1 }, economyEffects: { cash: -600000 },
+    text: '입시 상담에서 학교생활기록부와 지원 전략을 구체적으로 점검했습니다.',
+  },
+  {
+    id: 'capital-move', stage: 'young-adult', conditionStage: 'youngAdult', ageRange: [19, 29], weight: 0.8,
+    cooldownYears: 7, tags: ['region', 'housing'], when: outsideCapitalArea,
+    effects: { knowledge: 2, happiness: -1 }, economyEffects: { cash: -1200000 },
+    text: '진학이나 일자리를 위해 수도권으로 옮길지 현실적인 비용을 계산했습니다.',
+  },
+  {
+    id: 'interview-bias', stage: 'young-adult', conditionStage: 'youngAdult', ageRange: [20, 34], weight: 0.8,
+    cooldownYears: 5, tags: ['career', 'appearance'],
+    weightFor: (life) => 1 + Math.abs(modifier(life, 'service-impression')) / 35,
+    effects: { happiness: -1, knowledge: 1 },
+    text: '면접에서 실력과 무관한 인상 평가를 체감하고 대응 방식을 익혔습니다.',
+  },
+  {
+    id: 'first-studio', stage: 'young-adult', conditionStage: 'youngAdult', ageRange: [19, 32], weight: 0.9,
+    cooldownYears: 8, tags: ['housing'],
+    weightFor: (life) => 1 + Math.max(0, modifier(life, 'housing-pressure')) / 20,
+    effects: { happiness: 1 }, economyEffects: { cash: -1800000 },
+    text: '첫 독립방의 보증금, 관리비, 통근 시간을 놓고 오래 고민했습니다.',
+  },
+  {
+    id: 'military-gap', stage: 'young-adult', conditionStage: 'youngAdult', ageRange: [19, 28], weight: 0.6,
+    cooldownYears: 9, tags: ['career', 'service'],
+    when: (life) => life?.profile?.sex?.id === 'male' || life?.profile?.sex === 'male',
+    effects: { knowledge: 1, relationships: -1 },
+    text: '병역으로 생긴 학업과 경력의 공백을 어떻게 설명하고 회복할지 고민했습니다.',
+  },
+  {
+    id: 'campus-network', stage: 'young-adult', conditionStage: 'youngAdult', ageRange: [19, 29], weight: 0.7,
+    cooldownYears: 6, tags: ['education', 'network'],
+    weightFor: (life) => Math.max(0.4, 1 + modifier(life, 'career-network') / 20),
+    effects: { relationships: 2, knowledge: 1 },
+    text: '학교와 교육 과정에서 만난 사람을 통해 새로운 기회와 정보를 접했습니다.',
+  },
+  {
+    id: 'workplace-hierarchy', stage: 'adult', conditionStage: 'adult', ageRange: [30, 49], weight: 0.9,
+    cooldownYears: 5, tags: ['career'], effects: { happiness: -1, knowledge: 1 },
+    text: '직급과 연차가 강하게 작동하는 회의에서 의견을 꺼내는 방식을 배웠습니다.',
+  },
+  {
+    id: 'housing-rate-shock', stage: 'adult', conditionStage: 'adult', ageRange: [30, 54], weight: 0.7,
+    cooldownYears: 7, tags: ['housing', 'economy'],
+    weightFor: (life) => 1 + Math.max(0, modifier(life, 'housing-pressure')) / 15,
+    effects: { happiness: -2 }, economyEffects: { cash: -1500000 },
+    text: '금리와 전월세 조건이 바뀌어 주거 계획과 지출을 다시 계산했습니다.',
+  },
+  {
+    id: 'care-burden', stage: 'adult', conditionStage: 'adult', ageRange: [30, 54], weight: 0.7,
+    cooldownYears: 6, tags: ['family', 'care'],
+    weightFor: (life) => 1 + Math.max(0, -modifier(life, 'financial-buffer')) / 20,
+    effects: { health: -1, relationships: 2 },
+    text: '가족 돌봄과 생업 시간을 함께 감당하며 역할을 다시 나누었습니다.',
+  },
+  {
+    id: 'style-investment', stage: 'adult', conditionStage: 'adult', ageRange: [30, 49], weight: 0.6,
+    cooldownYears: 6, tags: ['appearance', 'career'], effects: { happiness: 1 },
+    economyEffects: { cash: -500000 }, appearanceEffects: { grooming: 5, socialRating: 2 },
+    text: '업무와 만남의 첫인상을 위해 옷차림과 관리 방식에 투자했습니다.',
+  },
+  {
+    id: 'discrimination-response', stage: 'adult', conditionStage: 'adult', ageRange: [30, 59], weight: 0.5,
+    cooldownYears: 7, tags: ['rights', 'accessibility'], when: hasDisability,
+    effects: { knowledge: 2, relationships: 1 },
+    text: '차별적인 상황을 겪고 기록과 상담, 주변의 연대를 통해 대응했습니다.',
+  },
+  {
+    id: 'retraining-access', stage: 'midlife', conditionStage: 'midlife', ageRange: [45, 64], weight: 0.8,
+    cooldownYears: 6, tags: ['career', 'education'],
+    weightFor: (life) => Math.max(0.5, 1 + modifier(life, 'education-access') / 40),
+    effects: { knowledge: 3, happiness: 1 }, economyEffects: { cash: -400000 },
+    text: '직업 전환을 위한 재교육 과정의 시간과 비용을 비교해 보았습니다.',
+  },
+  {
+    id: 'parent-care', stage: 'midlife', conditionStage: 'midlife', ageRange: [45, 69], weight: 0.9,
+    cooldownYears: 6, tags: ['family', 'care'], effects: { health: -1, relationships: 3 },
+    text: '부모의 병원 일정과 생활 돌봄을 가족들과 구체적으로 나누었습니다.',
+  },
+  {
+    id: 'business-network', stage: 'midlife', conditionStage: 'midlife', ageRange: [45, 64], weight: 0.6,
+    cooldownYears: 7, tags: ['career', 'business'],
+    weightFor: (life) => 1 + Math.max(0, modifier(life, 'career-network')) / 18,
+    effects: { knowledge: 2, relationships: 2 },
+    text: '오랫동안 쌓은 거래처와 동료 관계가 새로운 사업 기회를 연결했습니다.',
+  },
+  {
+    id: 'appearance-aging', stage: 'midlife', conditionStage: 'midlife', ageRange: [45, 69], weight: 0.7,
+    cooldownYears: 6, tags: ['appearance', 'aging'], effects: { happiness: -1 },
+    appearanceEffects: { socialRating: -2 },
+    text: '달라진 외모를 바라보는 사회의 시선과 나 자신의 기준을 다시 생각했습니다.',
+  },
+  {
+    id: 'regional-return', stage: 'midlife', conditionStage: 'midlife', ageRange: [45, 64], weight: 0.6,
+    cooldownYears: 8, tags: ['region', 'housing'],
+    weightFor: (life) => outsideCapitalArea(life) ? 1.3 : 0.8,
+    effects: { happiness: 2, relationships: 1 },
+    text: '고향이나 더 작은 도시로 돌아가는 삶의 비용과 관계를 살펴보았습니다.',
+  },
+  {
+    id: 'pension-gap', stage: 'senior', conditionStage: 'senior', ageRange: [65, 90], weight: 0.9,
+    cooldownYears: 6, tags: ['economy', 'retirement'],
+    weightFor: (life) => 1 + Math.max(0, -modifier(life, 'financial-buffer')) / 18,
+    effects: { happiness: -1 }, economyEffects: { cash: -600000 },
+    text: '연금과 생활비 사이의 간격을 확인하고 지출 우선순위를 다시 정했습니다.',
+  },
+  {
+    id: 'accessible-housing', stage: 'senior', conditionStage: 'senior', ageRange: [65, 90], weight: 0.7,
+    cooldownYears: 7, tags: ['housing', 'accessibility'], when: hasDisability,
+    effects: { health: 2, happiness: 1 }, economyEffects: { cash: -800000 },
+    text: '문턱과 욕실, 엘리베이터를 살피며 안전하게 오래 살 집을 손보았습니다.',
+  },
+  {
+    id: 'community-support', stage: 'senior', conditionStage: 'senior', ageRange: [65, 90], weight: 0.8,
+    cooldownYears: 5, tags: ['community'],
+    weightFor: (life) => life?.stats?.relationships < 45 ? 1.5 : 1,
+    effects: { relationships: 3, happiness: 2 },
+    text: '복지관과 동네 모임에서 식사와 안부를 나눌 사람들을 만났습니다.',
+  },
+  {
+    id: 'health-routine', stage: 'senior', conditionStage: 'senior', ageRange: [65, 90], weight: 0.9,
+    cooldownYears: 5, tags: ['health', 'appearance'], effects: { health: 3, happiness: 1 },
+    appearanceEffects: { grooming: 2, socialRating: 1 },
+    text: '진료와 운동, 식사를 무리 없이 이어갈 건강 관리 리듬을 만들었습니다.',
+  },
+  {
+    id: 'inheritance-conflict', stage: 'senior', conditionStage: 'senior', ageRange: [65, 90], weight: 0.5,
+    cooldownYears: 9, tags: ['family', 'economy'],
+    weightFor: (life) => (life?.relationships?.family?.length ?? 0) > 1 ? 1.3 : 0.5,
+    effects: { relationships: -2, happiness: -1 },
+    text: '상속과 부양 문제를 둘러싼 가족의 기대를 문서와 대화로 정리했습니다.',
+  },
+  {
+    id: 'access-barrier', stage: 'adult', conditionStage: 'adult', ageRange: [7, 75], weight: 0.5,
+    cooldownYears: 5, tags: ['accessibility'], when: hasDisability,
+    effects: { happiness: -1, knowledge: 1 },
+    text: '접근하기 어려운 시설 때문에 계획을 바꾸고 다른 경로를 찾아야 했습니다.',
+  },
+];
+
+export const LIFE_EVENTS = [...BASE_LIFE_EVENTS, ...PROFILE_EVENTS];
 
 export const LIFE_EVENT_BY_ID = Object.fromEntries(LIFE_EVENTS.map((event) => [event.id, event]));

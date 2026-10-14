@@ -12,6 +12,7 @@ import {
 } from './identity.js';
 import { updateRelationships } from './relationships.js';
 import { createProfileInfluence } from './profile-influence.js';
+import { advanceAppearance } from './appearance.js';
 
 const STAT_KEYS = ['health', 'happiness', 'knowledge', 'relationships'];
 
@@ -242,9 +243,20 @@ export function advanceYear(life, tickId = `age-${Number(life?.age ?? 0) + 1}`) 
   }
   const lifeEnded = nextAge >= 45 && stats.health <= 0;
   const reviewing = nextAge >= 90 || lifeEnded;
+  const profile = current.profile
+    ? {
+        ...current.profile,
+        appearance: advanceAppearance(current.profile.appearance, {
+          ...current,
+          age: nextAge,
+          stats,
+        }),
+      }
+    : current.profile;
 
   const advanced = normalizeLife({
     ...current,
+    profile,
     age: nextAge,
     year: current.year + 1,
     status: reviewing ? 'review' : 'living',
