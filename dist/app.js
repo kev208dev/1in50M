@@ -14,7 +14,13 @@ import {
   clearPastLives,
 } from './storage.js';
 import { createSimulationController } from './ui/controls.js';
-import { renderLife, renderDecision, renderResult, formatWon } from './ui/render.js';
+import {
+  renderLife,
+  renderDecision,
+  renderIdentityDiscovery,
+  renderResult,
+  formatWon,
+} from './ui/render.js';
 
 const viewNames = ['intro', 'profile', 'future', 'life', 'result', 'past-lives'];
 const views = Object.fromEntries(viewNames.map((name) => [name, document.querySelector(`#${name}-view`)]));
@@ -37,6 +43,7 @@ const controls = {
 };
 
 const decisionDialog = document.querySelector('#decision-dialog');
+const identityDialog = document.querySelector('#identity-dialog');
 const careerDialog = document.querySelector('#career-dialog');
 let candidateProfile = null;
 let previousCandidate = null;
@@ -171,10 +178,19 @@ function unlockBackground(dialog, focus = true) {
 function openDecision(decision, life) {
   if (!decision || decisionDialog.open) return;
   lastFocused = document.activeElement;
-  renderDecision(decisionDialog, decision, getChoices(life, decision.id));
+  renderDecision(decisionDialog, decision, getChoices(life, decision.id), life.age);
   main.inert = true;
   decisionDialog.showModal();
   document.querySelector('#decision-title').focus();
+}
+
+function openIdentityDiscovery(life) {
+  if (!life?.pendingIdentityDiscovery || identityDialog.open) return;
+  lastFocused = document.activeElement;
+  renderIdentityDiscovery(identityDialog, life);
+  main.inert = true;
+  identityDialog.showModal();
+  document.querySelector('#identity-title').focus();
 }
 
 function finishLife(life) {
@@ -193,6 +209,7 @@ function startLife(life) {
     initialLife: life,
     onState: renderCurrentLife,
     onDecision: openDecision,
+    onIdentityDiscovery: openIdentityDiscovery,
     onComplete: finishLife,
   });
   const current = controller.getState();
@@ -202,7 +219,11 @@ function startLife(life) {
     finishLife(current);
     return;
   }
-  if (current.pendingDecisionId) openDecision(getDecision(current), current);
+  if (current.pendingIdentityDiscovery) {
+    openIdentityDiscovery(current);
+  } else if (current.pendingDecisionId) {
+    openDecision(getDecision(current), current);
+  }
 }
 
 function beginCandidateLife() {
@@ -335,6 +356,16 @@ decisionDialog.querySelector('[data-decision="choices"]').addEventListener('clic
   controller.answerDecision(button.dataset.choiceId);
   unlockBackground(decisionDialog);
   updatePlayback();
+});
+
+identityDialog.addEventListener('cancel', (event) => event.preventDefault());
+document.querySelector('#identity-continue-button').addEventListener('click', () => {
+  if (!controller) return;
+  const label = controller.getState().identity.label ?? '정체성';
+  controller.acknowledgeIdentity();
+  unlockBackground(identityDialog);
+  updatePlayback();
+  liveRegion.textContent = `가상 인물이 자신의 ${label} 정체성을 발견한 삶을 계속합니다.`;
 });
 
 document.querySelector('#career-close-button').addEventListener('click', () => unlockBackground(careerDialog));

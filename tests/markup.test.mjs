@@ -38,3 +38,12 @@ test('가상 데이터 안내가 생애 화면과 결과 화면에 있다', () =
   const matches = html.match(/체험용 가상 데이터/g) ?? [];
   assert.ok(matches.length >= 2);
 });
+
+test('정체성 발견은 거절 선택 없는 가상 인물 사건으로 표시된다', () => {
+  for (const id of ['identity-dialog', 'identity-title', 'identity-continue-button']) {
+    assert.match(html, new RegExp(`id=["']${id}["']`));
+  }
+  assert.match(html, /실제 사용자의 정체성을 판정하는 결과가 아니라/);
+  assert.match(html, /data-decision=["']source["']/);
+  assert.doesNotMatch(html, /id=["']identity-(reject|cancel|close)-button["']/);
+});

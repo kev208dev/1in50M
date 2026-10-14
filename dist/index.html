@@ -261,6 +261,7 @@
             <dl class="profile-list panel-body">
               <div><dt>학교</dt><dd data-life="education">미취학</dd></div>
               <div><dt>직업</dt><dd data-life="career">아직 정하지 않음</dd></div>
+              <div data-identity-profile hidden><dt>정체성</dt><dd data-life="identity">발견 전</dd></div>
             </dl>
             <button id="career-select-button" class="panel-action" type="button" hidden>직업군과 직업 선택</button>
           </details>
@@ -343,8 +344,19 @@
       <h2 id="decision-title" tabindex="-1" data-decision="title">어떤 길을 선택할까요?</h2>
       <p class="decision-prompt" data-decision="prompt">이 선택은 이후의 삶에 영향을 줍니다.</p>
       <div class="decision-choices" data-decision="choices"></div>
+      <p class="decision-source" data-decision="source" hidden></p>
       <p class="decision-footnote">조건을 충족하지 못한 선택도 이유와 함께 표시됩니다.</p>
     </form>
+  </dialog>
+
+  <dialog id="identity-dialog" class="decision-dialog identity-dialog" aria-labelledby="identity-title">
+    <div class="decision-card identity-card">
+      <p class="eyebrow"><span>IDENTITY DISCOVERY</span> FICTIONAL LIFE EVENT</p>
+      <h2 id="identity-title" tabindex="-1">가상 인물이 자신의<br><em data-identity="label">정체성</em>을 찾았습니다.</h2>
+      <p class="identity-notice" data-identity="notice">실제 사용자의 정체성을 판정하는 결과가 아니라, 이 가상 인생에만 적용되는 시뮬레이션 사건입니다.</p>
+      <a class="identity-source" data-identity="source" href="https://www.ipsos.com/sites/default/files/ct/publication/documents/2024-06/Ipsos_Pride-Report-2024.pdf" target="_blank" rel="noreferrer">확률 참고: Ipsos Pride Report 2024</a>
+      <button id="identity-continue-button" class="primary-button" type="button">이 삶을 계속 살아간다 <span aria-hidden="true">→</span></button>
+    </div>
   </dialog>
 
   <dialog id="career-dialog" class="decision-dialog career-dialog" aria-labelledby="career-title">

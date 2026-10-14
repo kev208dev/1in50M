@@ -3,6 +3,7 @@ import { getDecision, applyDecision, chooseAutomatically } from '../engine/decis
 import { getCareerOffers, acceptCareer, advanceCareer } from '../engine/career.js';
 import { calculateAnnualEconomy } from '../engine/economy.js';
 import { selectAnnualEvents, applyEvent } from '../engine/events.js';
+import { acknowledgeIdentityDiscovery } from '../engine/identity.js';
 import { updateRelationships } from '../engine/relationships.js';
 
 const INTERVALS = { 1: 8000, 2: 4000, 4: 2000, 8: 1000, 16: 500 };
@@ -20,6 +21,7 @@ export function createSimulationController({
   initialLife,
   onState = () => {},
   onDecision = () => {},
+  onIdentityDiscovery = () => {},
   onComplete = () => {},
 } = {}) {
   let life = normalizeLife(initialLife);
@@ -57,6 +59,15 @@ export function createSimulationController({
     return true;
   }
 
+  function setPendingIdentityDiscovery() {
+    if (!life.pendingIdentityDiscovery) return false;
+    playing = false;
+    cancelTimer();
+    publish();
+    onIdentityDiscovery(structuredClone(life));
+    return true;
+  }
+
   function processYear() {
     if (life.status !== 'living' || life.pendingDecisionId) return;
     if (autoDecision && life.age >= 25 && !life.career.careerId) {
@@ -76,12 +87,13 @@ export function createSimulationController({
       onComplete(structuredClone(life));
       return;
     }
+    if (setPendingIdentityDiscovery()) return;
     setPendingDecision();
   }
 
   function scheduleNext() {
     cancelTimer();
-    if (!playing || !visible || life.pendingDecisionId || life.status !== 'living') return;
+    if (!playing || !visible || life.pendingDecisionId || life.pendingIdentityDiscovery || life.status !== 'living') return;
     timerId = clock.schedule(() => {
       timerId = null;
       processYear();
@@ -89,7 +101,7 @@ export function createSimulationController({
     }, INTERVALS[speed]);
   }
 
-  const initialDecision = getDecision(life);
+  const initialDecision = life.pendingIdentityDiscovery ? null : getDecision(life);
   if (initialDecision) life = normalizeLife({ ...life, pendingDecisionId: initialDecision.id });
 
   return {
@@ -98,7 +110,7 @@ export function createSimulationController({
     getSpeed: () => speed,
     isAutoDecision: () => autoDecision,
     play() {
-      if (life.status !== 'living' || life.pendingDecisionId) return false;
+      if (life.status !== 'living' || life.pendingDecisionId || life.pendingIdentityDiscovery) return false;
       playing = true;
       scheduleNext();
       return true;
@@ -119,10 +131,16 @@ export function createSimulationController({
       playing = false;
       cancelTimer();
       let guard = 0;
-      while (life.status === 'living' && !life.pendingDecisionId && guard < 91) {
+      while (life.status === 'living' && !life.pendingDecisionId && !life.pendingIdentityDiscovery && guard < 91) {
         processYear();
         guard += 1;
       }
+      return structuredClone(life);
+    },
+    acknowledgeIdentity() {
+      if (!life.pendingIdentityDiscovery) return structuredClone(life);
+      life = normalizeLife(acknowledgeIdentityDiscovery(life));
+      publish();
       return structuredClone(life);
     },
     setAutoDecision(value) {
@@ -165,7 +183,7 @@ export function createSimulationController({
       }
       if (nextVisible && !visible) {
         visible = true;
-        if (resumeWhenVisible && !life.pendingDecisionId && life.status === 'living') {
+        if (resumeWhenVisible && !life.pendingDecisionId && !life.pendingIdentityDiscovery && life.status === 'living') {
           playing = true;
           resumeWhenVisible = false;
           scheduleNext();

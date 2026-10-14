@@ -454,6 +454,12 @@ main { position: relative; z-index: 1; }
 .decision-tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
 .decision-tags i { padding: 4px 6px; border: 1px solid var(--line); color: var(--ink-muted); font-size: 8px; font-style: normal; }
 .decision-footnote { margin: 18px 0 0; color: var(--ink-muted); font-size: 10px; }
+.decision-source { margin: 16px 0 0; color: var(--ink-muted); font-size: 10px; }
+.decision-source a, .identity-source { color: var(--accent); text-underline-offset: 3px; }
+.identity-card em { color: var(--accent); font-style: normal; }
+.identity-notice { max-width: 620px; margin: 22px 0 16px; color: var(--ink-muted); font-size: 14px; line-height: 1.8; }
+.identity-source { display: inline-block; margin-bottom: 28px; font-size: 11px; }
+.identity-card .primary-button { width: 100%; }
 .dialog-topline { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 .career-dialog { width: min(980px, calc(100% - 32px)); }
 .career-groups { display: grid; gap: 20px; max-height: 52vh; overflow-y: auto; padding-right: 8px; }

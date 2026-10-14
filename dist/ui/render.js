@@ -1,6 +1,8 @@
 import { FOCUS_BY_ID } from '../data/focuses.js';
 import { EDUCATION_BY_ID } from '../data/education.js';
 import { HOUSING_BY_ID } from '../data/housing.js';
+import { IDENTITY_NOTICE } from '../data/identity.js';
+import { getResearchSource } from '../data/research.js';
 import { normalizeLife } from '../engine/life.js';
 
 const STAT_LABELS = {
@@ -52,6 +54,7 @@ export function createLifeViewModel(life) {
     career: current.career.title ?? (current.career.status === 'retired' ? '은퇴' : '아직 정하지 않음'),
     housing: HOUSING_BY_ID[current.housing.type]?.label ?? '가족과 동거',
     focus: FOCUS_BY_ID[current.focusId]?.label ?? '휴식과 균형',
+    identity: current.identity.discovered ? current.identity.label : null,
     family: current.relationships.family,
     friends: current.relationships.friends,
     partner: current.relationships.partner,
@@ -93,6 +96,9 @@ export function renderLife(root, life) {
   renderTextFields(root, '[data-life="career"]', model.career);
   renderTextFields(root, '[data-life="housing"]', model.housing);
   renderTextFields(root, '[data-life="focus"]', model.focus);
+  renderTextFields(root, '[data-life="identity"]', model.identity);
+  const identityProfile = root.querySelector('[data-identity-profile]');
+  if (identityProfile) identityProfile.hidden = !model.identity;
 
   const stats = root.querySelector('[data-life-list="stats"]');
   if (stats) {
@@ -158,8 +164,13 @@ export function renderLife(root, life) {
   return model;
 }
 
-export function renderDecision(dialog, decision, choices) {
-  renderTextFields(dialog, '[data-decision="kicker"]', `${decision.age}세의 결정`);
+export function renderDecision(
+  dialog,
+  decision,
+  choices,
+  currentAge = decision.age ?? decision.ageRange?.[0],
+) {
+  renderTextFields(dialog, '[data-decision="kicker"]', `${currentAge}세의 결정`);
   renderTextFields(dialog, '[data-decision="title"]', decision.title);
   renderTextFields(dialog, '[data-decision="prompt"]', decision.prompt);
   const list = dialog.querySelector('[data-decision="choices"]');
@@ -177,6 +188,34 @@ export function renderDecision(dialog, decision, choices) {
     button.append(number, copy, tags);
     return button;
   }));
+
+  const sourceLine = dialog.querySelector('[data-decision="source"]');
+  if (sourceLine) {
+    const source = getResearchSource(decision.sourceKey);
+    sourceLine.hidden = !source;
+    sourceLine.replaceChildren();
+    if (source) {
+      const label = makeNode(dialog, 'span', '', '근거 자료 · ');
+      const link = makeNode(dialog, 'a', '', `${source.label} (${source.year})`);
+      link.href = source.url;
+      link.target = '_blank';
+      link.rel = 'noreferrer';
+      sourceLine.append(label, link);
+    }
+  }
+}
+
+export function renderIdentityDiscovery(dialog, life) {
+  const current = normalizeLife(life);
+  renderTextFields(dialog, '[data-identity="label"]', current.identity.label ?? '정체성');
+  renderTextFields(dialog, '[data-identity="notice"]', IDENTITY_NOTICE);
+  const source = getResearchSource('lgbtq2024');
+  const sourceLink = dialog.querySelector('[data-identity="source"]');
+  if (source && sourceLink) {
+    sourceLink.textContent = `확률 참고 · ${source.label} (${source.year})`;
+    sourceLink.href = source.url;
+  }
+  return current.identity;
 }
 
 export function renderResult(root, summary) {

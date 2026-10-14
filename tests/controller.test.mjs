@@ -106,3 +106,29 @@ test('자동 결정은 실제 컨트롤러에서도 가능한 직업을 선택�
   assert.ok(controller.getState().career.careerId);
   assert.equal(controller.getState().career.status, 'employed');
 });
+
+test('정체성 발견이 열리면 시간과 건너뛰기가 멈추고 확인 뒤에만 진행된다', () => {
+  const clock = fakeClock();
+  let discoveries = 0;
+  const initialLife = makeLifeAtAge(15, {
+    decisions: completedDecisions,
+    identity: {
+      assigned: 'bisexual', label: '양성애자', discoveryAge: 16, discovered: false, acknowledged: false,
+    },
+  });
+  const controller = createSimulationController({
+    clock,
+    initialLife,
+    onIdentityDiscovery: () => { discoveries += 1; },
+  });
+  controller.play();
+  clock.advance(8000);
+  assert.equal(discoveries, 1);
+  assert.equal(controller.isPlaying(), false);
+  assert.equal(controller.getState().pendingIdentityDiscovery, true);
+  controller.skipToDecision();
+  assert.equal(controller.getState().age, 16);
+  controller.acknowledgeIdentity();
+  assert.equal(controller.getState().pendingIdentityDiscovery, false);
+  assert.equal(controller.getState().identity.acknowledged, true);
+});

@@ -45,3 +45,14 @@ test('생애 화면용 모델에 상태·경제·관계·기록이 모두 담긴
   assert.ok(model.lifeMap.length >= 91);
   assert.ok(model.log.length > 0);
 });
+
+test('발견한 가상 정체성만 생애 화면 모델에 표시한다', () => {
+  const discovered = createLifeViewModel(makeLifeAtAge(24, {
+    identity: {
+      assigned: 'bisexual', label: '양성애자', discoveryAge: 20, discovered: true, acknowledged: true,
+    },
+  }));
+  const undiscovered = createLifeViewModel(makeLifeAtAge(15));
+  assert.equal(discovered.identity, '양성애자');
+  assert.equal(undiscovered.identity, null);
+});
