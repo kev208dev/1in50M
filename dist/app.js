@@ -344,6 +344,8 @@ agencyDialog.addEventListener('cancel', (event) => event.preventDefault());
 document.querySelector('#agency-continue-button').addEventListener('click', () => {
   const actual = document.querySelector('#agency-actual').textContent;
   unlockBackground(agencyDialog);
+  controller?.acknowledgeInterruption();
+  updatePlayback();
   liveRegion.textContent = `인물의 성향에 따라 ${actual} 선택으로 삶이 이어집니다.`;
 });
 

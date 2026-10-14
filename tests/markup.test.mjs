@@ -47,6 +47,7 @@ test('정체성 발견은 거절 선택 없는 가상 인물 사건으로 표시
   }
   assert.match(html, /실제 사용자의 정체성을 판정하는 결과가 아니라/);
   assert.match(html, /data-decision=["']source["']/);
+  assert.match(html, /data-speed=["']12["']/);
   assert.doesNotMatch(html, /id=["']identity-(reject|cancel|close)-button["']/);
   assert.match(renderSource, /current\.identity\.label \?\? '성'\} 정체성/);
   assert.match(html, /온라인 조사에 기반한 가상 시뮬레이션 값/);

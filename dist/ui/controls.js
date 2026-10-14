@@ -8,7 +8,7 @@ import { updateRelationships } from '../engine/relationships.js';
 import { advancePortfolio } from '../engine/finance.js';
 import { advanceBusiness } from '../engine/business.js';
 
-const INTERVALS = { 1: 8000, 2: 4000, 4: 2000, 8: 1000, 16: 500 };
+const INTERVALS = { 1: 8000, 2: 4000, 4: 2000, 8: 1000, 12: 667, 16: 500 };
 
 function browserClock() {
   return {
@@ -32,6 +32,7 @@ export function createSimulationController({
   let playing = false;
   let visible = true;
   let resumeWhenVisible = false;
+  let resumeAfterInterruption = false;
   let autoDecision = false;
   let timerId = null;
   let tickCounter = 0;
@@ -46,6 +47,16 @@ export function createSimulationController({
     onState(structuredClone(life));
   }
 
+  function resumeInterruptedPlayback() {
+    if (!resumeAfterInterruption || !visible || life.pendingDecisionId || life.pendingIdentityDiscovery || life.status !== 'living') {
+      return false;
+    }
+    resumeAfterInterruption = false;
+    playing = true;
+    scheduleNext();
+    return true;
+  }
+
   function setPendingDecision() {
     const decision = getDecision(life);
     if (!decision) return false;
@@ -55,6 +66,7 @@ export function createSimulationController({
       publish();
       return false;
     }
+    resumeAfterInterruption ||= playing;
     playing = false;
     cancelTimer();
     publish();
@@ -64,6 +76,7 @@ export function createSimulationController({
 
   function setPendingIdentityDiscovery() {
     if (!life.pendingIdentityDiscovery) return false;
+    resumeAfterInterruption ||= playing;
     playing = false;
     cancelTimer();
     publish();
@@ -124,6 +137,7 @@ export function createSimulationController({
     pause() {
       playing = false;
       resumeWhenVisible = false;
+      resumeAfterInterruption = false;
       cancelTimer();
     },
     setSpeed(nextSpeed) {
@@ -135,6 +149,7 @@ export function createSimulationController({
     },
     skipToDecision() {
       playing = false;
+      resumeAfterInterruption = true;
       cancelTimer();
       let guard = 0;
       while (life.status === 'living' && !life.pendingDecisionId && !life.pendingIdentityDiscovery && guard < 91) {
@@ -149,6 +164,7 @@ export function createSimulationController({
       const decision = getDecision(life);
       if (decision) life = normalizeLife({ ...life, pendingDecisionId: decision.id });
       publish();
+      resumeInterruptedPlayback();
       return structuredClone(life);
     },
     setAutoDecision(value) {
@@ -156,6 +172,7 @@ export function createSimulationController({
       if (autoDecision && life.pendingDecisionId) {
         life = chooseAutomatically(life, life.pendingDecisionId);
         publish();
+        resumeInterruptedPlayback();
       }
       return autoDecision;
     },
@@ -170,6 +187,11 @@ export function createSimulationController({
       life = resolution.life;
       publish();
       if (resolution.overridden) onAgencyOverride({ ...resolution, life: structuredClone(life) });
+      else resumeInterruptedPlayback();
+      return structuredClone(life);
+    },
+    acknowledgeInterruption() {
+      resumeInterruptedPlayback();
       return structuredClone(life);
     },
     getCareerOffers(limit = 6) {
@@ -203,6 +225,7 @@ export function createSimulationController({
     destroy() {
       playing = false;
       resumeWhenVisible = false;
+      resumeAfterInterruption = false;
       cancelTimer();
     },
   };

@@ -55,13 +55,31 @@ test('속도를 바꿔도 타이머는 하나만 유지된다', () => {
   assert.equal(controller.getState().age, 9);
 });
 
-test('결정에 답하면 기록을 남기고 다시 진행할 수 있다', () => {
+test('재생 중 열린 결정에 답하면 기존 배속으로 자동 재생한다', () => {
   const clock = fakeClock();
-  const controller = createSimulationController({ clock, initialLife: makeLifeAtAge(15) });
+  const controller = createSimulationController({
+    clock,
+    initialLife: makeLifeAtAge(14, {
+      decisions: { 'family-relocation': 'move-together', 'middle-school-rhythm': 'steady' },
+    }),
+  });
+  controller.play();
+  clock.advance(8000);
   assert.equal(controller.getState().pendingDecisionId, 'choose-high-school');
   controller.answerDecision('vocational');
   assert.equal(controller.getState().education.schoolType, 'vocational');
   assert.equal(controller.getState().pendingDecisionId, null);
+  assert.equal(controller.isPlaying(), true);
+  clock.advance(8000);
+  assert.equal(controller.getState().age, 16);
+});
+
+test('직접 정지한 상태의 결정은 답한 뒤에도 정지한다', () => {
+  const clock = fakeClock();
+  const controller = createSimulationController({ clock, initialLife: makeLifeAtAge(15) });
+  controller.answerDecision('vocational');
+  assert.equal(controller.isPlaying(), false);
+  assert.equal(clock.pendingCount(), 0);
 });
 
 test('극단 성격이 선택을 뒤집으면 컨트롤러가 실제 선택과 이유를 알린다', () => {
@@ -86,6 +104,45 @@ test('극단 성격이 선택을 뒤집으면 컨트롤러가 실제 선택과 �
   assert.equal(override?.requestedChoiceId, 'general');
   assert.notEqual(override?.actualChoiceId, 'general');
   assert.match(override?.reason ?? '', /성향/);
+});
+
+test('성격 개입 안내 중에는 멈추고 확인한 뒤 기존 재생을 이어간다', () => {
+  let seed = '';
+  for (let index = 0; index < 10000; index += 1) {
+    const candidate = `agency-resume-${index}`;
+    if (createRng(`${candidate}:agency:choose-high-school:15`).next() < 0.28) {
+      seed = candidate;
+      break;
+    }
+  }
+  const clock = fakeClock();
+  const controller = createSimulationController({
+    clock,
+    initialLife: makeLifeAtAge(14, {
+      seed,
+      decisions: { 'family-relocation': 'move-together', 'middle-school-rhythm': 'steady' },
+      profile: { personality: { strength: 'extreme', dominant: 'impulsive', label: '극도로 충동적' } },
+    }),
+  });
+  controller.play();
+  clock.advance(8000);
+  controller.answerDecision('general');
+  assert.equal(controller.isPlaying(), false);
+  assert.equal(clock.pendingCount(), 0);
+  controller.acknowledgeInterruption();
+  assert.equal(controller.isPlaying(), true);
+  assert.equal(clock.pendingCount(), 1);
+});
+
+test('12배속은 약 667ms마다 한 해를 진행한다', () => {
+  const clock = fakeClock();
+  const controller = createSimulationController({ clock, initialLife: makeLifeAtAge(0) });
+  controller.setSpeed(12);
+  controller.play();
+  clock.advance(666);
+  assert.equal(controller.getState().age, 0);
+  clock.advance(1);
+  assert.equal(controller.getState().age, 1);
 });
 
 test('직업 제안 중 하나를 선택해 프로필에 반영한다', () => {
