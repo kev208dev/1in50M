@@ -207,7 +207,7 @@ export function renderDecision(
 
 export function renderIdentityDiscovery(dialog, life) {
   const current = normalizeLife(life);
-  renderTextFields(dialog, '[data-identity="label"]', current.identity.label ?? '정체성');
+  renderTextFields(dialog, '[data-identity="label"]', `${current.identity.label ?? '성'} 정체성`);
   renderTextFields(dialog, '[data-identity="notice"]', IDENTITY_NOTICE);
   const source = getResearchSource('lgbtq2024');
   const sourceLink = dialog.querySelector('[data-identity="source"]');
