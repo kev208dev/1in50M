@@ -82,3 +82,19 @@ test('생애 화면은 외모·성격 칩과 자산 상세, 투자 안내를 제
   assert.match(css, /\.profile-chip/);
   assert.match(css, /\.asset-details/);
 });
+
+test('원작형 라이브·공개 삶·추모 영역과 모바일 패널 전환을 제공한다', () => {
+  for (const id of ['live-counters', 'community-view', 'memorial-view', 'life-panel-tabs', 'wellbeing-panel']) {
+    assert.match(html, new RegExp(`id=["']${id}["']`));
+  }
+  assert.match(html, /data-life-panel-target=["']story["']/);
+  assert.match(html, /data-life-panel-target=["']status["']/);
+  assert.match(html, /data-life-panel-target=["']details["']/);
+  assert.match(appSource, /mobilePanel/);
+  assert.match(css, /@media \(max-width: 959px\)[\s\S]*data-mobile-panel/);
+});
+
+test('생애 작업공간은 화면 높이에 맞춰지고 현재 장면은 모바일에서도 유지된다', () => {
+  assert.match(css, /height:\s*calc\(100svh - 80px\)/);
+  assert.match(css, /@media \(max-width: 959px\)[\s\S]*\.current-moment[\s\S]*display:\s*block/);
+});

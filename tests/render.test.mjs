@@ -87,6 +87,15 @@ test('삶 화면은 외모 성격 자산 사업을 표시한다', () => {
   assert.match(view.business, /운영|온라인|사업/);
 });
 
+test('삶 화면 모델은 학업 스트레스·수면·카페인·지원과 마음 상태를 표시한다', () => {
+  const view = createLifeViewModel(makeLifeAtAge(17, {
+    mentalHealthState: 'strained',
+    riskFactors: { academicStress: 70, sleepDebt: 62, caffeineLoad: 45, support: 20 },
+  }));
+  assert.equal(view.mentalHealth.label, '지침');
+  assert.deepEqual(view.wellbeing.map((item) => item.value), [70, 62, 45, 20]);
+});
+
 test('요약은 출생 조건과 주요 경제 전환점을 설명한다', () => {
   const summary = createLifeSummary(completedV4Life);
   assert.ok(summary.influences.length >= 3);

@@ -33,7 +33,7 @@ import {
   slotDuration,
 } from './ui/birth-slot.js';
 
-const viewNames = ['intro', 'profile', 'future', 'life', 'result', 'past-lives'];
+const viewNames = ['intro', 'profile', 'future', 'life', 'result', 'past-lives', 'community', 'memorial'];
 const views = Object.fromEntries(viewNames.map((name) => [name, document.querySelector(`#${name}-view`)]));
 const storage = getSafeStorage(window);
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -363,6 +363,16 @@ controls.auto.addEventListener('click', () => {
   updatePlayback();
 });
 controls.career.addEventListener('click', openCareerPicker);
+
+document.querySelector('#life-panel-tabs').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-life-panel-target]');
+  if (!button) return;
+  const mobilePanel = button.dataset.lifePanelTarget;
+  views.life.dataset.mobilePanel = mobilePanel;
+  document.querySelectorAll('[data-life-panel-target]').forEach((item) => {
+    item.setAttribute('aria-pressed', String(item === button));
+  });
+});
 
 document.querySelector('#speed-controls').addEventListener('click', (event) => {
   const button = event.target.closest('[data-speed]');

@@ -72,11 +72,23 @@
         </div>
       </div>
 
-      <div class="intro-facts" aria-label="시뮬레이션 특징">
-        <div><strong>17</strong><span>시·도</span></div>
-        <div><strong>∞</strong><span>시작의 조합</span></div>
-        <div><strong>0</strong><span>서버 저장</span></div>
+      <div id="live-counters" class="intro-facts" aria-label="가상 세계의 현재 흐름">
+        <div><strong data-live="online">1</strong><span>지금 접속</span></div>
+        <div><strong data-live="births">4</strong><span>오늘의 가상 출생</span></div>
+        <div><strong data-live="deaths">0</strong><span>오늘의 가상 생애 종료</span></div>
       </div>
+    </section>
+
+    <section id="community-view" class="view network-view" aria-labelledby="community-title" hidden>
+      <p class="eyebrow"><span>PUBLIC LIVES</span> 익명 공개 기록</p>
+      <h1 id="community-title">같은 나라에서<br>살아간 다른 삶</h1>
+      <div data-community-list></div>
+    </section>
+
+    <section id="memorial-view" class="view network-view" aria-labelledby="memorial-title" hidden>
+      <p class="eyebrow"><span>MEMORIAL</span> 삶의 기록</p>
+      <h1 id="memorial-title">먼저 끝난 삶을<br>기억하는 곳</h1>
+      <div data-memorial-list></div>
     </section>
 
     <section id="profile-view" class="view slot-view" aria-labelledby="slot-title" hidden>
@@ -118,7 +130,7 @@
       </footer>
     </section>
 
-    <section id="life-view" class="life-view" aria-label="생애 시뮬레이션" hidden>
+    <section id="life-view" class="life-view" data-mobile-panel="story" aria-label="생애 시뮬레이션" hidden>
       <header class="life-toolbar">
         <div class="life-clock" aria-live="polite">
           <span id="age-display">0세</span>
@@ -143,6 +155,12 @@
 
       <p class="simulation-notice"><span>SIMULATION 02</span> 모든 확률과 금액은 실제 통계가 아닌 <strong>체험용 가상 데이터</strong>입니다.</p>
 
+      <nav id="life-panel-tabs" class="life-panel-tabs" aria-label="생애 정보 패널">
+        <button type="button" data-life-panel-target="story" aria-pressed="true">지금</button>
+        <button type="button" data-life-panel-target="status" aria-pressed="false">상태·돈</button>
+        <button type="button" data-life-panel-target="details" aria-pressed="false">사람·기록</button>
+      </nav>
+
       <div class="life-layout">
         <aside class="life-sidebar life-sidebar-left">
           <details id="stats-panel" class="life-panel" open>
@@ -150,8 +168,16 @@
             <div class="panel-body" data-life-list="stats"></div>
           </details>
 
+          <details id="wellbeing-panel" class="life-panel" open>
+            <summary><span>02</span> 마음과 생활 리듬</summary>
+            <div class="wellbeing-summary panel-body">
+              <strong data-life="mental-health">안정</strong>
+              <div data-life-list="wellbeing"></div>
+            </div>
+          </details>
+
           <details id="money-panel" class="life-panel" open>
-            <summary><span>02</span> 돈과 자산</summary>
+            <summary><span>03</span> 돈과 자산</summary>
             <dl class="metric-list panel-body">
               <div><dt>현금</dt><dd data-life="cash">0원</dd></div>
               <div><dt>월 소득</dt><dd data-life="income">0원</dd></div>
@@ -165,7 +191,7 @@
           </details>
 
           <details class="life-panel focus-panel" open>
-            <summary><span>03</span> 올해의 초점</summary>
+            <summary><span>04</span> 올해의 초점</summary>
             <div class="panel-body">
               <strong data-life="focus">휴식과 균형</strong>
               <div class="focus-options" role="group" aria-label="올해의 초점">
@@ -206,11 +232,11 @@
 
         <aside class="life-sidebar life-sidebar-right">
           <details id="family-panel" class="life-panel" open>
-            <summary><span>04</span> 사람들</summary>
+            <summary><span>05</span> 사람들</summary>
             <ul class="people-list panel-body" data-life-list="family"><li>가족</li></ul>
           </details>
           <details class="life-panel" open>
-            <summary><span>05</span> 배움과 일</summary>
+            <summary><span>06</span> 배움과 일</summary>
             <div id="profile-chips" class="profile-chips panel-body" aria-label="외모와 성격"></div>
             <dl class="profile-list panel-body">
               <div><dt>학교</dt><dd data-life="education">미취학</dd></div>
@@ -222,22 +248,22 @@
             <button id="career-select-button" class="panel-action" type="button" hidden>직업군과 직업 선택</button>
           </details>
           <details class="life-panel" open>
-            <summary><span>06</span> 사는 곳</summary>
+            <summary><span>07</span> 사는 곳</summary>
             <div class="panel-body housing-panel-copy">
               <strong data-life="housing">가족과 동거</strong>
               <p data-life="location">대한민국</p>
             </div>
           </details>
           <details class="life-panel" open>
-            <summary><span>07</span> 상태의 흐름</summary>
+            <summary><span>08</span> 상태의 흐름</summary>
             <div class="panel-body mini-chart" aria-label="아직 상태 변화 기록이 없습니다."></div>
           </details>
           <details class="life-panel" open>
-            <summary><span>08</span> 같은 순간의 삶</summary>
+            <summary><span>09</span> 같은 순간의 삶</summary>
             <div id="companion-lives" class="companion-grid companion-grid-life panel-body"></div>
           </details>
           <details class="life-panel" open>
-            <summary><span>09</span> 생존 곡선</summary>
+            <summary><span>10</span> 생존 곡선</summary>
             <div id="survival-curve" class="survival-curve panel-body"></div>
             <p class="investment-notice">개인의 수명을 예측하지 않는 가상 곡선입니다.</p>
           </details>

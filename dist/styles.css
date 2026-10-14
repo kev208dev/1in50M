@@ -466,6 +466,15 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
   border-right: 1px solid var(--line);
 }
 
+.life-panel-tabs { display: none; }
+.wellbeing-summary > strong { display: block; margin-bottom: 14px; color: var(--accent); font-size: 13px; }
+.wellbeing-summary[data-state="strained"] > strong { color: #f5c96a; }
+.wellbeing-summary[data-state="crisis"] > strong { color: #ff8f83; }
+.wellbeing-row + .wellbeing-row { margin-top: 10px; }
+.wellbeing-caffeineLoad .life-meter-fill { background: #f5c96a; }
+.wellbeing-support .life-meter-fill { background: var(--paper-muted); }
+.network-view h1 { margin: 0; font-family: var(--font-display); font-size: clamp(44px, 6vw, 84px); font-weight: 500; letter-spacing: -.06em; }
+
 .life-sidebar { min-width: 0; background: rgba(26, 33, 28, .5); }
 .life-sidebar-left { border-right: 1px solid var(--line); }
 .life-sidebar-right { border-left: 1px solid var(--line); }
@@ -691,11 +700,22 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
   .life-toolbar { top: 0; flex-direction: column; align-items: stretch; padding: 10px var(--page-pad); }
   .life-clock { min-width: 0; }
   .playback-controls { justify-content: flex-start; overflow-x: auto; padding-bottom: 2px; }
+  .life-panel-tabs { position: sticky; top: 0; z-index: 11; display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--line); background: rgba(17, 22, 19, .96); }
+  .life-panel-tabs button { min-height: 42px; border: 0; border-right: 1px solid var(--line); color: var(--ink-muted); background: transparent; font-size: 11px; cursor: pointer; }
+  .life-panel-tabs button[aria-pressed="true"] { color: var(--bg); background: var(--accent); }
   .life-layout { display: flex; flex-direction: column; border: 0; }
   .life-story { order: 1; }
+  .current-moment { display: block; min-height: 240px; }
   .life-sidebar-left { order: 2; border-top: 1px solid var(--line); border-right: 0; }
   .life-sidebar-right { order: 3; border-left: 0; }
   .life-sidebar { display: grid; grid-template-columns: 1fr 1fr; }
+  .life-view[data-mobile-panel="story"] .life-sidebar,
+  .life-view[data-mobile-panel="status"] .life-sidebar-right,
+  .life-view[data-mobile-panel="details"] .life-sidebar-left { display: none; }
+  .life-view[data-mobile-panel="status"] .map-section,
+  .life-view[data-mobile-panel="status"] .log-section,
+  .life-view[data-mobile-panel="details"] .map-section,
+  .life-view[data-mobile-panel="details"] .log-section { display: none; }
   .life-panel { border-right: 1px solid var(--line); }
   .result-grid { grid-template-columns: 1fr; }
   .result-review-grid { grid-template-columns: 1fr; }

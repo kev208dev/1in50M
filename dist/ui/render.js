@@ -13,6 +13,12 @@ const STAT_LABELS = {
   relationships: '관계',
 };
 
+const MENTAL_HEALTH_LABELS = {
+  stable: { label: '안정', tone: 'stable' },
+  strained: { label: '지침', tone: 'strained' },
+  crisis: { label: '위기 · 도움이 필요함', tone: 'crisis' },
+};
+
 export function formatAge(age) {
   return `${Math.max(0, Math.round(Number(age) || 0))}세`;
 }
@@ -84,6 +90,13 @@ export function createLifeViewModel(life) {
     children: current.relationships.children,
     statHistory: current.statHistory,
     survival: survivalCurve(current),
+    mentalHealth: MENTAL_HEALTH_LABELS[current.mentalHealthState] ?? MENTAL_HEALTH_LABELS.stable,
+    wellbeing: [
+      { id: 'academicStress', label: '학업 압박', value: current.riskFactors.academicStress },
+      { id: 'sleepDebt', label: '수면 부족', value: current.riskFactors.sleepDebt },
+      { id: 'caffeineLoad', label: '고카페인 부담', value: current.riskFactors.caffeineLoad },
+      { id: 'support', label: '주변 지원', value: current.riskFactors.support },
+    ],
     log: getVisibleLifeLog(current.history),
     lifeMap: Array.from({ length: 91 }, (_, age) => ({
       age,
@@ -124,6 +137,7 @@ export function renderLife(root, life) {
   renderTextFields(root, '[data-life="personality"]', model.personality);
   renderTextFields(root, '[data-life="business"]', model.business);
   renderTextFields(root, '[data-life="identity"]', model.identity);
+  renderTextFields(root, '[data-life="mental-health"]', model.mentalHealth.label);
   const identityProfile = root.querySelector('[data-identity-profile]');
   if (identityProfile) identityProfile.hidden = !model.identity;
 
@@ -158,6 +172,22 @@ export function renderLife(root, life) {
       row.append(heading, meter);
       return row;
     }));
+  }
+
+  const wellbeing = root.querySelector('[data-life-list="wellbeing"]');
+  if (wellbeing) {
+    wellbeing.replaceChildren(...model.wellbeing.map((item) => {
+      const row = makeNode(root, 'div', `wellbeing-row wellbeing-${item.id}`);
+      const heading = makeNode(root, 'div', 'life-stat-heading');
+      heading.append(makeNode(root, 'span', '', item.label), makeNode(root, 'strong', '', String(item.value)));
+      const meter = makeNode(root, 'div', 'life-meter');
+      const fill = makeNode(root, 'span', 'life-meter-fill');
+      fill.style.setProperty('--value', `${item.value}%`);
+      meter.append(fill);
+      row.append(heading, meter);
+      return row;
+    }));
+    wellbeing.parentElement?.setAttribute('data-state', model.mentalHealth.tone);
   }
 
   const log = root.querySelector('#life-log');
