@@ -6,6 +6,7 @@ import { createLifeSummary } from './engine/summary.js';
 const CURRENT_KEY = 'oneIn50mLifeV2';
 const PAST_KEY = 'oneIn50mPastLivesV2';
 const LEGACY_KEY = 'oneIn50mState';
+const PUBLIC_KEY = 'oneIn50mPublicLivesV1';
 const EMPTY_STATE = Object.freeze({ current: null, previous: null });
 const EDUCATION_LEVELS = new Set(['childhood', 'elementary', 'middle-school', 'high-school', 'university', 'college', 'training', 'completed']);
 
@@ -102,6 +103,44 @@ export function clearPastLives(storage = getSafeStorage()) {
   try {
     storage?.removeItem(PAST_KEY);
     return Boolean(storage);
+  } catch {
+    return false;
+  }
+}
+
+export function listLocalPublicLives(storage = getSafeStorage()) {
+  try {
+    const parsed = JSON.parse(storage?.getItem(PUBLIC_KEY) ?? '[]');
+    return Array.isArray(parsed)
+      ? parsed.filter((item) => item && typeof item.id === 'string' && !item.hidden).slice(0, 30)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveLocalPublicLife(storage = getSafeStorage(), publicLife) {
+  try {
+    if (!storage || !publicLife?.id) return false;
+    const previous = listLocalPublicLives(storage).filter((item) => item.id !== publicLife.id);
+    storage.setItem(PUBLIC_KEY, JSON.stringify([{ ...publicLife, localOwner: true }, ...previous].slice(0, 30)));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function hideLocalPublicLife(storage = getSafeStorage(), id) {
+  try {
+    if (!storage) return false;
+    const parsed = JSON.parse(storage.getItem(PUBLIC_KEY) ?? '[]');
+    if (!Array.isArray(parsed)) return false;
+    const target = parsed.find((item) => item?.id === id && item.localOwner);
+    if (!target) return false;
+    storage.setItem(PUBLIC_KEY, JSON.stringify(parsed.map((item) => (
+      item?.id === id ? { ...item, hidden: true } : item
+    ))));
+    return true;
   } catch {
     return false;
   }

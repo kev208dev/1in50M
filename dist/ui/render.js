@@ -323,6 +323,27 @@ export function renderReflection(dialog, reflection) {
   }
 }
 
+export function renderPublicLives(root, lives = [], { memorial = false } = {}) {
+  if (!root) return [];
+  const visible = (Array.isArray(lives) ? lives : []).slice(0, memorial ? 20 : 12);
+  root.replaceChildren(...visible.map((life) => {
+    const article = makeNode(root, 'article', 'public-life-card');
+    const heading = makeNode(root, 'div', 'public-life-heading');
+    heading.append(
+      makeNode(root, 'span', 'eyebrow', memorial ? `${life.age}세의 기록` : `${life.birthRegion}에서 시작`),
+      makeNode(root, 'time', '', String(life.completedAt ?? '').slice(0, 10)),
+    );
+    article.append(
+      heading,
+      makeNode(root, 'h2', '', life.alias),
+      makeNode(root, 'p', '', life.reflection),
+      makeNode(root, 'small', '', `${life.finalRegion} · ${life.career} · ${life.netWorthBand}`),
+    );
+    return article;
+  }));
+  return visible;
+}
+
 export function renderResult(root, summary) {
   renderTextFields(root, '[data-result="age"]', formatAge(summary.age));
   renderTextFields(root, '[data-result="birth"]', summary.birth);

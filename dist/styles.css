@@ -170,6 +170,8 @@ main { position: relative; z-index: 1; }
 .hero-button { min-width: min(100%, 310px); min-height: 64px; font-size: 17px; }
 .continue-button { display: flex; width: min(100%, 310px); margin-top: 10px; align-items: center; justify-content: space-between; }
 .intro-archive-button { display: block; margin-top: 14px; }
+.intro-network-actions { display: flex; gap: 8px; width: min(100%, 310px); }
+.intro-network-actions .text-button { flex: 1; font-size: 12px; }
 .button-arrow { font-family: var(--font-mono); font-size: 22px; }
 
 .disclaimer { margin: 24px 0 0; color: rgba(200, 208, 194, .62); font-size: 12px; line-height: 1.6; }
@@ -473,7 +475,15 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
 .wellbeing-row + .wellbeing-row { margin-top: 10px; }
 .wellbeing-caffeineLoad .life-meter-fill { background: #f5c96a; }
 .wellbeing-support .life-meter-fill { background: var(--paper-muted); }
-.network-view h1 { margin: 0; font-family: var(--font-display); font-size: clamp(44px, 6vw, 84px); font-weight: 500; letter-spacing: -.06em; }
+.network-view h1 { margin: 0 0 36px; font-family: var(--font-display); font-size: clamp(44px, 6vw, 84px); font-weight: 500; letter-spacing: -.06em; }
+.network-view [data-community-list], .network-view [data-memorial-list] { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.public-life-card { padding: 22px; border: 1px solid var(--line); background: rgba(26, 33, 28, .72); }
+.public-life-heading { display: flex; justify-content: space-between; gap: 16px; }
+.public-life-heading .eyebrow { margin: 0; }
+.public-life-heading time, .public-life-card small { color: var(--ink-muted); font-family: var(--font-mono); font-size: 9px; }
+.public-life-card h2 { margin: 22px 0 12px; font-family: var(--font-display); font-size: 26px; font-weight: 500; }
+.public-life-card p { min-height: 3.5em; color: var(--ink-muted); line-height: 1.7; }
+.network-back { margin-top: 28px; }
 
 .life-sidebar { min-width: 0; background: rgba(26, 33, 28, .5); }
 .life-sidebar-left { border-right: 1px solid var(--line); }
@@ -722,6 +732,7 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
   .result-influence-panel { grid-column: auto; }
   .result-influences { grid-template-columns: 1fr; }
   .past-lives-list { grid-template-columns: 1fr 1fr; }
+  .network-view [data-community-list], .network-view [data-memorial-list] { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 720px) {
@@ -771,6 +782,7 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
   .intro-lead br { display: none; }
   .birth-settings { grid-template-columns: 1fr 1fr; }
   .birth-settings label:nth-of-type(3) { grid-column: 1 / -1; }
+  .network-view [data-community-list], .network-view [data-memorial-list] { grid-template-columns: 1fr; }
   .intro-facts div { padding-left: 14px; padding-right: 14px; margin-right: 0; }
   .profile-kicker { flex-direction: column; gap: 8px; }
   .birth-certificate { min-height: 450px; padding: 34px 28px; }

@@ -101,3 +101,11 @@ test('다섯 전환점은 생애 후반의 중요한 선택도 포함한다', ()
   const summary = createLifeSummary(makeLifeAtAge(90, { milestones }));
   assert.ok(summary.turningPoints.some((point) => point.age >= 40));
 });
+
+test('공개용 순자산 구간은 정확한 금액을 노출하지 않는다', async () => {
+  const { toPublicLife } = await import('../dist/community.js');
+  const summary = createLifeSummary(makeLifeAtAge(90, { economy: { netWorth: 123456789 } }));
+  const publicLife = toPublicLife(summary);
+  assert.equal('netWorth' in publicLife, false);
+  assert.match(publicLife.netWorthBand, /원|미만|이상/);
+});

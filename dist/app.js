@@ -18,12 +18,14 @@ import {
   clearPastLives,
 } from './storage.js';
 import { createSimulationController } from './ui/controls.js';
+import { createCommunityClient } from './community.js';
 import {
   renderLife,
   renderDecision,
   renderIdentityDiscovery,
   renderReflection,
   renderResult,
+  renderPublicLives,
   formatWon,
 } from './ui/render.js';
 import {
@@ -39,6 +41,7 @@ const storage = getSafeStorage(window);
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const liveRegion = document.querySelector('#live-region');
 const main = document.querySelector('main');
+const community = createCommunityClient(globalThis.ONE_IN_50M_CONFIG ?? {}, { storage });
 
 const controls = {
   birth: document.querySelector('#birth-button'),
@@ -66,6 +69,17 @@ let isDrawing = false;
 let lastFocused = null;
 let spinCounter = 0;
 let pendingAgencyResolution = null;
+let lastCompletedSummary = null;
+
+async function refreshCommunity() {
+  const lives = await community.listPublicLives();
+  renderPublicLives(document.querySelector('[data-community-list]'), lives);
+  renderPublicLives(document.querySelector('[data-memorial-list]'), lives, { memorial: true });
+  const presence = await community.connectPresence();
+  document.querySelector('[data-live="online"]').textContent = String(presence.count);
+  document.querySelector('[data-live="births"]').textContent = String(Math.max(4, lives.length));
+  document.querySelector('[data-live="deaths"]').textContent = String(lives.filter((life) => life.age < 90).length);
+}
 
 function setText(field, value) {
   document.querySelectorAll(`[data-field="${field}"]`).forEach((node) => {
@@ -215,7 +229,8 @@ function finishLife(life) {
   archiveLife(storage, life);
   clearCurrentLife(storage);
   controls.continue.hidden = true;
-  renderResult(views.result, createLifeSummary(life));
+  lastCompletedSummary = createLifeSummary(life);
+  renderResult(views.result, lastCompletedSummary);
   showView('result');
   liveRegion.textContent = `${life.age}세의 생애가 회고 단계에 도착했습니다.`;
 }
@@ -457,6 +472,24 @@ document.querySelector('#new-life-button').addEventListener('click', () => {
 });
 document.querySelector('#past-lives-button').addEventListener('click', showPastLives);
 document.querySelector('#intro-past-lives-button').addEventListener('click', showPastLives);
+document.querySelector('#community-button').addEventListener('click', async () => {
+  await refreshCommunity();
+  showView('community');
+});
+document.querySelector('#memorial-button').addEventListener('click', async () => {
+  await refreshCommunity();
+  showView('memorial');
+});
+document.querySelectorAll('[data-network-back]').forEach((button) => {
+  button.addEventListener('click', () => showView('intro'));
+});
+document.querySelector('#publish-life-button').addEventListener('click', async (event) => {
+  if (!lastCompletedSummary) return;
+  event.currentTarget.disabled = true;
+  await community.publishLife(lastCompletedSummary);
+  event.currentTarget.textContent = '익명 공개됨';
+  await refreshCommunity();
+});
 document.querySelector('#close-past-lives-button').addEventListener('click', () => showView(controller ? 'result' : 'intro'));
 document.querySelector('#clear-past-lives-button').addEventListener('click', () => {
   clearPastLives(storage);
@@ -492,8 +525,14 @@ document.querySelector('.brand').addEventListener('click', (event) => {
 document.addEventListener('visibilitychange', () => controller?.setVisible(!document.hidden));
 window.addEventListener('beforeunload', () => {
   if (controller) saveCurrentLife(storage, controller.getState());
+  community.destroy();
 });
 
 const savedLife = loadCurrentLife(storage);
 controls.continue.hidden = !savedLife;
+community.subscribe((lives) => {
+  renderPublicLives(document.querySelector('[data-community-list]'), lives);
+  renderPublicLives(document.querySelector('[data-memorial-list]'), lives, { memorial: true });
+});
+void refreshCommunity();
 showView('intro');

@@ -47,6 +47,10 @@
         </button>
         <button id="continue-button" class="secondary-button continue-button" type="button" hidden>이어 살기 <span aria-hidden="true">→</span></button>
         <button id="intro-past-lives-button" class="text-button intro-archive-button" type="button">전생 기록 보기</button>
+        <div class="intro-network-actions">
+          <button id="community-button" class="text-button" type="button">공개된 삶</button>
+          <button id="memorial-button" class="text-button" type="button">추모관</button>
+        </div>
         <p class="disclaimer">현재 결과는 실제 인구통계가 아닌 체험용 가상 시뮬레이션입니다.</p>
       </div>
 
@@ -83,12 +87,14 @@
       <p class="eyebrow"><span>PUBLIC LIVES</span> 익명 공개 기록</p>
       <h1 id="community-title">같은 나라에서<br>살아간 다른 삶</h1>
       <div data-community-list></div>
+      <button class="secondary-button network-back" data-network-back type="button">← 처음으로</button>
     </section>
 
     <section id="memorial-view" class="view network-view" aria-labelledby="memorial-title" hidden>
       <p class="eyebrow"><span>MEMORIAL</span> 삶의 기록</p>
       <h1 id="memorial-title">먼저 끝난 삶을<br>기억하는 곳</h1>
       <div data-memorial-list></div>
+      <button class="secondary-button network-back" data-network-back type="button">← 처음으로</button>
     </section>
 
     <section id="profile-view" class="view slot-view" aria-labelledby="slot-title" hidden>
@@ -294,6 +300,7 @@
         <button id="same-life-button" class="secondary-button" type="button">같은 조건으로 다시</button>
         <button id="new-life-button" class="primary-button" type="button">완전히 다른 삶</button>
         <button id="past-lives-button" class="text-button" type="button">전생 기록 보기</button>
+        <button id="publish-life-button" class="text-button" type="button">이 삶을 익명 공개</button>
       </div>
     </section>
 
