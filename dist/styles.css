@@ -483,6 +483,7 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
 .public-life-heading time, .public-life-card small { color: var(--ink-muted); font-family: var(--font-mono); font-size: 9px; }
 .public-life-card h2 { margin: 22px 0 12px; font-family: var(--font-display); font-size: 26px; font-weight: 500; }
 .public-life-card p { min-height: 3.5em; color: var(--ink-muted); line-height: 1.7; }
+.public-life-hide { margin-top: 16px; color: var(--accent); }
 .network-back { margin-top: 28px; }
 
 .life-sidebar { min-width: 0; background: rgba(26, 33, 28, .5); }

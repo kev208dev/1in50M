@@ -1,4 +1,5 @@
 import { DECISIONS, DECISION_BY_ID } from '../data/decisions.js';
+import { ASSET_MODELS } from '../data/financial-paths.js';
 import { HOUSING_BY_ID } from '../data/housing.js';
 import { normalizeLife } from './life.js';
 import { createRng } from './random.js';
@@ -16,6 +17,12 @@ function availability(life, choice) {
   }
   if ((choice.minimumHealth ?? 0) > life.stats.health) {
     return { enabled: false, reason: `건강 ${choice.minimumHealth} 이상이 필요합니다.` };
+  }
+  const financialModel = choice.financialAction?.type === 'buy'
+    ? ASSET_MODELS[choice.financialAction.asset]
+    : null;
+  if (financialModel?.availableFromYear && life.year < financialModel.availableFromYear) {
+    return { enabled: false, reason: `${financialModel.availableFromYear}년부터 선택할 수 있습니다.` };
   }
   const requiredCash = Math.max(choice.minimumCash ?? 0, choice.cost ?? 0);
   if (requiredCash > 0 && requiredCash > life.economy.cash) {

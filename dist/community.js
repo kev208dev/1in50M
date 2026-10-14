@@ -47,7 +47,7 @@ async function createConfiguredClient(config) {
   });
 }
 
-function fromDatabase(row) {
+function fromDatabase(row, ownerId) {
   return {
     id: row.id,
     alias: row.alias,
@@ -58,7 +58,7 @@ function fromDatabase(row) {
     netWorthBand: row.net_worth_band,
     reflection: row.reflection,
     completedAt: row.completed_at,
-    localOwner: false,
+    localOwner: Boolean(ownerId && row.owner_id === ownerId),
   };
 }
 
@@ -147,11 +147,11 @@ export function createCommunityClient(config = {}, { storage = getSafeStorage(),
         try {
           const { data, error } = await client
             .from('public_lives')
-            .select('id,alias,age,birth_region,final_region,career,net_worth_band,reflection,completed_at')
+            .select('id,owner_id,alias,age,birth_region,final_region,career,net_worth_band,reflection,completed_at')
             .eq('hidden', false)
             .order('completed_at', { ascending: false })
             .limit(50);
-          if (!error && Array.isArray(data)) return [...local, ...data.map(fromDatabase)];
+          if (!error && Array.isArray(data)) return [...local, ...data.map((row) => fromDatabase(row, userId))];
         } catch {
           // The complete local experience remains available when the backend is unreachable.
         }
@@ -166,10 +166,10 @@ export function createCommunityClient(config = {}, { storage = getSafeStorage(),
           const { data, error } = await client
             .from('public_lives')
             .insert(toDatabase(safeLife, userId))
-            .select('id,alias,age,birth_region,final_region,career,net_worth_band,reflection,completed_at')
+            .select('id,owner_id,alias,age,birth_region,final_region,career,net_worth_band,reflection,completed_at')
             .single();
           if (!error && data) {
-            const published = fromDatabase(data);
+            const published = fromDatabase(data, userId);
             await notify();
             return published;
           }

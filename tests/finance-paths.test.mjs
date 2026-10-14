@@ -54,6 +54,14 @@ test('가상자산은 2010년 전에는 살 수 없다', () => {
   );
 });
 
+test('2010년 전 결정 화면에서는 가상자산 선택이 이유와 함께 비활성화된다', async () => {
+  const { getChoices } = await import('../dist/engine/decisions.js');
+  const oldLife = makeLifeAtAge(30, { year: 1980, economy: { cash: 10000000 } });
+  const crypto = getChoices(oldLife, 'alternative-assets').find((item) => item.id === 'buy-crypto');
+  assert.equal(crypto.enabled, false);
+  assert.match(crypto.reason, /2010년/);
+});
+
 test('도박 유혹은 손실과 빚을 만들 수 있고 대박·폭락·안정 채권 경로가 도달 가능하다', () => {
   const gamblingLife = makeLifeAtAge(35, { economy: { cash: 100000, debt: 0 } });
   const lost = applyFinancialAction(gamblingLife, {

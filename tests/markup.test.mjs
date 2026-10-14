@@ -98,3 +98,10 @@ test('생애 작업공간은 화면 높이에 맞춰지고 현재 장면은 모�
   assert.match(css, /height:\s*calc\(100svh - 80px\)/);
   assert.match(css, /@media \(max-width: 959px\)[\s\S]*\.current-moment[\s\S]*display:\s*block/);
 });
+
+test('공개 버튼은 비동기 이후에도 안전한 참조를 쓰고 작성자 숨김 동작을 제공한다', () => {
+  assert.match(appSource, /const publishButton = event\.currentTarget/);
+  assert.doesNotMatch(appSource, /await community\.publishLife[\s\S]{0,200}event\.currentTarget/);
+  assert.match(renderSource, /data\.publicLifeId|dataset\.publicLifeId/);
+  assert.match(appSource, /community\.hideLife/);
+});

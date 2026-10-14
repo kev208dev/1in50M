@@ -77,8 +77,8 @@ export const YOUTH_DECISIONS = [
     sourceKey: 'privateEducation2024',
     when: (life) => life.education.level === 'high-school' || Boolean(life.education.schoolType),
     choices: [
-      choice('study-room', '야간 자율학습을 한다', '학교에 남아 내신과 시험을 준비합니다.', { knowledge: 4, happiness: -2 }, ['내신', '긴 하루'], { riskEffects: { academicStress: 16, sleepDebt: 12, caffeineLoad: 5 } }),
-      choice('all-night-energy', '고카페인 음료로 밤을 새운다', '당장의 공부 시간은 늘지만 잠과 몸의 부담이 크게 쌓입니다.', { knowledge: 5, happiness: -3, health: -2 }, ['내신', '밤샘', '위험'], { riskEffects: { academicStress: 15, sleepDebt: 22, caffeineLoad: 28 } }),
+      choice('study-room', '야간 자율학습을 한다', '학교에 남아 내신과 시험을 준비합니다.', { knowledge: 4, happiness: -2 }, ['내신', '긴 하루'], { riskEffects: { academicStress: 16, sleepDebt: 12, caffeineLoad: 5, support: -3 } }),
+      choice('all-night-energy', '고카페인 음료로 밤을 새운다', '당장의 공부 시간은 늘지만 잠과 몸의 부담이 크게 쌓입니다.', { knowledge: 5, happiness: -3, health: -2 }, ['내신', '밤샘', '위험'], { riskEffects: { academicStress: 15, sleepDebt: 22, caffeineLoad: 28, support: -10 } }),
       choice('part-time', '주말 아르바이트를 한다', '용돈과 경험을 얻지만 회복 시간이 줄어듭니다.', { knowledge: 1, health: -1 }, ['아르바이트'], { economyEffects: { cash: 1800000 } }),
       choice('portfolio', '동아리·실기·자격증을 준비한다', '관심 분야의 결과물을 쌓습니다.', { knowledge: 3, happiness: 1 }, ['진로 준비']),
       choice('rest', '집에서 충분히 쉰다', '수면과 마음의 여유를 먼저 지킵니다.', { health: 3, happiness: 2 }, ['회복'], { riskEffects: { academicStress: -15, sleepDebt: -18, caffeineLoad: -10, support: 2 } }),

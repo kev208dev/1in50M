@@ -298,3 +298,24 @@ test('현금이 없는 자동 진행도 투자 결정에서 멈추지 않는다'
   clock.advance(8000);
   assert.equal(controller.getState().age, 25);
 });
+
+test('누적된 밤샘 습관은 실제 컨트롤러에서 도움 장면을 연다', () => {
+  const clock = fakeClock();
+  const decisions = Object.fromEntries(DECISIONS.filter((item) => item.id !== 'mental-health-support').map((item) => [item.id, 'done']));
+  decisions['high-school-evening'] = 'all-night-energy';
+  const controller = createSimulationController({
+    clock,
+    initialLife: makeLifeAtAge(22, {
+      seed: 'wellbeing-controller-reachability',
+      stats: { health: 45, happiness: 30, relationships: 30 },
+      riskFactors: { academicStress: 68, sleepDebt: 68, caffeineLoad: 68, support: 18 },
+      mentalHealthState: 'strained',
+      decisions,
+      reflections: { 'reflection-5': 'play', 'reflection-15': 'people' },
+    }),
+  });
+  controller.play();
+  clock.advance(8000);
+  assert.equal(controller.getState().pendingDecisionId, 'mental-health-support');
+  assert.equal(controller.isPlaying(), false);
+});

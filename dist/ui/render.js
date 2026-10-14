@@ -339,6 +339,12 @@ export function renderPublicLives(root, lives = [], { memorial = false } = {}) {
       makeNode(root, 'p', '', life.reflection),
       makeNode(root, 'small', '', `${life.finalRegion} · ${life.career} · ${life.netWorthBand}`),
     );
+    if (life.localOwner) {
+      const hideButton = makeNode(root, 'button', 'text-button public-life-hide', '이 기록 숨기기');
+      hideButton.type = 'button';
+      hideButton.dataset.publicLifeId = life.id;
+      article.append(hideButton);
+    }
     return article;
   }));
   return visible;

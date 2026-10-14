@@ -27,20 +27,46 @@ export function wellbeingBurden(life) {
 
 function deriveMentalHealthState(life, burden) {
   const happiness = clamp(life?.stats?.happiness);
-  const relationships = clamp(life?.stats?.relationships);
-  if (burden >= 68 && happiness <= 30 && relationships <= 35) return 'crisis';
+  if (burden >= 62 && happiness <= 40) return 'crisis';
   if (burden >= 45 || happiness <= 35) return 'strained';
   return 'stable';
+}
+
+function persistentExposure(life) {
+  const exposure = { academicStress: 0, sleepDebt: 0, caffeineLoad: 0, support: 0 };
+  const decisions = life?.decisions ?? {};
+  if (decisions['private-education'] === 'core-subjects' && life.age <= 15) {
+    Object.assign(exposure, { academicStress: 6, sleepDebt: 3, caffeineLoad: 0, support: -1 });
+  }
+  if (decisions['middle-school-rhythm'] === 'grades' && life.age <= 17) {
+    exposure.academicStress += 7;
+    exposure.sleepDebt += 5;
+    exposure.support -= 1;
+  }
+  if (decisions['high-school-evening'] === 'study-room' && life.age <= 21) {
+    exposure.academicStress += 9;
+    exposure.sleepDebt += 8;
+    exposure.caffeineLoad += 4;
+    exposure.support -= 1;
+  }
+  if (decisions['high-school-evening'] === 'all-night-energy' && life.age <= 23) {
+    exposure.academicStress += 13;
+    exposure.sleepDebt += 15;
+    exposure.caffeineLoad += 18;
+    exposure.support -= 3;
+  }
+  return exposure;
 }
 
 export function advanceWellbeing(life) {
   const current = structuredClone(life);
   const risk = normalizeRiskFactors(current.riskFactors);
+  const exposure = persistentExposure(current);
   const recovered = normalizeRiskFactors({
-    academicStress: risk.academicStress - 4,
-    sleepDebt: risk.sleepDebt - 6,
-    caffeineLoad: risk.caffeineLoad - 9,
-    support: risk.support,
+    academicStress: risk.academicStress - 4 + exposure.academicStress,
+    sleepDebt: risk.sleepDebt - 6 + exposure.sleepDebt,
+    caffeineLoad: risk.caffeineLoad - 9 + exposure.caffeineLoad,
+    support: risk.support + exposure.support,
   });
   const burden = wellbeingBurden({ ...current, riskFactors: recovered });
   const previousState = ['stable', 'strained', 'crisis'].includes(current.mentalHealthState)
@@ -48,12 +74,14 @@ export function advanceWellbeing(life) {
     : 'stable';
   const mentalHealthState = deriveMentalHealthState(current, burden);
   const stats = { ...current.stats };
-  if (burden >= 68) {
+  if (burden >= 62) {
     stats.health = clamp(stats.health - 4);
     stats.happiness = clamp(stats.happiness - 6);
+    stats.relationships = clamp(stats.relationships - 3);
   } else if (burden >= 45) {
     stats.health = clamp(stats.health - 2);
     stats.happiness = clamp(stats.happiness - 3);
+    stats.relationships = clamp(stats.relationships - 1);
   }
   const history = [...(current.history ?? [])];
   if (mentalHealthState !== previousState) {

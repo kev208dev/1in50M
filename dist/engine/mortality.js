@@ -41,8 +41,8 @@ export function causeSpecificRisks(life, ageOverride) {
     && stress >= 75
     && sleep >= 65
     && support <= 20
-    && happiness <= 20
-    && relationships <= 25;
+    && happiness <= 35
+    && relationships <= 45;
   const selfHarm = severeCrisis
     ? clamp(0.001 + ((stress - 75) + (sleep - 65) + (20 - support)) / 30000, 0, 0.006)
     : 0;

@@ -230,6 +230,9 @@ function finishLife(life) {
   clearCurrentLife(storage);
   controls.continue.hidden = true;
   lastCompletedSummary = createLifeSummary(life);
+  const publishButton = document.querySelector('#publish-life-button');
+  publishButton.disabled = false;
+  publishButton.textContent = '이 삶을 익명 공개';
   renderResult(views.result, lastCompletedSummary);
   showView('result');
   liveRegion.textContent = `${life.age}세의 생애가 회고 단계에 도착했습니다.`;
@@ -484,11 +487,33 @@ document.querySelectorAll('[data-network-back]').forEach((button) => {
   button.addEventListener('click', () => showView('intro'));
 });
 document.querySelector('#publish-life-button').addEventListener('click', async (event) => {
-  if (!lastCompletedSummary) return;
-  event.currentTarget.disabled = true;
-  await community.publishLife(lastCompletedSummary);
-  event.currentTarget.textContent = '익명 공개됨';
-  await refreshCommunity();
+  const publishButton = event.currentTarget;
+  if (!lastCompletedSummary || publishButton.disabled) return;
+  publishButton.disabled = true;
+  try {
+    await community.publishLife(lastCompletedSummary);
+    publishButton.textContent = '익명 공개됨';
+    await refreshCommunity();
+  } catch {
+    publishButton.disabled = false;
+    publishButton.textContent = '다시 공개하기';
+    liveRegion.textContent = '공개하지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
+  }
+});
+document.querySelectorAll('[data-community-list], [data-memorial-list]').forEach((list) => {
+  list.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-public-life-id]');
+    if (!button || button.disabled) return;
+    button.disabled = true;
+    const hidden = await community.hideLife(button.dataset.publicLifeId);
+    if (hidden) {
+      await refreshCommunity();
+      liveRegion.textContent = '내 공개 기록을 숨겼습니다.';
+    } else {
+      button.disabled = false;
+      liveRegion.textContent = '기록을 숨기지 못했습니다.';
+    }
+  });
 });
 document.querySelector('#close-past-lives-button').addEventListener('click', () => showView(controller ? 'result' : 'intro'));
 document.querySelector('#clear-past-lives-button').addEventListener('click', () => {
