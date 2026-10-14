@@ -38,3 +38,30 @@ test('구독자는 오프라인 기록 변경도 알 수 있다', async () => {
   assert.equal(updates, 1);
   unsubscribe();
 });
+
+test('설정된 클라이언트는 익명 세션으로 presence 인원을 센다', async () => {
+  let sync = () => {};
+  const channel = {
+    on(type, options, callback) {
+      if (type === 'presence' && options.event === 'sync') sync = callback;
+      return this;
+    },
+    subscribe(callback) {
+      queueMicrotask(() => callback('SUBSCRIBED'));
+      return this;
+    },
+    async track() { sync(); },
+    presenceState() { return { first: [{}], second: [{}] }; },
+  };
+  const supabaseClient = {
+    auth: {
+      async getSession() { return { data: { session: { user: { id: 'anon-user' } } } }; },
+      async signInAnonymously() { throw new Error('existing session should be reused'); },
+    },
+    channel() { return channel; },
+    removeChannel() {},
+  };
+  const client = createCommunityClient({ supabaseClient }, { storage: memoryStorage() });
+  assert.deepEqual(await client.connectPresence(), { mode: 'online', count: 2 });
+  client.destroy();
+});
