@@ -64,5 +64,25 @@ export function advanceBusiness(life) {
   }
   current.business = outcome;
   current.economy = { ...current.economy, cash, debt, assets };
+  if (outcome.status !== 'operating') {
+    const sold = outcome.status === 'sold';
+    const label = sold ? '창업 회사 매각' : '사업 폐업';
+    current.economy.transactions = [...(current.economy.transactions ?? []), {
+      id: `tx-${current.year}-business-${outcome.status}`,
+      age: current.age,
+      year: current.year,
+      type: sold ? 'business-sale' : 'business-close',
+      amount: sold ? outcome.equity : 0,
+    }].slice(-100);
+    current.history = [...(current.history ?? []), {
+      id: `business-${current.age}-${outcome.status}`,
+      age: current.age,
+      year: current.year,
+      type: 'event',
+      text: sold ? '성장한 회사를 매각해 큰 자산을 얻었습니다.' : '사업을 정리하고 남은 부채와 다음 생계를 살폈습니다.',
+      label,
+    }];
+    current.milestones = [...(current.milestones ?? []), { age: current.age, type: 'business', label }];
+  }
   return current;
 }

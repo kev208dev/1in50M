@@ -71,3 +71,12 @@ test('PC 생애 화면은 뷰포트에 고정되고 내부 패널만 스크롤�
 test('모바일 생애 화면은 문서 스크롤을 유지한다', () => {
   assert.match(css, /@media \(max-width: 959px\)[\s\S]*body\[data-view="life"\][\s\S]*overflow-y:\s*auto/);
 });
+
+test('생애 화면은 외모·성격 칩과 자산 상세, 투자 안내를 제공한다', () => {
+  for (const id of ['profile-chips', 'asset-details', 'business-status', 'result-influences']) {
+    assert.match(html, new RegExp(`id=["']${id}["']`));
+  }
+  assert.match(html, /실제 투자·도박 조언이 아닙니다/);
+  assert.match(css, /\.profile-chip/);
+  assert.match(css, /\.asset-details/);
+});

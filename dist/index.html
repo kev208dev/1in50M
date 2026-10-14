@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#111613">
   <meta name="description" content="대한민국 어딘가에서 다시 태어나는 가상 인생 시뮬레이션">
   <title>5000만 분의 1</title>
+  <link rel="icon" href="data:,">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap" rel="stylesheet">
@@ -138,6 +139,9 @@
               <div><dt>부채</dt><dd data-life="debt">0원</dd></div>
               <div class="metric-total"><dt>순자산</dt><dd data-life="net-worth">0원</dd></div>
             </dl>
+            <div id="asset-details" class="asset-details panel-body" aria-label="자산별 보유액"></div>
+            <div id="business-status" class="business-status panel-body"><span>사업</span><strong data-life="business">운영 중인 사업 없음</strong></div>
+            <p class="investment-notice">가상 수익률이며 실제 투자·도박 조언이 아닙니다.</p>
           </details>
 
           <details class="life-panel focus-panel" open>
@@ -187,9 +191,12 @@
           </details>
           <details class="life-panel" open>
             <summary><span>05</span> 배움과 일</summary>
+            <div id="profile-chips" class="profile-chips panel-body" aria-label="외모와 성격"></div>
             <dl class="profile-list panel-body">
               <div><dt>학교</dt><dd data-life="education">미취학</dd></div>
               <div><dt>직업</dt><dd data-life="career">아직 정하지 않음</dd></div>
+              <div><dt>성격</dt><dd data-life="personality">혼합 성향</dd></div>
+              <div class="appearance-row"><dt>외모</dt><dd data-life="appearance">외모 정보 없음</dd></div>
               <div data-identity-profile hidden><dt>정체성</dt><dd data-life="identity">발견 전</dd></div>
             </dl>
             <button id="career-select-button" class="panel-action" type="button" hidden>직업군과 직업 선택</button>
@@ -225,8 +232,9 @@
       <div class="result-review-grid">
         <section><p class="eyebrow">FINAL STATE</p><h2>상태 변화</h2><div id="result-stats" class="result-stat-chart" data-result="stats"></div></section>
         <section><p class="eyebrow">FAMILY & RELATIONSHIPS</p><h2>함께한 사람들</h2><p id="result-family" data-result="family">관계 기록을 정리하고 있습니다.</p></section>
+        <section class="result-influence-panel"><p class="eyebrow">STARTING CONDITIONS</p><h2>출생 조건의 영향</h2><ul id="result-influences" class="result-influences" data-result="influences"></ul></section>
       </div>
-      <p class="simulation-notice result-notice">이 결과는 미래 예측이나 평가가 아닌 <strong>체험용 가상 데이터</strong>입니다.</p>
+      <p class="simulation-notice result-notice">이 결과는 미래 예측이나 평가가 아닌 <strong>체험용 가상 데이터</strong>입니다. 금융 결과 역시 실제 투자·도박 조언이 아닙니다.</p>
       <div class="result-actions">
         <button id="same-life-button" class="secondary-button" type="button">같은 조건으로 다시</button>
         <button id="new-life-button" class="primary-button" type="button">완전히 다른 삶</button>

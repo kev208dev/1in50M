@@ -38,3 +38,18 @@ test('사업 연간 진행은 같은 상태에서 결정적이고 정확히 한 
   assert.deepEqual(first, second);
   assert.equal(first.business.years, 4);
 });
+
+test('사업의 매각이나 폐업은 경제 거래와 생애 전환점으로 남는다', () => {
+  let selected = null;
+  for (let index = 0; index < 50000; index += 1) {
+    const life = makeLifeAtAge(40, { seed: `business-outcome-${index}`, business });
+    const result = advanceBusiness(life);
+    if (result.business.status !== 'operating') {
+      selected = result;
+      break;
+    }
+  }
+  assert.ok(selected);
+  assert.ok(selected.history.some((entry) => /사업|창업/.test(entry.label ?? '')));
+  assert.ok(selected.economy.transactions.some((entry) => entry.type.startsWith('business-')));
+});

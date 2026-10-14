@@ -8,6 +8,28 @@ import {
   renderTextFields,
 } from '../dist/ui/render.js';
 import { makeLifeAtAge } from './support/life-fixtures.mjs';
+import { createLifeSummary } from '../dist/engine/summary.js';
+
+const v4Life = makeLifeAtAge(38, {
+  economy: {
+    assets: {
+      deposits: 10000000, bonds: 5000000, stocks: 18000000,
+      crypto: 3000000, businessEquity: 0,
+    },
+  },
+  business: {
+    status: 'operating', sector: 'online', capital: 20000000,
+    debt: 3000000, equity: 24000000, years: 2,
+  },
+});
+
+const completedV4Life = makeLifeAtAge(90, {
+  status: 'review',
+  history: [{
+    id: 'sale', age: 44, year: 2070, type: 'event',
+    text: '창업한 회사를 매각했습니다.', label: '창업 회사 매각',
+  }],
+});
 
 test('나이와 원화 수치를 사람이 읽을 수 있게 표시한다', () => {
   assert.equal(formatAge(24), '24세');
@@ -55,4 +77,18 @@ test('발견한 가상 정체성만 생애 화면 모델에 표시한다', () =>
   const undiscovered = createLifeViewModel(makeLifeAtAge(15));
   assert.equal(discovered.identity, '양성애자');
   assert.equal(undiscovered.identity, null);
+});
+
+test('삶 화면은 외모 성격 자산 사업을 표시한다', () => {
+  const view = createLifeViewModel(v4Life);
+  assert.match(view.appearance, /얼굴|체형|스타일/);
+  assert.ok(view.personality.length > 0);
+  assert.ok(view.assets.some((asset) => asset.label === '주식'));
+  assert.match(view.business, /운영|온라인|사업/);
+});
+
+test('요약은 출생 조건과 주요 경제 전환점을 설명한다', () => {
+  const summary = createLifeSummary(completedV4Life);
+  assert.ok(summary.influences.length >= 3);
+  assert.ok(summary.turningPoints.some((item) => /창업|주식|복권|가상자산/.test(item.label)));
 });

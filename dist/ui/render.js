@@ -38,6 +38,20 @@ export function getVisibleLifeLog(history, limit = 8) {
 export function createLifeViewModel(life) {
   const current = normalizeLife(life);
   const milestones = new Map(current.milestones.map((item) => [item.age, item]));
+  const appearance = current.profile?.appearance?.description ?? '외모 정보 없음';
+  const personality = current.profile?.personality?.label ?? '혼합 성향';
+  const assets = [
+    ['예금', current.economy.assets.deposits],
+    ['채권', current.economy.assets.bonds],
+    ['주식', current.economy.assets.stocks],
+    ['가상자산', current.economy.assets.crypto],
+    ['사업 지분', current.economy.assets.businessEquity],
+  ].map(([label, value]) => ({ label, value: formatWon(value), rawValue: value }));
+  const businessLabels = { food: '식음료', online: '온라인', manufacturing: '제조업', other: '기타' };
+  const businessStatus = { operating: '운영 중', closed: '폐업', sold: '매각 완료' };
+  const business = current.business
+    ? `${businessLabels[current.business.sector] ?? current.business.sector} 사업 · ${businessStatus[current.business.status] ?? current.business.status}`
+    : '운영 중인 사업 없음';
   return {
     age: formatAge(current.age),
     ageNumber: current.age,
@@ -54,6 +68,14 @@ export function createLifeViewModel(life) {
     career: current.career.title ?? (current.career.status === 'retired' ? '은퇴' : '아직 정하지 않음'),
     housing: HOUSING_BY_ID[current.housing.type]?.label ?? '가족과 동거',
     focus: FOCUS_BY_ID[current.focusId]?.label ?? '휴식과 균형',
+    appearance,
+    personality,
+    profileChips: [
+      { label: '외모', value: current.profile?.appearance?.attractivenessLabel ?? '외모 정보 없음' },
+      { label: '성격', value: personality },
+    ],
+    assets,
+    business,
     identity: current.identity.discovered ? current.identity.label : null,
     family: current.relationships.family,
     friends: current.relationships.friends,
@@ -96,9 +118,30 @@ export function renderLife(root, life) {
   renderTextFields(root, '[data-life="career"]', model.career);
   renderTextFields(root, '[data-life="housing"]', model.housing);
   renderTextFields(root, '[data-life="focus"]', model.focus);
+  renderTextFields(root, '[data-life="appearance"]', model.appearance);
+  renderTextFields(root, '[data-life="personality"]', model.personality);
+  renderTextFields(root, '[data-life="business"]', model.business);
   renderTextFields(root, '[data-life="identity"]', model.identity);
   const identityProfile = root.querySelector('[data-identity-profile]');
   if (identityProfile) identityProfile.hidden = !model.identity;
+
+  const chips = root.querySelector('#profile-chips');
+  if (chips) {
+    chips.replaceChildren(...model.profileChips.map((chip) => {
+      const item = makeNode(root, 'span', 'profile-chip');
+      item.append(makeNode(root, 'small', '', chip.label), makeNode(root, 'strong', '', chip.value));
+      return item;
+    }));
+  }
+
+  const assetDetails = root.querySelector('#asset-details');
+  if (assetDetails) {
+    assetDetails.replaceChildren(...model.assets.map((asset) => {
+      const row = makeNode(root, 'div', 'asset-row');
+      row.append(makeNode(root, 'span', '', asset.label), makeNode(root, 'strong', '', asset.value));
+      return row;
+    }));
+  }
 
   const stats = root.querySelector('[data-life-list="stats"]');
   if (stats) {
@@ -245,6 +288,17 @@ export function renderResult(root, summary) {
     points.replaceChildren(...summary.turningPoints.map((point) => {
       const item = makeNode(root, 'li', 'result-point');
       item.append(makeNode(root, 'span', '', formatAge(point.age)), makeNode(root, 'strong', '', point.label));
+      return item;
+    }));
+  }
+  const influences = root.querySelector('[data-result="influences"]');
+  if (influences) {
+    influences.replaceChildren(...summary.influences.map((influence) => {
+      const item = makeNode(root, 'li', `influence-item influence-${influence.direction === '유리' ? 'positive' : 'negative'}`);
+      item.append(
+        makeNode(root, 'span', '', influence.direction),
+        makeNode(root, 'strong', '', influence.label),
+      );
       return item;
     }));
   }

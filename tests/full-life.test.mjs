@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { simulateAutomatically } from '../dist/engine/life.js';
 import { createBirthProfile } from '../dist/simulator.js';
+import { createLifeSummary } from '../dist/engine/summary.js';
+import { createLifeViewModel } from '../dist/ui/render.js';
 
 test('100개 seed가 선택지 고갈이나 NaN 없이 완주한다', () => {
   for (let seed = 1; seed <= 100; seed += 1) {
@@ -16,4 +18,14 @@ test('100개 seed가 선택지 고갈이나 NaN 없이 완주한다', () => {
     assert.equal(result.pendingDecisionId, null);
     assert.equal(result.pendingIdentityDiscovery, false);
   }
+});
+
+test('완주한 삶의 확장 상태는 화면과 인과 요약으로 직렬화된다', () => {
+  const life = simulateAutomatically(createBirthProfile(() => 0.42, 2026), 'expanded-summary');
+  const view = createLifeViewModel(life);
+  const summary = createLifeSummary(life);
+  assert.ok(view.assets.every((asset) => typeof asset.value === 'string'));
+  assert.equal(typeof view.appearance, 'string');
+  assert.ok(Array.isArray(summary.influences));
+  assert.doesNotMatch(JSON.stringify({ view, summary }), /\[object Object\]/);
 });

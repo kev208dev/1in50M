@@ -2,10 +2,30 @@ import { normalizeLife } from './life.js';
 import { EDUCATION_BY_ID } from '../data/education.js';
 
 function turningPoints(life) {
+  const financePoints = (life.economy.transactions ?? [])
+    .filter((item) => item.type !== 'market')
+    .map((item) => {
+      const labels = {
+        lottery: item.tier === 'jackpot' ? '복권 대박' : '복권 구매',
+        gamble: item.tier === 'loss' ? '도박 손실과 부채' : '도박 결과',
+        startup: '창업 시작',
+        property: '부동산 매입',
+        'business-sale': '창업 회사 매각',
+        'business-close': '사업 폐업',
+      };
+      const assetLabels = { deposits: '예금', bonds: '채권', stocks: '주식', crypto: '가상자산' };
+      const label = labels[item.type]
+        ?? (item.type === 'buy' ? `${assetLabels[item.asset] ?? '금융 자산'} 투자` : null);
+      return label ? { age: item.age, label, type: 'finance' } : null;
+    })
+    .filter(Boolean);
   const candidates = [
     ...life.milestones.map((item) => ({ age: item.age, label: item.label, type: item.type })),
     ...life.history.filter((item) => ['decision', 'career', 'housing', 'event'].includes(item.type)).map((item) => ({ age: item.age, label: item.label ?? item.text, type: item.type })),
+    ...financePoints,
   ];
+  if (life.business?.status === 'sold') candidates.push({ age: life.age, label: '창업 회사 매각', type: 'finance' });
+  if (life.business?.status === 'closed') candidates.push({ age: life.age, label: '사업 폐업', type: 'finance' });
   const unique = [];
   const seen = new Set();
   for (const item of candidates) {
@@ -27,9 +47,41 @@ function turningPoints(life) {
   }
   const chronological = unique.sort((a, b) => a.age - b.age);
   if (chronological.length <= 5) return chronological;
-  return Array.from({ length: 5 }, (_, index) => (
+  const selected = Array.from({ length: 5 }, (_, index) => (
     chronological[Math.round((index * (chronological.length - 1)) / 4)]
   ));
+  const economic = chronological.find((item) => (
+    item.type === 'finance' || /창업|사업|주식|채권|복권|가상자산|도박/.test(item.label)
+  ));
+  if (economic && !selected.includes(economic)) selected[2] = economic;
+  return selected.sort((a, b) => a.age - b.age);
+}
+
+const INFLUENCE_LABELS = {
+  'education-access': '가정과 지역의 교육 접근성',
+  'financial-buffer': '출생 가정의 경제적 안전망',
+  'housing-pressure': '거주 지역의 주거 부담',
+  'career-network': '보호자 직업이 만든 경력 정보망',
+  'first-impression': '외모지상주의가 만든 첫인상 효과',
+  'romance-first-impression': '외모가 관계의 첫인상에 준 영향',
+  'service-impression': '외모가 서비스 상황의 첫인상에 준 영향',
+};
+
+function causalInfluences(life) {
+  const ranked = Object.entries(life.profileInfluence?.modifiers ?? {})
+    .filter(([id, value]) => INFLUENCE_LABELS[id] && Number.isFinite(Number(value)) && Number(value) !== 0)
+    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
+  const visible = ranked.filter(([, value]) => Math.abs(value) >= 5);
+  for (const item of ranked) {
+    if (visible.length >= 3) break;
+    if (!visible.includes(item)) visible.push(item);
+  }
+  return visible.map(([id, value]) => ({
+    id,
+    label: INFLUENCE_LABELS[id],
+    direction: value > 0 ? '유리' : '불리',
+    value,
+  }));
 }
 
 function getLongestCareer(life) {
@@ -65,6 +117,10 @@ export function createLifeSummary(life) {
     + current.relationships.friends.length
     + current.relationships.children.length
     + (current.relationships.partner ? 1 : 0);
+  const influences = causalInfluences(current);
+  const influenceSentence = influences.length
+    ? `${influences.slice(0, 2).map((item) => `${item.label}이 ${item.direction}하게`).join(', ')} 작용했습니다.`
+    : '출생 조건의 영향은 한 방향으로 단정할 수 없었습니다.';
 
   return {
     id: `${current.seed}-${current.year}`,
@@ -83,8 +139,9 @@ export function createLifeSummary(life) {
     netWorth: current.economy.netWorth,
     finalStats: { ...current.stats },
     statChanges,
+    influences,
     turningPoints: turningPoints(current),
-    narrative: `${region}에서 시작한 삶은 ${finalRegion}에서 ${current.age}세의 시간을 맞았습니다. ${school} 경로를 지나 ${longestCareer}의 시간을 보냈고, 숫자로 다 담을 수 없는 선택과 관계가 한 사람의 생애를 만들었습니다.`,
+    narrative: `${region}에서 시작한 삶은 ${finalRegion}에서 ${current.age}세의 시간을 맞았습니다. ${influenceSentence} ${school} 경로를 지나 ${longestCareer}의 시간을 보냈고, 숫자로 다 담을 수 없는 선택과 관계가 한 사람의 생애를 만들었습니다.`,
     completedAt: new Date().toISOString(),
   };
 }
