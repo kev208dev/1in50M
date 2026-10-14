@@ -35,4 +35,5 @@ test('모바일에서도 출생 조건 상세를 키보드로 펼쳐 볼 수 있
   assert.match(source, /makeNode\(documentRef, ['"]summary['"]/);
   assert.doesNotMatch(css, /@media \(max-width: 720px\)[\s\S]*?\.slot-detail \{ display: none; \}/);
   assert.match(css, /@media \(max-width: 720px\)[\s\S]*?\.slot-detail-disclosure/);
+  assert.match(css, /\.slot-reel:has\(\.slot-detail-disclosure\[open\]\)[\s\S]*?overflow: visible/);
 });
