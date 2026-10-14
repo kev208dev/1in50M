@@ -15,7 +15,7 @@ import { createProfileInfluence } from './profile-influence.js';
 import { advanceAppearance } from './appearance.js';
 import { advancePortfolio } from './finance.js';
 import { advanceBusiness } from './business.js';
-import { normalizeRiskFactors } from './wellbeing.js';
+import { normalizeRiskFactors, normalizeWellbeingHabits } from './wellbeing.js';
 
 const STAT_KEYS = ['health', 'happiness', 'knowledge', 'relationships'];
 
@@ -105,6 +105,7 @@ export function createLife(profile, seed = profile?.id) {
     reflections: {},
     endedReason: null,
     riskFactors: { academicStress: 0, sleepDebt: 0, caffeineLoad: 0, support: 45 },
+    wellbeingHabits: { privateEducation: false, gradePressure: false, nighttimeStudy: null },
     mentalHealthState: 'stable',
     identity: createIdentityArc(initialSeed),
     pendingIdentityDiscovery: false,
@@ -245,6 +246,7 @@ export function normalizeLife(life) {
     caffeineLoad: 0,
     support: 45,
   });
+  copy.wellbeingHabits = normalizeWellbeingHabits(copy.wellbeingHabits, copy.decisions);
   copy.mentalHealthState = ['stable', 'strained', 'crisis'].includes(copy.mentalHealthState)
     ? copy.mentalHealthState
     : 'stable';

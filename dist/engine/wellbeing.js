@@ -1,9 +1,31 @@
 const RISK_KEYS = ['academicStress', 'sleepDebt', 'caffeineLoad', 'support'];
+const STUDY_HABIT_KEYS = ['privateEducation', 'gradePressure', 'nighttimeStudy'];
 
 const clamp = (value, min = 0, max = 100) => Math.min(max, Math.max(min, Math.round(Number(value) || 0)));
 
 export function normalizeRiskFactors(input = {}) {
   return Object.fromEntries(RISK_KEYS.map((key) => [key, clamp(input[key])]));
+}
+
+export function normalizeWellbeingHabits(input = {}, decisions = {}) {
+  const inferred = {
+    privateEducation: decisions['private-education'] === 'core-subjects',
+    gradePressure: decisions['middle-school-rhythm'] === 'grades',
+    nighttimeStudy: ['study-room', 'all-night-energy'].includes(decisions['high-school-evening'])
+      ? decisions['high-school-evening']
+      : null,
+  };
+  if (['trusted-help', 'reduce-schedule'].includes(decisions['mental-health-support'])) {
+    Object.assign(inferred, { privateEducation: false, gradePressure: false, nighttimeStudy: null });
+  }
+  const habits = input && typeof input === 'object' ? input : {};
+  return Object.fromEntries(STUDY_HABIT_KEYS.map((key) => {
+    if (!Object.prototype.hasOwnProperty.call(habits, key)) return [key, inferred[key]];
+    if (key === 'nighttimeStudy') {
+      return [key, ['study-room', 'all-night-energy'].includes(habits[key]) ? habits[key] : null];
+    }
+    return [key, Boolean(habits[key])];
+  }));
 }
 
 export function applyRiskEffects(life, effects = {}) {
@@ -34,22 +56,22 @@ function deriveMentalHealthState(life, burden) {
 
 function persistentExposure(life) {
   const exposure = { academicStress: 0, sleepDebt: 0, caffeineLoad: 0, support: 0 };
-  const decisions = life?.decisions ?? {};
-  if (decisions['private-education'] === 'core-subjects' && life.age <= 15) {
+  const habits = normalizeWellbeingHabits(life?.wellbeingHabits, life?.decisions);
+  if (habits.privateEducation && life.age <= 15) {
     Object.assign(exposure, { academicStress: 6, sleepDebt: 3, caffeineLoad: 0, support: -1 });
   }
-  if (decisions['middle-school-rhythm'] === 'grades' && life.age <= 17) {
+  if (habits.gradePressure && life.age <= 17) {
     exposure.academicStress += 7;
     exposure.sleepDebt += 5;
     exposure.support -= 1;
   }
-  if (decisions['high-school-evening'] === 'study-room' && life.age <= 21) {
+  if (habits.nighttimeStudy === 'study-room' && life.age <= 21) {
     exposure.academicStress += 9;
     exposure.sleepDebt += 8;
     exposure.caffeineLoad += 4;
     exposure.support -= 1;
   }
-  if (decisions['high-school-evening'] === 'all-night-energy' && life.age <= 23) {
+  if (habits.nighttimeStudy === 'all-night-energy' && life.age <= 23) {
     exposure.academicStress += 13;
     exposure.sleepDebt += 15;
     exposure.caffeineLoad += 18;

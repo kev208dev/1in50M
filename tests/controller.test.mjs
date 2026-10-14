@@ -309,6 +309,7 @@ test('누적된 밤샘 습관은 실제 컨트롤러에서 도움 장면을 연�
       seed: 'wellbeing-controller-reachability',
       stats: { health: 45, happiness: 30, relationships: 30 },
       riskFactors: { academicStress: 68, sleepDebt: 68, caffeineLoad: 68, support: 18 },
+      wellbeingHabits: { privateEducation: false, gradePressure: false, nighttimeStudy: 'all-night-energy' },
       mentalHealthState: 'strained',
       decisions,
       reflections: { 'reflection-5': 'play', 'reflection-15': 'people' },

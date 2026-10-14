@@ -193,6 +193,7 @@ export function applyDecision(life, decisionId, choiceId) {
     career,
     housing,
     relationships,
+    wellbeingHabits: { ...current.wellbeingHabits, ...(selected.habitEffects ?? {}) },
     focusId: selected.focusId ?? current.focusId,
     pendingDecisionId: null,
     decisions: { ...current.decisions, [decisionId]: choiceId },

@@ -63,3 +63,24 @@ test('밤샘 습관이 여러 해 이어지면 위기와 추가 건강 위험에
   assert.ok(causeSpecificRisks(life).caffeineCardiac > 0);
   assert.ok(causeSpecificRisks(life).selfHarm > 0);
 });
+
+test('회복을 선택하면 과거의 밤샘 습관을 끊고 다음 해에도 계속 회복한다', () => {
+  let life = makeLifeAtAge(20, {
+    stats: { health: 42, happiness: 24, relationships: 30 },
+    riskFactors: { academicStress: 90, sleepDebt: 90, caffeineLoad: 90, support: 10 },
+    mentalHealthState: 'crisis',
+    decisions: { 'high-school-evening': 'all-night-energy' },
+    wellbeingHabits: { privateEducation: false, gradePressure: false, nighttimeStudy: 'all-night-energy' },
+  });
+  life = applyDecision(life, 'mental-health-support', 'reduce-schedule');
+  const afterChoice = structuredClone(life.riskFactors);
+  life = advanceWellbeing({ ...life, age: 21, year: life.year + 1 });
+  assert.deepEqual(life.wellbeingHabits, {
+    privateEducation: false,
+    gradePressure: false,
+    nighttimeStudy: null,
+  });
+  assert.ok(life.riskFactors.academicStress < afterChoice.academicStress);
+  assert.ok(life.riskFactors.sleepDebt < afterChoice.sleepDebt);
+  assert.ok(life.riskFactors.caffeineLoad < afterChoice.caffeineLoad);
+});
