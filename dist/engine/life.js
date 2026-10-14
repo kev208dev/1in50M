@@ -5,6 +5,11 @@ import { getDecision, chooseAutomatically } from './decisions.js';
 import { getCareerOffers, acceptCareer, advanceCareer } from './career.js';
 import { calculateAnnualEconomy } from './economy.js';
 import { selectAnnualEvents, applyEvent } from './events.js';
+import {
+  createIdentityArc,
+  revealIdentityIfDue,
+  acknowledgeIdentityDiscovery,
+} from './identity.js';
 import { updateRelationships } from './relationships.js';
 
 const STAT_KEYS = ['health', 'happiness', 'knowledge', 'relationships'];
@@ -37,7 +42,7 @@ export function createLife(profile, seed = profile?.id) {
   }));
 
   return normalizeLife({
-    version: 2,
+    version: 3,
     seed: initialSeed,
     rngState: hashSeed(initialSeed),
     profile: structuredClone(profile),
@@ -77,6 +82,8 @@ export function createLife(profile, seed = profile?.id) {
     },
     focusId: 'balance',
     pendingDecisionId: null,
+    identity: createIdentityArc(initialSeed),
+    pendingIdentityDiscovery: false,
     decisions: {},
     history: [{
       id: 'birth',
@@ -94,7 +101,7 @@ export function createLife(profile, seed = profile?.id) {
 
 export function normalizeLife(life) {
   const copy = structuredClone(life ?? {});
-  copy.version = 2;
+  copy.version = 3;
   copy.seed = String(copy.seed ?? copy.profile?.id ?? 'one-in-50m');
   copy.rngState = finite(copy.rngState, hashSeed(copy.seed)) >>> 0;
   copy.age = clamp(copy.age, 0, 90);
@@ -144,6 +151,28 @@ export function normalizeLife(life) {
   };
   copy.focusId = FOCUS_BY_ID[copy.focusId] ? copy.focusId : 'balance';
   copy.pendingDecisionId = DECISION_BY_ID[copy.pendingDecisionId] ? copy.pendingDecisionId : null;
+  const identity = copy.identity && typeof copy.identity === 'object' ? copy.identity : {};
+  copy.identity = {
+    assigned: typeof identity.assigned === 'string' ? identity.assigned : null,
+    label: typeof identity.label === 'string' ? identity.label : null,
+    discoveryAge: Number.isFinite(Number(identity.discoveryAge))
+      ? clamp(identity.discoveryAge, 16, 24)
+      : null,
+    discovered: Boolean(identity.discovered),
+    acknowledged: Boolean(identity.acknowledged),
+  };
+  if (!copy.identity.assigned) {
+    copy.identity = {
+      assigned: null,
+      label: null,
+      discoveryAge: null,
+      discovered: false,
+      acknowledged: false,
+    };
+  }
+  copy.pendingIdentityDiscovery = Boolean(copy.pendingIdentityDiscovery)
+    && copy.identity.discovered
+    && !copy.identity.acknowledged;
   copy.decisions = copy.decisions && typeof copy.decisions === 'object' ? { ...copy.decisions } : {};
   copy.history = Array.isArray(copy.history)
     ? copy.history.filter((item) => item && typeof item === 'object' && typeof item.text === 'string')
@@ -189,7 +218,7 @@ export function advanceYear(life, tickId = `age-${Number(life?.age ?? 0) + 1}`) 
   const lifeEnded = nextAge >= 45 && stats.health <= 0;
   const reviewing = nextAge >= 90 || lifeEnded;
 
-  return normalizeLife({
+  const advanced = normalizeLife({
     ...current,
     age: nextAge,
     year: current.year + 1,
@@ -209,6 +238,7 @@ export function advanceYear(life, tickId = `age-${Number(life?.age ?? 0) + 1}`) 
     statHistory: [...current.statHistory, { age: nextAge, ...stats }],
     processedTickIds: [...current.processedTickIds, normalizedTickId].slice(-8),
   });
+  return normalizeLife(revealIdentityIfDue(advanced));
 }
 
 export function isLifeComplete(life) {
@@ -229,6 +259,9 @@ export function simulateAutomatically(profile, seed = profile?.id) {
     }
 
     life = advanceYear(life, `automatic-${iterations}`);
+    if (life.pendingIdentityDiscovery) {
+      life = normalizeLife(acknowledgeIdentityDiscovery(life));
+    }
     life = advanceCareer(life);
     life = calculateAnnualEconomy(life);
     for (const event of selectAnnualEvents(life)) life = applyEvent(life, event.id);
