@@ -1,5 +1,6 @@
-import { createBirthProfile, validateProfile } from './simulator.js';
+import { validateProfile } from './simulator.js';
 import { CAREER_GROUPS } from './data/careers.js';
+import { createBirthSlotResult, profileFromSlotResult } from './engine/birth-slot.js';
 import { createLife } from './engine/life.js';
 import { getDecision, getChoices } from './engine/decisions.js';
 import { createLifeSummary } from './engine/summary.js';
@@ -21,6 +22,7 @@ import {
   renderResult,
   formatWon,
 } from './ui/render.js';
+import { renderBirthSlot, slotDuration } from './ui/birth-slot.js';
 
 const viewNames = ['intro', 'profile', 'future', 'life', 'result', 'past-lives'];
 const views = Object.fromEntries(viewNames.map((name) => [name, document.querySelector(`#${name}-view`)]));
@@ -32,9 +34,8 @@ const main = document.querySelector('main');
 const controls = {
   birth: document.querySelector('#birth-button'),
   continue: document.querySelector('#continue-button'),
-  reroll: document.querySelector('#reroll-button'),
-  previous: document.querySelector('#previous-button'),
-  accept: document.querySelector('#accept-button'),
+  reroll: document.querySelector('#slot-spin-button'),
+  accept: document.querySelector('#slot-accept-button'),
   back: document.querySelector('#back-button'),
   play: document.querySelector('#play-button'),
   skip: document.querySelector('#skip-button'),
@@ -46,10 +47,11 @@ const decisionDialog = document.querySelector('#decision-dialog');
 const identityDialog = document.querySelector('#identity-dialog');
 const careerDialog = document.querySelector('#career-dialog');
 let candidateProfile = null;
-let previousCandidate = null;
+let candidateResult = null;
 let controller = null;
 let isDrawing = false;
 let lastFocused = null;
+let spinCounter = 0;
 
 function setText(field, value) {
   document.querySelectorAll(`[data-field="${field}"]`).forEach((node) => {
@@ -57,39 +59,10 @@ function setText(field, value) {
   });
 }
 
-function renderGuardians(guardians) {
-  const container = document.querySelector('[data-field="guardians"]');
-  container.replaceChildren(...guardians.map((guardian) => {
-    const item = document.createElement('span');
-    item.textContent = `${guardian.label} · ${guardian.occupation}`;
-    return item;
-  }));
-}
-
-function renderProfile(profile) {
+function renderProfileContext(profile) {
   if (!validateProfile(profile)) return;
-  setText('id-short', profile.id.split('-').at(-1));
-  setText('id', profile.id);
-  setText('birth-year', profile.birthYear);
-  setText('region-code', profile.region.code);
-  setText('region', profile.region.name);
-  setText('district', profile.district);
-  setText('summary', profile.summary);
-  setText('family-type', profile.familyType);
-  setText('finance', profile.finance);
-  setText('housing', profile.housing);
-  setText('siblings', profile.siblings);
-  setText('location-chip', `${profile.region.short} · ${profile.district}`);
   setText('future-location', `${profile.region.name} ${profile.district}`);
   setText('future-birth-summary', `${profile.birthYear}년 ${profile.region.short}, ${profile.familyType}`);
-  renderGuardians(profile.guardians);
-  const source = { health: 'health', stability: 'stability', education: 'education', relationships: 'relationships' };
-  for (const [field, key] of Object.entries(source)) {
-    setText(`stat-${field}`, String(profile.stats[key]).padStart(2, '0'));
-    const meter = document.querySelector(`[data-meter="${field}"]`);
-    meter.style.setProperty('--value', `${profile.stats[key]}%`);
-    meter.parentElement.setAttribute('aria-label', `${profile.stats[key]}점`);
-  }
 }
 
 function showView(name) {
@@ -109,34 +82,28 @@ function setDrawDisabled(disabled) {
   controls.birth.disabled = disabled;
   controls.reroll.disabled = disabled;
   controls.accept.disabled = disabled;
-  controls.previous.disabled = disabled || !previousCandidate;
   document.body.classList.toggle('is-drawing', disabled);
 }
 
-async function drawLife() {
-  if (isDrawing) return;
-  previousCandidate = candidateProfile;
-  setDrawDisabled(true);
-  showView('profile');
-  views.profile.classList.add('is-shuffling');
-  const duration = reduceMotion.matches ? 0 : 750;
-  const startedAt = performance.now();
-  while (performance.now() - startedAt < duration) {
-    renderProfile(createBirthProfile());
-    await wait(75);
-  }
-  candidateProfile = createBirthProfile();
-  renderProfile(candidateProfile);
-  views.profile.classList.remove('is-shuffling');
-  setDrawDisabled(false);
-  liveRegion.textContent = `${candidateProfile.region.name} ${candidateProfile.district}에서 새로운 출생 조건이 정해졌습니다.`;
+function nextBirthSeed() {
+  spinCounter += 1;
+  const randomPart = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+  return `${randomPart}-${spinCounter}`;
 }
 
-function restorePreviousCandidate() {
-  if (!previousCandidate || isDrawing) return;
-  [candidateProfile, previousCandidate] = [previousCandidate, candidateProfile];
-  renderProfile(candidateProfile);
-  controls.previous.disabled = false;
+async function spinBirthSlot() {
+  if (isDrawing) return;
+  setDrawDisabled(true);
+  showView('profile');
+  candidateResult = createBirthSlotResult(nextBirthSeed(), 2026);
+  candidateProfile = profileFromSlotResult(candidateResult);
+  renderBirthSlot(document.querySelector('#birth-slot'), candidateResult, { spinning: !reduceMotion.matches });
+  renderProfileContext(candidateProfile);
+  await wait(slotDuration(reduceMotion.matches));
+  renderBirthSlot(document.querySelector('#birth-slot'), candidateResult);
+  setDrawDisabled(false);
+  controls.accept.focus({ preventScroll: true });
+  liveRegion.textContent = `${candidateProfile.name.full}, ${candidateProfile.region.name} ${candidateProfile.district} 출생 조건이 정해졌습니다.`;
 }
 
 function updatePlayback() {
@@ -308,9 +275,8 @@ function showPastLives() {
   showView('past-lives');
 }
 
-controls.birth.addEventListener('click', drawLife);
-controls.reroll.addEventListener('click', drawLife);
-controls.previous.addEventListener('click', restorePreviousCandidate);
+controls.birth.addEventListener('click', spinBirthSlot);
+controls.reroll.addEventListener('click', spinBirthSlot);
 controls.accept.addEventListener('click', beginCandidateLife);
 controls.continue.addEventListener('click', () => {
   const saved = loadCurrentLife(storage);
@@ -389,7 +355,7 @@ document.querySelector('#same-life-button').addEventListener('click', () => {
 });
 document.querySelector('#new-life-button').addEventListener('click', () => {
   candidateProfile = null;
-  previousCandidate = null;
+  candidateResult = null;
   showView('intro');
 });
 document.querySelector('#past-lives-button').addEventListener('click', showPastLives);
@@ -433,5 +399,4 @@ window.addEventListener('beforeunload', () => {
 
 const savedLife = loadCurrentLife(storage);
 controls.continue.hidden = !savedLife;
-controls.previous.disabled = true;
 showView('intro');

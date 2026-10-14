@@ -70,103 +70,32 @@
       </div>
     </section>
 
-    <section id="profile-view" class="view profile-view" aria-labelledby="profile-title" hidden>
-      <div class="profile-kicker">
-        <span class="profile-index">BIRTH RECORD / <span data-field="id-short">000000</span></span>
-        <span class="profile-ready"><i aria-hidden="true"></i> 출생 신고 완료</span>
-      </div>
-
-      <div class="profile-layout">
-        <article class="birth-certificate">
-          <div class="certificate-noise" aria-hidden="true"></div>
-          <div class="certificate-topline">
-            <span data-field="birth-year">2026</span>
-            <span data-field="region-code">KOR</span>
-          </div>
-          <div class="birth-place">
-            <p data-field="region">대한민국</p>
-            <h1 id="profile-title" data-field="district">어딘가</h1>
-          </div>
-          <p class="birth-summary" data-field="summary">새로운 삶이 시작됩니다.</p>
-          <div class="birth-id">
-            <span>IDENTIFICATION</span>
-            <strong data-field="id">KR-2026-KOR-000000</strong>
-          </div>
-          <div class="certificate-stamp" aria-hidden="true">
-            <span>대한민국</span>
-            <strong>출생</strong>
-            <small>REPUBLIC OF KOREA</small>
-          </div>
-        </article>
-
-        <div class="profile-details">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">YOUR STARTING CONDITIONS</p>
-              <h2>당신에게 주어진 조건</h2>
-            </div>
-            <span class="condition-count">05 CONDITIONS</span>
-          </div>
-
-          <div class="condition-grid">
-            <article class="condition-card condition-card-wide">
-              <span class="card-number">01</span>
-              <div>
-                <p class="card-label">가족 구성</p>
-                <strong data-field="family-type">양부모 가정</strong>
-                <div class="guardian-list" data-field="guardians"></div>
-              </div>
-            </article>
-            <article class="condition-card">
-              <span class="card-number">02</span>
-              <div><p class="card-label">가정 형편</p><strong data-field="finance">보통</strong></div>
-            </article>
-            <article class="condition-card">
-              <span class="card-number">03</span>
-              <div><p class="card-label">주거 형태</p><strong data-field="housing">전세 주택</strong></div>
-            </article>
-            <article class="condition-card condition-card-wide condition-card-last">
-              <span class="card-number">04</span>
-              <div><p class="card-label">형제자매</p><strong data-field="siblings">형제자매 1명</strong></div>
-              <span class="location-chip"><i aria-hidden="true"></i><span data-field="location-chip">서울 · 마포구</span></span>
-            </article>
-          </div>
-
-          <section class="stats-panel" aria-labelledby="stats-title">
-            <div class="stats-intro">
-              <p class="eyebrow">INITIAL TENDENCIES</p>
-              <h2 id="stats-title">삶의 시작점</h2>
-              <p>이 수치는 시작의 경향일 뿐,<br>당신의 미래를 결정하지 않습니다.</p>
-            </div>
-            <div class="stats-list">
-              <div class="stat-row">
-                <div><span>건강</span><strong data-field="stat-health">00</strong></div>
-                <div class="meter"><span class="meter-fill" data-meter="health"></span></div>
-              </div>
-              <div class="stat-row">
-                <div><span>안정</span><strong data-field="stat-stability">00</strong></div>
-                <div class="meter"><span class="meter-fill" data-meter="stability"></span></div>
-              </div>
-              <div class="stat-row">
-                <div><span>교육 기회</span><strong data-field="stat-education">00</strong></div>
-                <div class="meter"><span class="meter-fill" data-meter="education"></span></div>
-              </div>
-              <div class="stat-row">
-                <div><span>관계</span><strong data-field="stat-relationships">00</strong></div>
-                <div class="meter"><span class="meter-fill" data-meter="relationships"></span></div>
-              </div>
-            </div>
-          </section>
+    <section id="profile-view" class="view slot-view" aria-labelledby="slot-title" hidden>
+      <header class="slot-heading">
+        <div>
+          <p class="eyebrow"><span>ONE LIFE</span> / RANDOM BIRTH</p>
+          <h1 id="slot-title">당신의 시작 조건</h1>
         </div>
+        <div class="slot-status" aria-hidden="true">
+          <i></i><span>7 REELS</span><b>대한민국</b>
+        </div>
+      </header>
+
+      <div class="slot-machine-shell">
+        <div class="slot-machine-topline" aria-hidden="true">
+          <span>BIRTH CONFIGURATION / 50,000,000</span>
+          <span>무작위 삶 생성기</span>
+        </div>
+        <div id="birth-slot" class="birth-slot" aria-live="polite"></div>
       </div>
 
-      <p class="disclaimer profile-disclaimer">현재 결과는 실제 인구통계가 아닌 체험용 가상 시뮬레이션입니다.</p>
-
-      <div class="action-bar" aria-label="출생 프로필 동작">
-        <button id="previous-button" class="text-button" type="button" disabled>← 이전 인생</button>
-        <button id="reroll-button" class="secondary-button" type="button"><span class="reroll-icon" aria-hidden="true">↻</span> 다시 태어나기</button>
-        <button id="accept-button" class="primary-button" type="button">이 인생 시작하기 <span aria-hidden="true">→</span></button>
-      </div>
+      <footer class="slot-footer">
+        <p class="slot-notice">현재 결과는 실제 인구통계가 아닌 체험용 가상 시뮬레이션입니다. 일부 검증 자료와 <strong>창작용 가중치</strong>를 함께 사용하며, 마음에 들지 않으면 계속 다시 돌릴 수 있습니다.</p>
+        <div class="slot-actions" aria-label="출생 슬롯 동작">
+          <button id="slot-spin-button" class="secondary-button" type="button"><span class="reroll-icon" aria-hidden="true">↻</span> 다시 돌리기</button>
+          <button id="slot-accept-button" class="primary-button" type="button">이 삶으로 시작하기 <span aria-hidden="true">→</span></button>
+        </div>
+      </footer>
     </section>
 
     <section id="life-view" class="life-view" aria-label="생애 시뮬레이션" hidden>

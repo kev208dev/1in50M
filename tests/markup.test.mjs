@@ -7,7 +7,7 @@ const css = await readFile(new URL('../dist/styles.css', import.meta.url), 'utf8
 const renderSource = await readFile(new URL('../dist/ui/render.js', import.meta.url), 'utf8');
 
 test('세 화면과 모든 주요 동작이 존재한다', () => {
-  for (const id of ['intro-view', 'profile-view', 'future-view', 'birth-button', 'reroll-button', 'previous-button', 'accept-button', 'back-button', 'live-region']) {
+  for (const id of ['intro-view', 'profile-view', 'future-view', 'birth-button', 'slot-spin-button', 'slot-accept-button', 'back-button', 'live-region']) {
     assert.match(html, new RegExp(`id=["']${id}["']`));
   }
 });
@@ -17,8 +17,8 @@ test('가상 시뮬레이션 안내를 인트로와 결과에 모두 표시한�
   assert.ok(matches.length >= 2);
 });
 
-test('960px 미만에서는 프로필을 한 열로 유지한다', () => {
-  assert.match(css, /@media \(max-width: 959px\)[\s\S]*?\.profile-layout \{ grid-template-columns: 1fr; \}/);
+test('720px 미만에서는 슬롯을 두 열로 재배치한다', () => {
+  assert.match(css, /@media \(max-width: 720px\)[\s\S]*?\.birth-slot \{ grid-template-columns: repeat\(2,/);
 });
 
 test('생애 화면과 원작형 컨트롤이 존재한다', () => {
