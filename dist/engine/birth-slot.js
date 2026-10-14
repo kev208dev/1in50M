@@ -8,7 +8,6 @@ import {
 } from '../data.js';
 import {
   ANCESTRY_OPTIONS,
-  BASIC_APPEARANCE,
   BIRTH_WEIGHT_NOTICE,
   DISABILITY_OPTIONS,
   GIVEN_NAME_SYLLABLES,
@@ -17,13 +16,9 @@ import {
   SEX_OPTIONS,
 } from '../data/birth-slot.js';
 import { createRng, hashSeed } from './random.js';
+import { createAppearance } from './appearance.js';
 
 const clamp = (value, min = 0, max = 100) => Math.min(max, Math.max(min, Math.round(value)));
-const pickPair = (rng, pairs) => {
-  const [id, label] = rng.pick(pairs);
-  return { id, label };
-};
-
 function createPersonality(rng) {
   const rolls = Array.from({ length: 3 }, () => rng.weighted(PERSONALITY_OPTIONS));
   const counts = Object.fromEntries(
@@ -49,33 +44,6 @@ function createGuardians(rng, familyType) {
         ? ['부모 보호자', '조부모 보호자']
         : Array.from({ length: familyType.guardianCount }, (_, index) => `보호자 ${index + 1}`);
   return labels.map((label) => ({ label, occupation: rng.weighted(OCCUPATIONS).value }));
-}
-
-function createAppearance(rng, sex, ancestry) {
-  const face = pickPair(rng, BASIC_APPEARANCE.faces);
-  const build = pickPair(rng, BASIC_APPEARANCE.builds);
-  const hair = pickPair(rng, BASIC_APPEARANCE.hair);
-  const style = pickPair(rng, BASIC_APPEARANCE.styles);
-  const skinTone = pickPair(rng, BASIC_APPEARANCE.skinTones);
-  const heightCm = rng.int(sex.id === 'male' ? 158 : 148, sex.id === 'male' ? 195 : 185);
-  const socialRating = rng.int(22, 94);
-  return {
-    faceShape: face.id,
-    faceLabel: face.label,
-    build: build.id,
-    buildLabel: build.label,
-    hairTexture: hair.id,
-    hairLabel: hair.label,
-    style: style.id,
-    styleLabel: style.label,
-    skinTone: skinTone.id,
-    skinToneLabel: skinTone.label,
-    ancestry: ancestry.id,
-    heightCm,
-    grooming: rng.int(35, 85),
-    socialRating,
-    description: `${heightCm}cm, ${face.label} 얼굴과 ${build.label}, ${hair.label}의 ${ancestry.label} ${sex.label}`,
-  };
 }
 
 function createName(rng) {
@@ -104,7 +72,12 @@ export function createBirthSlotResult(seed, year = 2026) {
   const siblings = rng.weighted(SIBLINGS);
   const ancestry = rng.weighted(ANCESTRY_OPTIONS);
   const disability = rng.weighted(DISABILITY_OPTIONS);
-  const appearance = createAppearance(rng, sex, ancestry);
+  const appearance = createAppearance(rng, {
+    sex: sex.id,
+    sexLabel: sex.label,
+    ancestry: ancestry.id,
+    ancestryLabel: ancestry.label,
+  });
   const personality = createPersonality(rng);
   const name = createName(rng);
 
