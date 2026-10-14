@@ -23,6 +23,7 @@ test('결정이 열리면 시간은 자동 정지한다', () => {
     clock,
     initialLife: makeLifeAtAge(14, {
       decisions: { 'family-relocation': 'move-together', 'middle-school-rhythm': 'steady' },
+      reflections: { 'reflection-15': 'people' },
     }),
   });
   controller.play();
@@ -61,6 +62,7 @@ test('재생 중 열린 결정에 답하면 기존 배속으로 자동 재생한
     clock,
     initialLife: makeLifeAtAge(14, {
       decisions: { 'family-relocation': 'move-together', 'middle-school-rhythm': 'steady' },
+      reflections: { 'reflection-15': 'people' },
     }),
   });
   controller.play();
@@ -76,7 +78,10 @@ test('재생 중 열린 결정에 답하면 기존 배속으로 자동 재생한
 
 test('직접 정지한 상태의 결정은 답한 뒤에도 정지한다', () => {
   const clock = fakeClock();
-  const controller = createSimulationController({ clock, initialLife: makeLifeAtAge(15) });
+  const controller = createSimulationController({
+    clock,
+    initialLife: makeLifeAtAge(15, { reflections: { 'reflection-15': 'people' } }),
+  });
   controller.answerDecision('vocational');
   assert.equal(controller.isPlaying(), false);
   assert.equal(clock.pendingCount(), 0);
@@ -95,6 +100,7 @@ test('극단 성격이 선택을 뒤집으면 컨트롤러가 실제 선택과 �
   const controller = createSimulationController({
     initialLife: makeLifeAtAge(15, {
       seed,
+      reflections: { 'reflection-15': 'people' },
       profile: { personality: { strength: 'extreme', dominant: 'impulsive', label: '극도로 충동적' } },
     }),
     onAgencyOverride: (resolution) => { override = resolution; },
@@ -121,6 +127,7 @@ test('성격 개입 안내 중에는 멈추고 확인한 뒤 기존 재생을 �
     initialLife: makeLifeAtAge(14, {
       seed,
       decisions: { 'family-relocation': 'move-together', 'middle-school-rhythm': 'steady' },
+      reflections: { 'reflection-15': 'people' },
       profile: { personality: { strength: 'extreme', dominant: 'impulsive', label: '극도로 충동적' } },
     }),
   });
@@ -143,6 +150,24 @@ test('12배속은 약 667ms마다 한 해를 진행한다', () => {
   assert.equal(controller.getState().age, 0);
   clock.advance(1);
   assert.equal(controller.getState().age, 1);
+});
+
+test('회고가 열리면 멈추고 답한 뒤 자동 재생한다', () => {
+  const clock = fakeClock();
+  let opened = 0;
+  const controller = createSimulationController({
+    clock,
+    initialLife: makeLifeAtAge(4),
+    onReflection: () => { opened += 1; },
+  });
+  controller.play();
+  clock.advance(8000);
+  assert.equal(opened, 1);
+  assert.equal(controller.getState().pendingReflectionId, 'reflection-5');
+  assert.equal(controller.isPlaying(), false);
+  controller.answerReflection('play');
+  assert.equal(controller.getState().pendingReflectionId, null);
+  assert.equal(controller.isPlaying(), true);
 });
 
 test('직업 제안 중 하나를 선택해 프로필에 반영한다', () => {
@@ -216,6 +241,7 @@ test('정체성 발견이 열리면 시간과 건너뛰기가 멈추고 확인 �
   let discoveries = 0;
   const initialLife = makeLifeAtAge(15, {
     decisions: completedDecisions,
+    reflections: { 'reflection-15': 'people' },
     identity: {
       assigned: 'bisexual', label: '양성애자', discoveryAge: 16, discovered: false, acknowledged: false,
     },

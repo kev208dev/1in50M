@@ -37,9 +37,32 @@ test('생활 장면 34개 이상이 고유한 id와 두 개 이상의 선택지�
 });
 
 test('동의와 권리가 중요한 장면은 성격 개입을 금지한다', () => {
-  for (const id of ['service-path', 'queer-trusted-friend', 'queer-workplace', 'relationship-path', 'family-path', 'digital-healthcare-access']) {
+  for (const id of ['mental-health-support', 'service-path', 'queer-trusted-friend', 'queer-workplace', 'relationship-path', 'family-path', 'digital-healthcare-access']) {
     assert.equal(DECISIONS.find((item) => item.id === id)?.overridePolicy, 'forbidden', id);
   }
+});
+
+test('밤샘과 고카페인 선택은 누적 위험을 높이고 휴식은 낮춘다', () => {
+  const life = makeLifeAtAge(16, {
+    education: { level: 'high-school', status: 'enrolled', schoolType: 'general', skills: [] },
+  });
+  const night = applyDecision(life, 'high-school-evening', 'all-night-energy');
+  assert.ok(night.riskFactors.caffeineLoad > life.riskFactors.caffeineLoad);
+  assert.ok(night.riskFactors.sleepDebt > life.riskFactors.sleepDebt);
+  const rested = applyDecision(life, 'high-school-evening', 'rest');
+  assert.ok(rested.riskFactors.sleepDebt <= life.riskFactors.sleepDebt);
+});
+
+test('정신건강 위기에서는 도움 요청 장면이 최우선으로 열린다', () => {
+  const life = makeLifeAtAge(17, {
+    mentalHealthState: 'crisis',
+    riskFactors: { academicStress: 90, sleepDebt: 85, caffeineLoad: 35, support: 5 },
+    education: { level: 'high-school', status: 'enrolled', schoolType: 'general', skills: [] },
+  });
+  assert.equal(getDecision(life).id, 'mental-health-support');
+  const helped = applyDecision(life, 'mental-health-support', 'trusted-help');
+  assert.ok(helped.riskFactors.support > life.riskFactors.support);
+  assert.ok(helped.riskFactors.academicStress < life.riskFactors.academicStress);
 });
 
 test('같은 seed와 상태에서는 같은 조건부 장면이 선택된다', () => {

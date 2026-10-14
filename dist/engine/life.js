@@ -15,6 +15,7 @@ import { createProfileInfluence } from './profile-influence.js';
 import { advanceAppearance } from './appearance.js';
 import { advancePortfolio } from './finance.js';
 import { advanceBusiness } from './business.js';
+import { normalizeRiskFactors } from './wellbeing.js';
 
 const STAT_KEYS = ['health', 'happiness', 'knowledge', 'relationships'];
 
@@ -100,6 +101,11 @@ export function createLife(profile, seed = profile?.id) {
     },
     focusId: 'balance',
     pendingDecisionId: null,
+    pendingReflectionId: null,
+    reflections: {},
+    endedReason: null,
+    riskFactors: { academicStress: 0, sleepDebt: 0, caffeineLoad: 0, support: 45 },
+    mentalHealthState: 'stable',
     identity: createIdentityArc(initialSeed),
     pendingIdentityDiscovery: false,
     decisions: {},
@@ -228,6 +234,20 @@ export function normalizeLife(life) {
   };
   copy.focusId = FOCUS_BY_ID[copy.focusId] ? copy.focusId : 'balance';
   copy.pendingDecisionId = DECISION_BY_ID[copy.pendingDecisionId] ? copy.pendingDecisionId : null;
+  copy.reflections = copy.reflections && typeof copy.reflections === 'object' ? { ...copy.reflections } : {};
+  copy.pendingReflectionId = /^reflection-(5|15|30|50|70)$/.test(String(copy.pendingReflectionId ?? ''))
+    ? String(copy.pendingReflectionId)
+    : null;
+  copy.endedReason = typeof copy.endedReason === 'string' ? copy.endedReason : null;
+  copy.riskFactors = normalizeRiskFactors(copy.riskFactors ?? {
+    academicStress: 0,
+    sleepDebt: 0,
+    caffeineLoad: 0,
+    support: 45,
+  });
+  copy.mentalHealthState = ['stable', 'strained', 'crisis'].includes(copy.mentalHealthState)
+    ? copy.mentalHealthState
+    : 'stable';
   const identity = copy.identity && typeof copy.identity === 'object' ? copy.identity : {};
   copy.identity = {
     assigned: typeof identity.assigned === 'string' ? identity.assigned : null,

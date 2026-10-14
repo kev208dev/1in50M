@@ -27,6 +27,7 @@ test('생애 화면과 원작형 컨트롤이 존재한다', () => {
     'life-view', 'age-display', 'year-display', 'play-button', 'speed-controls',
     'skip-button', 'auto-button', 'stats-panel', 'money-panel', 'life-log',
     'life-map', 'family-panel', 'decision-dialog', 'result-view', 'past-lives-view',
+    'reflection-dialog', 'survival-curve',
   ]) assert.match(html, new RegExp(`id=["']${id}["']`));
 });
 

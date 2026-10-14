@@ -135,17 +135,22 @@ git commit -m "feat: add original-style birth setup and peer lives"
 
 **Files:**
 - Create: `dist/engine/mortality.js`
+- Create: `dist/engine/wellbeing.js`
 - Create: `dist/data/reflections.js`
+- Modify: `dist/data/decisions-youth.js`
+- Modify: `dist/data/research.js`
+- Modify: `dist/engine/decisions.js`
 - Modify: `dist/engine/life.js`
 - Modify: `dist/ui/controls.js`
 - Modify: `dist/ui/render.js`
 - Modify: `dist/index.html`
 - Test: `tests/mortality.test.mjs`
 - Test: `tests/reflections.test.mjs`
+- Test: `tests/wellbeing.test.mjs`
 - Test: `tests/life-engine.test.mjs`
 
 **Interfaces:**
-- Produces: `annualMortalityRisk(life)`, `evaluateSurvival(life)`, `survivalCurve(life)`, `getReflection(life)`, `applyReflection(life, choiceId)`.
+- Produces: `annualMortalityRisk(life)`, `causeSpecificRisks(life)`, `evaluateSurvival(life)`, `survivalCurve(life)`, `applyRiskEffects(life, effects)`, `advanceWellbeing(life)`, `getReflection(life)`, `applyReflection(life, choiceId)`.
 - Consumes: deterministic life seed, health and history.
 
 - [ ] **Step 1: Write failing mortality and reflection tests**
@@ -163,17 +168,17 @@ Expected: FAIL because the modules do not exist.
 
 - [ ] **Step 3: Implement deterministic survival and reflection interruptions**
 
-Evaluate non-graphic annual mortality after yearly effects, end a life at its actual age, render the survival curve, and interrupt at ages 5, 15, 30, 50, and 70 without advancing behind the dialog.
+Evaluate non-graphic annual mortality after yearly effects, end a life at its actual age, render the survival curve, and interrupt at ages 5, 15, 30, 50, and 70 without advancing behind the dialog. Accumulate academic stress, sleep debt, caffeine load, and support from youth choices. Severe multi-factor mental-health crises and combined high-caffeine/sleep-deprivation health crises add rare deterministic cause-specific mortality, while rest and support choices reduce risk.
 
 - [ ] **Step 4: Run focused tests**
 
-Run: `node --test tests/mortality.test.mjs tests/reflections.test.mjs tests/life-engine.test.mjs tests/controller.test.mjs`
+Run: `node --test tests/mortality.test.mjs tests/reflections.test.mjs tests/wellbeing.test.mjs tests/education-decisions.test.mjs tests/life-engine.test.mjs tests/controller.test.mjs`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add dist/engine/mortality.js dist/data/reflections.js dist/engine/life.js dist/ui/controls.js dist/ui/render.js dist/index.html tests/mortality.test.mjs tests/reflections.test.mjs tests/life-engine.test.mjs
+git add dist/engine/mortality.js dist/engine/wellbeing.js dist/data/reflections.js dist/data/decisions-youth.js dist/data/research.js dist/engine/life.js dist/engine/decisions.js dist/ui/controls.js dist/ui/render.js dist/index.html tests/mortality.test.mjs tests/reflections.test.mjs tests/wellbeing.test.mjs tests/education-decisions.test.mjs tests/life-engine.test.mjs
 git commit -m "feat: add mortality and life reflections"
 ```
 

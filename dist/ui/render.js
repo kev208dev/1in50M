@@ -4,6 +4,7 @@ import { HOUSING_BY_ID } from '../data/housing.js';
 import { IDENTITY_NOTICE } from '../data/identity.js';
 import { getResearchSource } from '../data/research.js';
 import { normalizeLife } from '../engine/life.js';
+import { survivalCurve } from '../engine/mortality.js';
 
 const STAT_LABELS = {
   health: '건강',
@@ -82,6 +83,7 @@ export function createLifeViewModel(life) {
     partner: current.relationships.partner,
     children: current.relationships.children,
     statHistory: current.statHistory,
+    survival: survivalCurve(current),
     log: getVisibleLifeLog(current.history),
     lifeMap: Array.from({ length: 91 }, (_, age) => ({
       age,
@@ -204,6 +206,17 @@ export function renderLife(root, life) {
       ? `최근 ${points.length}년의 상태 평균 변화 그래프`
       : '아직 상태 변화 기록이 없습니다.');
   }
+  const survival = root.querySelector('#survival-curve');
+  if (survival) {
+    const sampled = model.survival.filter((point) => point.age % 5 === 0);
+    survival.replaceChildren(...sampled.map((point) => {
+      const bar = makeNode(root, 'i', point.age <= model.ageNumber ? 'is-past' : '');
+      bar.style.setProperty('--survival', `${Math.round(point.survival * 100)}%`);
+      bar.title = `${formatAge(point.age)} 생존 ${Math.round(point.survival * 100)}%`;
+      return bar;
+    }));
+    survival.setAttribute('aria-label', `현재 ${model.age}, 가상 생존 곡선`);
+  }
   return model;
 }
 
@@ -259,6 +272,25 @@ export function renderIdentityDiscovery(dialog, life) {
     sourceLink.href = source.url;
   }
   return current.identity;
+}
+
+export function renderReflection(dialog, reflection) {
+  renderTextFields(dialog, '[data-reflection="kicker"]', `${reflection.age}세의 회고`);
+  renderTextFields(dialog, '[data-reflection="title"]', reflection.title);
+  renderTextFields(dialog, '[data-reflection="prompt"]', reflection.prompt);
+  const choices = dialog.querySelector('[data-reflection="choices"]');
+  if (choices) {
+    choices.replaceChildren(...reflection.choices.map((choice, index) => {
+      const button = makeNode(dialog, 'button', 'decision-choice');
+      button.type = 'button';
+      button.dataset.reflectionChoice = choice.id;
+      button.append(
+        makeNode(dialog, 'span', 'decision-number', String(index + 1).padStart(2, '0')),
+        makeNode(dialog, 'span', 'decision-copy', choice.label),
+      );
+      return button;
+    }));
+  }
 }
 
 export function renderResult(root, summary) {

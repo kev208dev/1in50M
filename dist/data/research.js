@@ -29,6 +29,16 @@ export const RESEARCH_SOURCES = {
     year: 2024,
     url: 'https://www.ipsos.com/sites/default/files/ct/publication/documents/2024-06/Ipsos_Pride-Report-2024.pdf',
   },
+  youthCaffeineMentalHealth2024: {
+    label: '질병관리청 청소년건강패널조사·고카페인 음료 및 정신건강 지표',
+    year: 2024,
+    url: 'https://www.kdca.go.kr/bbs/kdca/42/310010/download.do',
+  },
+  caffeineGuidance2024: {
+    label: '식품의약품안전처 청소년 고카페인 섭취 안내',
+    year: 2024,
+    url: 'https://www.mfds.go.kr/webzine/202406/202406.pdf',
+  },
 };
 
 export const getResearchSource = (key) => RESEARCH_SOURCES[key] ?? null;

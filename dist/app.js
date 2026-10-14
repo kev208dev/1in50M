@@ -5,6 +5,7 @@ import { createCompanionLives, advanceCompanionLives } from './engine/companions
 import { normalizeRuntimeSettings, resolveBirthYear } from './data/runtime-settings.js';
 import { createLife } from './engine/life.js';
 import { getDecision, getChoices } from './engine/decisions.js';
+import { REFLECTION_BY_ID } from './data/reflections.js';
 import { createLifeSummary } from './engine/summary.js';
 import {
   getSafeStorage,
@@ -21,6 +22,7 @@ import {
   renderLife,
   renderDecision,
   renderIdentityDiscovery,
+  renderReflection,
   renderResult,
   formatWon,
 } from './ui/render.js';
@@ -52,6 +54,7 @@ const controls = {
 
 const decisionDialog = document.querySelector('#decision-dialog');
 const identityDialog = document.querySelector('#identity-dialog');
+const reflectionDialog = document.querySelector('#reflection-dialog');
 const agencyDialog = document.querySelector('#agency-dialog');
 const careerDialog = document.querySelector('#career-dialog');
 let candidateProfile = null;
@@ -188,6 +191,15 @@ function openIdentityDiscovery(life) {
   document.querySelector('#identity-title').focus();
 }
 
+function openReflection(reflection) {
+  if (!reflection || reflectionDialog.open) return;
+  lastFocused = document.activeElement;
+  renderReflection(reflectionDialog, reflection);
+  main.inert = true;
+  reflectionDialog.showModal();
+  document.querySelector('#reflection-title').focus();
+}
+
 function openAgencyOverride(resolution) {
   if (!resolution || agencyDialog.open) return;
   document.querySelector('#agency-reason').textContent = resolution.reason;
@@ -215,6 +227,7 @@ function startLife(life) {
     onState: renderCurrentLife,
     onDecision: openDecision,
     onIdentityDiscovery: openIdentityDiscovery,
+    onReflection: openReflection,
     onAgencyOverride: (resolution) => { pendingAgencyResolution = resolution; },
     onComplete: finishLife,
   });
@@ -231,6 +244,8 @@ function startLife(life) {
   }
   if (current.pendingIdentityDiscovery) {
     openIdentityDiscovery(current);
+  } else if (current.pendingReflectionId) {
+    openReflection(REFLECTION_BY_ID[current.pendingReflectionId]);
   } else if (current.pendingDecisionId) {
     openDecision(getDecision(current), current);
   } else {
@@ -394,6 +409,17 @@ document.querySelector('#identity-continue-button').addEventListener('click', ()
   if (next.pendingDecisionId) openDecision(getDecision(next), next);
   updatePlayback();
   liveRegion.textContent = `가상 인물이 자신의 ${label} 정체성을 발견한 삶을 계속합니다.`;
+});
+
+reflectionDialog.addEventListener('cancel', (event) => event.preventDefault());
+reflectionDialog.querySelector('[data-reflection="choices"]').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-reflection-choice]');
+  if (!button || !controller) return;
+  const next = controller.answerReflection(button.dataset.reflectionChoice);
+  unlockBackground(reflectionDialog);
+  if (next.pendingIdentityDiscovery) openIdentityDiscovery(next);
+  else if (next.pendingDecisionId) openDecision(getDecision(next), next);
+  updatePlayback();
 });
 
 document.querySelector('#career-close-button').addEventListener('click', () => unlockBackground(careerDialog));

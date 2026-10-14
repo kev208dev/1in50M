@@ -6,6 +6,19 @@ const choice = (id, label, description, effects = {}, tags = [], extra = {}) => 
 
 export const YOUTH_DECISIONS = [
   {
+    id: 'mental-health-support', ageRange: [13, 29], priority: 120, weight: 5,
+    title: '혼자 버티기 어려운 날',
+    prompt: '잠과 식사가 무너지고 마음의 위기가 깊어졌습니다. 지금은 성적보다 안전과 회복이 먼저입니다.',
+    sourceKey: 'youthCaffeineMentalHealth2024',
+    overridePolicy: 'forbidden',
+    when: (life) => life.mentalHealthState === 'crisis',
+    choices: [
+      choice('trusted-help', '믿을 만한 어른과 전문가에게 알린다', '보호자·교사·상담 전문가와 현재 상태를 나누고 회복 계획을 만듭니다.', { happiness: 5, relationships: 4 }, ['도움', '상담'], { riskEffects: { academicStress: -32, sleepDebt: -12, caffeineLoad: -10, support: 45 } }),
+      choice('reduce-schedule', '일정을 줄이고 제대로 쉰다', '학원과 밤샘을 멈추고 잠과 식사를 회복의 기준으로 삼습니다.', { health: 5, happiness: 4 }, ['휴식', '회복'], { riskEffects: { academicStress: -25, sleepDebt: -35, caffeineLoad: -25, support: 12 } }),
+      choice('peer-support', '친구와 함께 도움을 청한다', '혼자 설명하기 어려운 마음을 친구와 나누고 어른에게 연결을 부탁합니다.', { happiness: 4, relationships: 5 }, ['친구', '도움'], { riskEffects: { academicStress: -18, sleepDebt: -10, caffeineLoad: -8, support: 35 } }),
+    ],
+  },
+  {
     id: 'after-school-care', ageRange: [7, 9], weight: 2,
     title: '수업이 끝난 뒤의 시간',
     prompt: '보호자가 돌아오기 전까지 오후 시간을 어디에서 보낼까요?',
@@ -23,10 +36,10 @@ export const YOUTH_DECISIONS = [
     prompt: '주변 친구들이 여러 학원을 다니기 시작했습니다. 우리 집의 시간과 비용은 한정되어 있습니다.',
     sourceKey: 'privateEducation2024',
     choices: [
-      choice('core-subjects', '주요 과목 학원을 다닌다', '성적에 집중하는 대신 저녁 시간이 짧아집니다.', { knowledge: 4, happiness: -2 }, ['학업', '비용']),
+      choice('core-subjects', '주요 과목 학원을 다닌다', '성적에 집중하는 대신 저녁 시간이 짧아집니다.', { knowledge: 4, happiness: -2 }, ['학업', '비용'], { riskEffects: { academicStress: 12, sleepDebt: 6 } }),
       choice('arts-sports', '예체능 하나를 오래 배운다', '좋아하는 분야에서 성취감과 친구를 얻습니다.', { happiness: 3, health: 1, relationships: 1 }, ['취미', '비용']),
       choice('public-program', '방과후학교를 활용한다', '비용을 아끼며 학교 안에서 배움을 이어갑니다.', { knowledge: 2, relationships: 1 }, ['비용 절약']),
-      choice('rest', '학원 대신 쉬고 논다', '비교에서 잠시 벗어나 생활의 여유를 지킵니다.', { happiness: 4, health: 1 }, ['회복']),
+      choice('rest', '학원 대신 쉬고 논다', '비교에서 잠시 벗어나 생활의 여유를 지킵니다.', { happiness: 4, health: 1 }, ['회복'], { riskEffects: { academicStress: -12, sleepDebt: -8, support: 3 } }),
     ],
   },
   {
@@ -44,10 +57,10 @@ export const YOUTH_DECISIONS = [
     title: '중학교의 생활 리듬',
     prompt: '시험, 친구, 동아리와 휴대전화가 한꺼번에 일상으로 들어옵니다.',
     choices: [
-      choice('grades', '내신 관리에 집중한다', '수행평가와 시험 계획을 꼼꼼히 챙깁니다.', { knowledge: 4, happiness: -1 }, ['내신']),
+      choice('grades', '내신 관리에 집중한다', '수행평가와 시험 계획을 꼼꼼히 챙깁니다.', { knowledge: 4, happiness: -1 }, ['내신'], { riskEffects: { academicStress: 10, sleepDebt: 7 } }),
       choice('club', '동아리에서 역할을 맡는다', '좋아하는 일을 함께할 친구를 만듭니다.', { relationships: 3, happiness: 2 }, ['동아리']),
       choice('part-time-family', '집안일과 가족 일을 돕는다', '내 시간은 줄지만 가족의 부담을 나눕니다.', { relationships: 3, knowledge: -1 }, ['가족']),
-      choice('steady', '성적과 휴식을 균형 있게 챙긴다', '큰 변화보다 오래 갈 수 있는 생활을 만듭니다.', { health: 2, happiness: 2, knowledge: 1 }, ['균형']),
+      choice('steady', '성적과 휴식을 균형 있게 챙긴다', '큰 변화보다 오래 갈 수 있는 생활을 만듭니다.', { health: 2, happiness: 2, knowledge: 1 }, ['균형'], { riskEffects: { academicStress: -8, sleepDebt: -8, support: 2 } }),
     ],
   },
   {
@@ -64,10 +77,11 @@ export const YOUTH_DECISIONS = [
     sourceKey: 'privateEducation2024',
     when: (life) => life.education.level === 'high-school' || Boolean(life.education.schoolType),
     choices: [
-      choice('study-room', '야간 자율학습을 한다', '학교에 남아 내신과 시험을 준비합니다.', { knowledge: 4, happiness: -2 }, ['내신', '긴 하루']),
+      choice('study-room', '야간 자율학습을 한다', '학교에 남아 내신과 시험을 준비합니다.', { knowledge: 4, happiness: -2 }, ['내신', '긴 하루'], { riskEffects: { academicStress: 16, sleepDebt: 12, caffeineLoad: 5 } }),
+      choice('all-night-energy', '고카페인 음료로 밤을 새운다', '당장의 공부 시간은 늘지만 잠과 몸의 부담이 크게 쌓입니다.', { knowledge: 5, happiness: -3, health: -2 }, ['내신', '밤샘', '위험'], { riskEffects: { academicStress: 15, sleepDebt: 22, caffeineLoad: 28 } }),
       choice('part-time', '주말 아르바이트를 한다', '용돈과 경험을 얻지만 회복 시간이 줄어듭니다.', { knowledge: 1, health: -1 }, ['아르바이트'], { economyEffects: { cash: 1800000 } }),
       choice('portfolio', '동아리·실기·자격증을 준비한다', '관심 분야의 결과물을 쌓습니다.', { knowledge: 3, happiness: 1 }, ['진로 준비']),
-      choice('rest', '집에서 충분히 쉰다', '수면과 마음의 여유를 먼저 지킵니다.', { health: 3, happiness: 2 }, ['회복']),
+      choice('rest', '집에서 충분히 쉰다', '수면과 마음의 여유를 먼저 지킵니다.', { health: 3, happiness: 2 }, ['회복'], { riskEffects: { academicStress: -15, sleepDebt: -18, caffeineLoad: -10, support: 2 } }),
     ],
   },
   {

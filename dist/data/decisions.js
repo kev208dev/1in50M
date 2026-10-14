@@ -18,6 +18,7 @@ const PERSONALITY_RULES = {
 
 const PERSONALITY_IDS = Object.keys(PERSONALITY_RULES);
 const FORBIDDEN_OVERRIDE_IDS = new Set([
+  'mental-health-support',
   'service-path',
   'queer-trusted-friend',
   'queer-workplace',

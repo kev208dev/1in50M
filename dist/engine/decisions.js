@@ -5,6 +5,7 @@ import { createRng } from './random.js';
 import { resolveAgencyChoice } from './agency.js';
 import { applyFinancialAction, applyHousingTransition } from './finance.js';
 import { startBusiness } from './business.js';
+import { applyRiskEffects } from './wellbeing.js';
 
 function availability(life, choice) {
   if (choice.requiresPartner && !life.relationships.partner) {
@@ -202,6 +203,7 @@ export function applyDecision(life, decisionId, choiceId) {
   };
   if (selected.financialAction) next = applyFinancialAction(next, selected.financialAction);
   if (selected.businessPlan) next = startBusiness(next, selected.businessPlan);
+  if (selected.riskEffects) next = applyRiskEffects(next, selected.riskEffects);
   return normalizeLife(next);
 }
 
