@@ -511,7 +511,53 @@ main { position: relative; z-index: 1; }
 @keyframes flicker { 50% { opacity: .3; } }
 @keyframes certificate-pulse { to { filter: brightness(.82); transform: translateY(2px); } }
 
+@media (min-width: 960px) {
+  body[data-view="life"] { height: 100svh; overflow: hidden; }
+  body[data-view="life"] main { height: calc(100svh - 80px); }
+  .life-view {
+    display: grid;
+    grid-template-rows: 66px 34px minmax(0, 1fr);
+    height: 100%;
+    min-height: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+  }
+  .life-toolbar { position: relative; min-height: 0; padding-block: 8px; }
+  .simulation-notice { display: flex; min-height: 0; align-items: center; padding-block: 6px; }
+  .life-layout { height: 100%; min-height: 0; overflow: hidden; }
+  .life-sidebar { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .life-story {
+    display: grid;
+    grid-template-rows: minmax(185px, 1.25fr) minmax(142px, .85fr) minmax(112px, .7fr);
+    min-height: 0;
+    overflow: hidden;
+  }
+  .current-moment { min-height: 0; padding: clamp(22px, 3vh, 42px) clamp(26px, 3.4vw, 54px); }
+  .current-moment h1 { font-size: clamp(38px, 4.2vh, 58px); }
+  .current-moment > p:last-child { margin-top: 14px; line-height: 1.55; }
+  .map-section, .log-section {
+    min-height: 0;
+    padding: clamp(14px, 2vh, 24px) clamp(22px, 3vw, 42px);
+    overflow: hidden;
+  }
+  .life-section-heading { margin-bottom: 12px; }
+  .life-section-heading .eyebrow { display: none; }
+  .life-section-heading h2 { font-size: clamp(22px, 2.6vh, 30px); }
+  .life-map { grid-template-columns: repeat(19, minmax(16px, 1fr)); gap: 3px; }
+  .life-year { height: clamp(14px, 2vh, 20px); aspect-ratio: auto; }
+  .life-log { max-height: calc(100% - 42px); overflow-y: auto; overscroll-behavior: contain; }
+  .log-entry { grid-template-columns: 52px 1fr; gap: 12px; padding: 8px 0; }
+  .log-entry p { font-size: 11px; line-height: 1.45; }
+  .life-panel summary { padding: 11px 14px; }
+  .panel-body { padding: 0 14px 14px; }
+  .panel-action { width: calc(100% - 28px); margin: 0 14px 14px; }
+  .life-stat + .life-stat { margin-top: 9px; }
+}
+
 @media (max-width: 959px) {
+  body[data-view="life"] { height: auto; overflow-y: auto; }
+  body[data-view="life"] main { height: auto; }
+  .life-view { display: block; height: auto; min-height: 100svh; overflow: visible; }
   .site-header { min-height: 68px; }
   .system-status > span:nth-child(2) { display: none; }
   .intro-view { grid-template-columns: 1fr; min-height: auto; padding-top: 58px; }

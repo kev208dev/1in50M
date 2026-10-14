@@ -47,3 +47,13 @@ test('정체성 발견은 거절 선택 없는 가상 인물 사건으로 표시
   assert.match(html, /data-decision=["']source["']/);
   assert.doesNotMatch(html, /id=["']identity-(reject|cancel|close)-button["']/);
 });
+
+test('PC 생애 화면은 뷰포트에 고정되고 내부 패널만 스크롤한다', () => {
+  assert.match(css, /@media \(min-width: 960px\)[\s\S]*body\[data-view="life"\][\s\S]*overflow:\s*hidden/);
+  assert.match(css, /@media \(min-width: 960px\)[\s\S]*\.life-layout[\s\S]*min-height:\s*0/);
+  assert.match(css, /@media \(min-width: 960px\)[\s\S]*\.life-sidebar[\s\S]*overflow-y:\s*auto/);
+});
+
+test('모바일 생애 화면은 문서 스크롤을 유지한다', () => {
+  assert.match(css, /@media \(max-width: 959px\)[\s\S]*body\[data-view="life"\][\s\S]*overflow-y:\s*auto/);
+});
