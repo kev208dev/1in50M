@@ -148,6 +148,7 @@ export function applyDecision(life, decisionId, choiceId) {
     const recoveredDeposit = current.economy.deposit;
     economy.cash = economy.cash + recoveredDeposit - option.requiredCash;
     economy.deposit = option.deposit ?? 0;
+    economy.assets = { ...current.economy.assets, deposits: economy.deposit };
     economy.homeValue = option.homeValue ?? 0;
     economy.debt = option.debt ?? 0;
     economy.fixedCosts = option.monthlyCost;

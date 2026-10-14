@@ -20,6 +20,17 @@ test('알 수 없는 학교와 직업 ID는 일반 경로로 복구한다', () =
   assert.equal(restored.career.careerId, null);
 });
 
+test('버전 4 저장 상태를 그대로 복원한다', () => {
+  const storage = memoryStorage();
+  const life = makeLifeAtAge(30, {
+    economy: { assets: { deposits: 12000000, bonds: 3000000, stocks: 5000000, crypto: 0, businessEquity: 0 } },
+  });
+  assert.equal(saveCurrentLife(storage, life), true);
+  const restored = loadCurrentLife(storage);
+  assert.equal(restored.version, 4);
+  assert.equal(restored.economy.assets.stocks, 5000000);
+});
+
 test('전생 기록은 최신 10개만 보존한다', () => {
   const storage = memoryStorage();
   for (let index = 0; index < 12; index += 1) archiveLife(storage, makeLifeAtAge(90, { seed: `seed-${index}` }));

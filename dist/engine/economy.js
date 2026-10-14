@@ -32,7 +32,20 @@ export function calculateAnnualEconomy(life) {
     debt,
     deposit,
     homeValue,
-    netWorth: finite(cash + deposit + homeValue - debt),
+    assets: {
+      ...current.economy.assets,
+      deposits: deposit,
+    },
+    netWorth: finite(
+      cash
+      + deposit
+      + current.economy.assets.bonds
+      + current.economy.assets.stocks
+      + current.economy.assets.crypto
+      + current.economy.assets.businessEquity
+      + homeValue
+      - debt
+    ),
   };
   return normalizeLife({ ...current, economy });
 }

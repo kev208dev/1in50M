@@ -11,6 +11,7 @@ import {
   acknowledgeIdentityDiscovery,
 } from './identity.js';
 import { updateRelationships } from './relationships.js';
+import { createProfileInfluence } from './profile-influence.js';
 
 const STAT_KEYS = ['health', 'happiness', 'knowledge', 'relationships'];
 
@@ -25,6 +26,7 @@ const finite = (value, fallback = 0) => {
 };
 
 const financeBase = (finance) => {
+  if (finance?.includes('매우 여유')) return 60000000;
   if (finance?.includes('여유')) return 32000000;
   if (finance?.includes('안정')) return 16000000;
   if (finance?.includes('빠듯')) return 3500000;
@@ -42,10 +44,11 @@ export function createLife(profile, seed = profile?.id) {
   }));
 
   return normalizeLife({
-    version: 3,
+    version: 4,
     seed: initialSeed,
     rngState: hashSeed(initialSeed),
     profile: structuredClone(profile),
+    profileInfluence: createProfileInfluence(profile),
     age: 0,
     year: finite(profile?.birthYear, new Date().getFullYear()),
     status: 'living',
@@ -62,6 +65,13 @@ export function createLife(profile, seed = profile?.id) {
       debt: 0,
       deposit: 0,
       homeValue: 0,
+      assets: {
+        deposits: 0,
+        bonds: 0,
+        stocks: 0,
+        crypto: 0,
+        businessEquity: 0,
+      },
       netWorth: initialCash,
     },
     education: { level: 'childhood', status: 'not-started', schoolType: null, skills: [] },
@@ -101,26 +111,41 @@ export function createLife(profile, seed = profile?.id) {
 
 export function normalizeLife(life) {
   const copy = structuredClone(life ?? {});
-  copy.version = 3;
+  copy.version = 4;
   copy.seed = String(copy.seed ?? copy.profile?.id ?? 'one-in-50m');
   copy.rngState = finite(copy.rngState, hashSeed(copy.seed)) >>> 0;
   copy.age = clamp(copy.age, 0, 90);
   copy.year = finite(copy.year, finite(copy.profile?.birthYear, 2026) + copy.age);
   copy.status = copy.age >= 90 || copy.status === 'review' ? 'review' : 'living';
   copy.stats = Object.fromEntries(STAT_KEYS.map((key) => [key, clamp(copy.stats?.[key], 0, 100)]));
+  copy.profileInfluence = copy.profileInfluence?.modifiers
+    ? structuredClone(copy.profileInfluence)
+    : createProfileInfluence(copy.profile);
 
   const economy = copy.economy ?? {};
+  const assets = economy.assets ?? {};
+  const normalizedAssets = {
+    deposits: Math.max(0, finite(assets.deposits, economy.deposit)),
+    bonds: Math.max(0, finite(assets.bonds)),
+    stocks: Math.max(0, finite(assets.stocks)),
+    crypto: Math.max(0, finite(assets.crypto)),
+    businessEquity: Math.max(0, finite(assets.businessEquity)),
+  };
   copy.economy = {
     cash: finite(economy.cash),
     income: finite(economy.income),
     fixedCosts: Math.max(0, finite(economy.fixedCosts)),
     debt: Math.max(0, finite(economy.debt)),
-    deposit: Math.max(0, finite(economy.deposit)),
+    deposit: normalizedAssets.deposits,
     homeValue: Math.max(0, finite(economy.homeValue)),
+    assets: normalizedAssets,
     netWorth: finite(economy.netWorth),
   };
   copy.economy.netWorth = finite(
-    copy.economy.cash + copy.economy.deposit + copy.economy.homeValue - copy.economy.debt,
+    copy.economy.cash
+      + Object.values(copy.economy.assets).reduce((sum, value) => sum + value, 0)
+      + copy.economy.homeValue
+      - copy.economy.debt,
   );
 
   copy.education = {

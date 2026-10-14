@@ -28,6 +28,7 @@ export function changeHousing(life, housingId) {
     ...current.economy,
     cash: current.economy.cash + previousDeposit - option.requiredCash,
     deposit: option.deposit ?? 0,
+    assets: { ...current.economy.assets, deposits: option.deposit ?? 0 },
     homeValue: option.homeValue ?? 0,
     debt: option.debt ?? 0,
     fixedCosts: option.monthlyCost,
