@@ -289,6 +289,21 @@
     </div>
   </dialog>
 
+  <dialog id="agency-dialog" class="decision-dialog agency-dialog" aria-labelledby="agency-title">
+    <div class="decision-card agency-card">
+      <p class="eyebrow"><span>CHARACTER AGENCY</span> PERSONALITY OVERRIDE</p>
+      <h2 id="agency-title" tabindex="-1">인물이 자신의 방식으로<br>선택했습니다.</h2>
+      <p id="agency-reason" class="decision-prompt">강한 성향이 당신의 계획을 앞질렀습니다.</p>
+      <div class="agency-compare">
+        <div><span>당신의 선택</span><strong id="agency-requested">—</strong></div>
+        <i aria-hidden="true">→</i>
+        <div><span>인물의 선택</span><strong id="agency-actual">—</strong></div>
+      </div>
+      <p class="decision-footnote">성격이 매우 강하면 12%, 극도로 강하면 28% 확률로 인물이 다른 선택을 할 수 있습니다. 민감한 결정은 바뀌지 않습니다.</p>
+      <button id="agency-continue-button" class="primary-button" type="button">결과를 받아들이고 계속하기 <span aria-hidden="true">→</span></button>
+    </div>
+  </dialog>
+
   <dialog id="career-dialog" class="decision-dialog career-dialog" aria-labelledby="career-title">
     <div class="decision-card">
       <div class="dialog-topline"><p class="eyebrow"><span>CAREER INDEX</span> 12 GROUPS</p><button id="career-close-button" class="text-button" type="button">닫기 ×</button></div>

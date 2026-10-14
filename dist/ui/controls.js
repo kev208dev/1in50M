@@ -1,5 +1,5 @@
 import { advanceYear, normalizeLife, setFocus as applyFocus } from '../engine/life.js';
-import { getDecision, applyDecision, chooseAutomatically } from '../engine/decisions.js';
+import { getDecision, applyUserDecision, chooseAutomatically } from '../engine/decisions.js';
 import { getCareerOffers, acceptCareer, advanceCareer } from '../engine/career.js';
 import { calculateAnnualEconomy } from '../engine/economy.js';
 import { selectAnnualEvents, applyEvent } from '../engine/events.js';
@@ -22,6 +22,7 @@ export function createSimulationController({
   onState = () => {},
   onDecision = () => {},
   onIdentityDiscovery = () => {},
+  onAgencyOverride = () => {},
   onComplete = () => {},
 } = {}) {
   let life = normalizeLife(initialLife);
@@ -160,8 +161,10 @@ export function createSimulationController({
     },
     answerDecision(choiceId) {
       if (!life.pendingDecisionId) return structuredClone(life);
-      life = applyDecision(life, life.pendingDecisionId, choiceId);
+      const resolution = applyUserDecision(life, life.pendingDecisionId, choiceId);
+      life = resolution.life;
       publish();
+      if (resolution.overridden) onAgencyOverride({ ...resolution, life: structuredClone(life) });
       return structuredClone(life);
     },
     getCareerOffers(limit = 6) {

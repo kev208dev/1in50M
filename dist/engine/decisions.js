@@ -2,6 +2,7 @@ import { DECISIONS, DECISION_BY_ID } from '../data/decisions.js';
 import { HOUSING_BY_ID } from '../data/housing.js';
 import { normalizeLife } from './life.js';
 import { createRng } from './random.js';
+import { resolveAgencyChoice } from './agency.js';
 
 function availability(life, choice) {
   if (choice.requiresPartner && !life.relationships.partner) {
@@ -196,6 +197,28 @@ export function applyDecision(life, decisionId, choiceId) {
     }],
     milestones: [...current.milestones, { age: current.age, type: 'decision', label: selected.label }],
   });
+}
+
+export function applyUserDecision(life, decisionId, requestedChoiceId) {
+  const current = normalizeLife(life);
+  const decision = DECISION_BY_ID[decisionId];
+  const choices = getChoices(current, decisionId);
+  const requested = choices.find((choiceItem) => choiceItem.id === requestedChoiceId);
+  if (!decision || !requested) throw new RangeError('알 수 없는 결정 또는 선택입니다.');
+  if (!requested.enabled) throw new RangeError(requested.reason || '현재 선택할 수 없습니다.');
+  const resolution = resolveAgencyChoice(current, decision, requested, choices);
+  const next = applyDecision(current, decisionId, resolution.actualChoiceId);
+  if (resolution.overridden) {
+    const lastIndex = next.history.length - 1;
+    next.history[lastIndex] = {
+      ...next.history[lastIndex],
+      requestedChoiceId: resolution.requestedChoiceId,
+      agencyOverride: true,
+      agencyReason: resolution.reason,
+      text: `${decision.title}: ${resolution.actualLabel} — ${resolution.reason}`,
+    };
+  }
+  return { ...resolution, life: normalizeLife(next) };
 }
 
 export function chooseAutomatically(life, decisionId) {

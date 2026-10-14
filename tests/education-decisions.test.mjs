@@ -32,6 +32,13 @@ test('생활 장면 30개가 고유한 id와 두 개 이상의 선택지를 가�
   assert.equal(DECISIONS.length, 30);
   assert.equal(new Set(DECISIONS.map((item) => item.id)).size, 30);
   assert.ok(DECISIONS.every((item) => item.choices.length >= 2));
+  assert.ok(DECISIONS.every((item) => item.choices.every((choice) => choice.personalityTags.length >= 1)));
+});
+
+test('동의와 권리가 중요한 장면은 성격 개입을 금지한다', () => {
+  for (const id of ['service-path', 'queer-trusted-friend', 'queer-workplace', 'relationship-path', 'family-path', 'digital-healthcare-access']) {
+    assert.equal(DECISIONS.find((item) => item.id === id)?.overridePolicy, 'forbidden', id);
+  }
 });
 
 test('같은 seed와 상태에서는 같은 조건부 장면이 선택된다', () => {

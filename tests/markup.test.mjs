@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 const html = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
 const css = await readFile(new URL('../dist/styles.css', import.meta.url), 'utf8');
 const renderSource = await readFile(new URL('../dist/ui/render.js', import.meta.url), 'utf8');
+const appSource = await readFile(new URL('../dist/app.js', import.meta.url), 'utf8');
 
 test('세 화면과 모든 주요 동작이 존재한다', () => {
   for (const id of ['intro-view', 'profile-view', 'future-view', 'birth-button', 'slot-spin-button', 'slot-accept-button', 'back-button', 'live-region']) {
@@ -51,6 +52,14 @@ test('정체성 발견은 거절 선택 없는 가상 인물 사건으로 표시
   assert.match(html, /온라인 조사에 기반한 가상 시뮬레이션 값/);
   assert.match(html, /공식 인구 비율이 아닙니다/);
   assert.match(html, /서로 겹칠 수 있는 정체성을 단순화/);
+});
+
+test('성격이 선택을 뒤집으면 요청과 실제 선택을 확인시킨다', () => {
+  for (const id of ['agency-dialog', 'agency-title', 'agency-requested', 'agency-actual', 'agency-continue-button']) {
+    assert.match(html, new RegExp(`id=["']${id}["']`));
+  }
+  assert.match(appSource, /onAgencyOverride/);
+  assert.match(appSource, /pendingAgencyResolution/);
 });
 
 test('PC 생애 화면은 뷰포트에 고정되고 내부 패널만 스크롤한다', () => {

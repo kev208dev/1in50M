@@ -45,6 +45,7 @@ const controls = {
 
 const decisionDialog = document.querySelector('#decision-dialog');
 const identityDialog = document.querySelector('#identity-dialog');
+const agencyDialog = document.querySelector('#agency-dialog');
 const careerDialog = document.querySelector('#career-dialog');
 let candidateProfile = null;
 let candidateResult = null;
@@ -52,6 +53,7 @@ let controller = null;
 let isDrawing = false;
 let lastFocused = null;
 let spinCounter = 0;
+let pendingAgencyResolution = null;
 
 function setText(field, value) {
   document.querySelectorAll(`[data-field="${field}"]`).forEach((node) => {
@@ -160,6 +162,16 @@ function openIdentityDiscovery(life) {
   document.querySelector('#identity-title').focus();
 }
 
+function openAgencyOverride(resolution) {
+  if (!resolution || agencyDialog.open) return;
+  document.querySelector('#agency-reason').textContent = resolution.reason;
+  document.querySelector('#agency-requested').textContent = resolution.requestedLabel;
+  document.querySelector('#agency-actual').textContent = resolution.actualLabel;
+  main.inert = true;
+  agencyDialog.showModal();
+  document.querySelector('#agency-title').focus();
+}
+
 function finishLife(life) {
   controller?.pause();
   archiveLife(storage, life);
@@ -177,6 +189,7 @@ function startLife(life) {
     onState: renderCurrentLife,
     onDecision: openDecision,
     onIdentityDiscovery: openIdentityDiscovery,
+    onAgencyOverride: (resolution) => { pendingAgencyResolution = resolution; },
     onComplete: finishLife,
   });
   const current = controller.getState();
@@ -320,8 +333,18 @@ decisionDialog.querySelector('[data-decision="choices"]').addEventListener('clic
   const button = event.target.closest('[data-choice-id]');
   if (!button || button.disabled || !controller) return;
   controller.answerDecision(button.dataset.choiceId);
-  unlockBackground(decisionDialog);
+  const resolution = pendingAgencyResolution;
+  pendingAgencyResolution = null;
+  unlockBackground(decisionDialog, !resolution);
+  if (resolution) openAgencyOverride(resolution);
   updatePlayback();
+});
+
+agencyDialog.addEventListener('cancel', (event) => event.preventDefault());
+document.querySelector('#agency-continue-button').addEventListener('click', () => {
+  const actual = document.querySelector('#agency-actual').textContent;
+  unlockBackground(agencyDialog);
+  liveRegion.textContent = `인물의 성향에 따라 ${actual} 선택으로 삶이 이어집니다.`;
 });
 
 identityDialog.addEventListener('cancel', (event) => event.preventDefault());

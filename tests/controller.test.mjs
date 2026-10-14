@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DECISIONS } from '../dist/data/decisions.js';
 import { createSimulationController } from '../dist/ui/controls.js';
+import { createRng } from '../dist/engine/random.js';
 import { makeLifeAtAge, fakeClock } from './support/life-fixtures.mjs';
 
 const completedDecisions = Object.fromEntries(DECISIONS.map((decision) => [decision.id, 'fixture-choice']));
@@ -61,6 +62,30 @@ test('결정에 답하면 기록을 남기고 다시 진행할 수 있다', () =
   controller.answerDecision('vocational');
   assert.equal(controller.getState().education.schoolType, 'vocational');
   assert.equal(controller.getState().pendingDecisionId, null);
+});
+
+test('극단 성격이 선택을 뒤집으면 컨트롤러가 실제 선택과 이유를 알린다', () => {
+  let seed = '';
+  for (let index = 0; index < 10000; index += 1) {
+    const candidate = `agency-controller-${index}`;
+    if (createRng(`${candidate}:agency:choose-high-school:15`).next() < 0.28) {
+      seed = candidate;
+      break;
+    }
+  }
+  let override = null;
+  const controller = createSimulationController({
+    initialLife: makeLifeAtAge(15, {
+      seed,
+      profile: { personality: { strength: 'extreme', dominant: 'impulsive', label: '극도로 충동적' } },
+    }),
+    onAgencyOverride: (resolution) => { override = resolution; },
+  });
+  controller.answerDecision('general');
+  assert.equal(override?.overridden, true);
+  assert.equal(override?.requestedChoiceId, 'general');
+  assert.notEqual(override?.actualChoiceId, 'general');
+  assert.match(override?.reason ?? '', /성향/);
 });
 
 test('직업 제안 중 하나를 선택해 프로필에 반영한다', () => {
