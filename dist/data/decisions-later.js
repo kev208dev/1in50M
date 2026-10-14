@@ -16,7 +16,7 @@ export const LATER_DECISIONS = [
       choice('remain', '남아 다음 역할을 맡는다', '익숙한 조직을 지키지만 업무 변화와 압박을 감수합니다.', { knowledge: 2, happiness: -2 }, ['잔류']),
       choice('severance', '퇴직금을 받고 나온다', '현금을 확보하고 다음 일을 찾습니다.', { happiness: 1 }, ['희망퇴직'], { careerStatus: 'none', economyEffects: { cash: 24000000, income: -1500000 } }),
       choice('retrain', '재교육을 받고 직무를 옮긴다', '시간을 들여 다음 경력을 준비합니다.', { knowledge: 4, happiness: 1 }, ['재교육'], { careerStatus: 'none' }),
-      choice('small-business', '작은 자영업을 시작한다', '경험을 바탕으로 직접 수입원을 만듭니다.', { knowledge: 2, health: -1 }, ['자영업'], { careerStatus: 'self-employed', economyEffects: { cash: -10000000 } }),
+      choice('small-business', '작은 자영업을 시작한다', '경험을 바탕으로 직접 수입원을 만듭니다.', { knowledge: 2, health: -1 }, ['자영업'], { careerTransition: { status: 'self-employed', title: '소규모 자영업', annualIncome: 30000000 }, economyEffects: { cash: -10000000 } }),
     ],
   },
   {
@@ -39,7 +39,7 @@ export const LATER_DECISIONS = [
     when: (life) => life.career.status !== 'retired',
     choices: [
       choice('continue', '현재 일을 조금 더 이어간다', '소득을 지키되 회복 시간을 확보합니다.', { health: -1, knowledge: 1 }, ['소득 유지']),
-      choice('part-time', '시간제 일로 전환한다', '소득은 줄이고 생활 리듬을 되찾습니다.', { health: 2, happiness: 2 }, ['시간제'], { careerStatus: 'part-time', economyEffects: { income: -600000 } }),
+      choice('part-time', '시간제 일로 전환한다', '소득은 줄이고 생활 리듬을 되찾습니다.', { health: 2, happiness: 2 }, ['시간제'], { careerStatus: 'part-time', incomeScale: 0.6 }),
       choice('spend-savings', '저축으로 공백을 건넌다', '일을 쉬지만 모아둔 돈을 생활비로 사용합니다.', { health: 2, happiness: 1 }, ['자산 사용'], { economyEffects: { cash: -12000000 } }),
       choice('new-license', '새 자격과 일자리를 준비한다', '다시 배우며 짧은 경력의 문을 엽니다.', { knowledge: 4, happiness: 1 }, ['재취업']),
     ],
@@ -51,7 +51,7 @@ export const LATER_DECISIONS = [
     sourceKey: 'olderAdults2024',
     choices: [
       choice('retire', '은퇴한다', '일을 내려놓고 다른 일상을 엽니다.', { health: 2, happiness: 3 }, ['휴식']),
-      choice('part-time', '시간제로 일한다', '소득과 생활 리듬을 함께 지킵니다.', { happiness: 1, relationships: 1 }, ['소득 유지']),
+      choice('part-time', '시간제로 일한다', '소득과 생활 리듬을 함께 지킵니다.', { happiness: 1, relationships: 1 }, ['소득 유지'], { careerStatus: 'part-time', incomeScale: 0.5 }),
       choice('continue', '계속 일한다', '경험을 이어가지만 회복 시간을 챙깁니다.', { knowledge: 2, health: -1 }, ['경력 유지']),
       choice('community', '지역 활동을 시작한다', '새로운 관계와 역할을 만듭니다.', { relationships: 4, happiness: 2 }, ['지역 관계']),
     ],
@@ -87,7 +87,7 @@ export const LATER_DECISIONS = [
     prompt: '일과 돌봄이 줄어든 시간에 어떤 관계와 활동을 남길까요?',
     sourceKey: 'olderAdults2024',
     choices: [
-      choice('senior-job', '지역의 단시간 일을 한다', '작은 소득과 규칙적인 만남을 함께 얻습니다.', { relationships: 2, health: 1, happiness: 1 }, ['노인 일자리'], { careerStatus: 'part-time', economyEffects: { income: 350000 } }),
+      choice('senior-job', '지역의 단시간 일을 한다', '작은 소득과 규칙적인 만남을 함께 얻습니다.', { relationships: 2, health: 1, happiness: 1 }, ['노인 일자리'], { careerTransition: { status: 'part-time', title: '지역 단시간 일자리', annualIncome: 4200000 } }),
       choice('club', '취미 모임에 나간다', '좋아하는 일을 매개로 새로운 친구를 만듭니다.', { relationships: 4, happiness: 3 }, ['취미']),
       choice('volunteer', '경험을 나누는 봉사를 한다', '쌓아온 기술과 이야기를 다음 사람에게 건넵니다.', { relationships: 3, knowledge: 2 }, ['봉사']),
       choice('quiet-days', '조용한 일상을 지킨다', '무리하지 않고 산책과 휴식의 리듬을 만듭니다.', { health: 3, happiness: 2 }, ['회복']),

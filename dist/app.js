@@ -362,8 +362,9 @@ identityDialog.addEventListener('cancel', (event) => event.preventDefault());
 document.querySelector('#identity-continue-button').addEventListener('click', () => {
   if (!controller) return;
   const label = controller.getState().identity.label ?? '정체성';
-  controller.acknowledgeIdentity();
+  const next = controller.acknowledgeIdentity();
   unlockBackground(identityDialog);
+  if (next.pendingDecisionId) openDecision(getDecision(next), next);
   updatePlayback();
   liveRegion.textContent = `가상 인물이 자신의 ${label} 정체성을 발견한 삶을 계속합니다.`;
 });

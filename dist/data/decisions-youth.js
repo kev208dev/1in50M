@@ -51,7 +51,7 @@ export const YOUTH_DECISIONS = [
     ],
   },
   {
-    id: 'choose-high-school', ageRange: [15, 15], weight: 4,
+    id: 'choose-high-school', ageRange: [15, 15], weight: 4, priority: 100,
     title: '어떤 고등학교로 갈까',
     prompt: '통학 거리, 성적, 관심 분야와 졸업 뒤의 계획을 함께 놓고 학교를 고릅니다.',
     sourceKey: 'privateEducation2024',
@@ -71,7 +71,7 @@ export const YOUTH_DECISIONS = [
     ],
   },
   {
-    id: 'after-graduation', ageRange: [18, 18], weight: 4,
+    id: 'after-graduation', ageRange: [18, 18], weight: 4, priority: 100,
     title: '졸업 뒤의 길',
     prompt: '간판보다 비용, 적성, 준비 기간과 취업 가능성을 함께 살펴봅니다.',
     sourceKey: 'socialTrends2025',

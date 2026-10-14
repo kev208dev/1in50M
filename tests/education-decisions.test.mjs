@@ -18,6 +18,16 @@ test('15세에는 고등학교 결정이 열린다', () => {
   assert.equal(getChoices(life, 'choose-high-school').length, 8);
 });
 
+test('18세에는 정체성 후속 장면보다 졸업 진로가 먼저 열린다', () => {
+  const life = makeLifeAtAge(18, {
+    seed: 'collision-0',
+    identity: {
+      assigned: 'bisexual', label: '양성애자', discoveryAge: 18, discovered: true, acknowledged: true,
+    },
+  });
+  assert.equal(getDecision(life).id, 'after-graduation');
+});
+
 test('생활 장면 30개가 고유한 id와 두 개 이상의 선택지를 가진다', () => {
   assert.equal(DECISIONS.length, 30);
   assert.equal(new Set(DECISIONS.map((item) => item.id)).size, 30);
@@ -82,4 +92,47 @@ test('직업 전환을 고르면 기존 직업을 내려놓고 다시 선택할 
   assert.equal(next.career.careerId, null);
   assert.equal(next.career.status, 'none');
   assert.equal(next.economy.income, 0);
+});
+
+test('즉시 취업과 창업 선택은 직업명과 반복 소득을 함께 바꾼다', () => {
+  const unemployed = makeLifeAtAge(23);
+  const employed = applyDecision(unemployed, 'exam-or-experience', 'available-job');
+  assert.equal(employed.career.status, 'employed');
+  assert.equal(employed.career.title, '서비스·현장 일자리');
+  assert.ok(employed.career.annualIncome > 0);
+  assert.ok(employed.economy.income > 0);
+
+  const officeWorker = makeLifeAtAge(40, {
+    career: { groupId: 'management', careerId: 'management-1', title: '사무원', status: 'employed', annualIncome: 36000000 },
+    economy: { cash: 20000000, income: 3000000 },
+  });
+  const owner = applyDecision(officeWorker, 'self-employment', 'open-shop');
+  assert.equal(owner.career.status, 'self-employed');
+  assert.equal(owner.career.title, '소규모 자영업');
+  assert.equal(owner.career.careerId, null);
+  assert.ok(owner.career.annualIncome > 0);
+});
+
+test('시간제 전환과 노인 일자리 소득은 다음 해에도 유지된다', async () => {
+  const { advanceCareer } = await import('../dist/engine/career.js');
+  const { calculateAnnualEconomy } = await import('../dist/engine/economy.js');
+  const worker = makeLifeAtAge(60, {
+    career: { groupId: 'management', careerId: 'management-1', title: '사무원', status: 'employed', annualIncome: 48000000 },
+    economy: { cash: 0, income: 4000000 },
+  });
+  const reduced = applyDecision(worker, 'retirement-income-gap', 'part-time');
+  assert.equal(reduced.career.status, 'part-time');
+  assert.ok(reduced.career.annualIncome < 48000000);
+  const nextYear = calculateAnnualEconomy(advanceCareer(reduced));
+  assert.equal(nextYear.economy.income, Math.round(nextYear.career.annualIncome / 12));
+  assert.ok(nextYear.economy.income < 4000000);
+
+  const retired = makeLifeAtAge(76, {
+    career: { groupId: 'management', careerId: 'management-1', title: '사무원', status: 'retired', annualIncome: 48000000 },
+    economy: { cash: 0, income: 0 },
+  });
+  const seniorJob = applyDecision(retired, 'late-life-community', 'senior-job');
+  assert.equal(seniorJob.career.title, '지역 단시간 일자리');
+  assert.equal(seniorJob.career.annualIncome, 4200000);
+  assert.equal(calculateAnnualEconomy(seniorJob).economy.income, 350000);
 });

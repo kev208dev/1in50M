@@ -17,9 +17,9 @@ export const ADULT_DECISIONS = [
     when: (life) => !life.career.careerId,
     choices: [
       choice('small-company', '중소기업에서 경력을 시작한다', '빠르게 실무를 배우며 다음 기회를 준비합니다.', { knowledge: 3, happiness: -1 }, ['빠른 취업'], { focusId: 'career' }),
-      choice('contract', '계약직으로 경험을 만든다', '고용은 불안정하지만 이력에 남을 경험을 쌓습니다.', { knowledge: 2, happiness: -2 }, ['계약직'], { careerStatus: 'part-time' }),
+      choice('contract', '계약직으로 경험을 만든다', '고용은 불안정하지만 이력에 남을 경험을 쌓습니다.', { knowledge: 2, happiness: -2 }, ['계약직'], { careerTransition: { status: 'part-time', title: '계약직 일자리', annualIncome: 24000000 } }),
       choice('train', '직업훈련을 더 받는다', '소득 시작을 늦추고 필요한 기술을 익힙니다.', { knowledge: 4, happiness: 1 }, ['훈련'], { focusId: 'growth' }),
-      choice('family-work', '가족의 일을 돕는다', '익숙한 환경에서 일하지만 역할 경계가 흐려질 수 있습니다.', { relationships: 2, knowledge: 1 }, ['가족 일'], { careerStatus: 'self-employed' }),
+      choice('family-work', '가족의 일을 돕는다', '익숙한 환경에서 일하지만 역할 경계가 흐려질 수 있습니다.', { relationships: 2, knowledge: 1 }, ['가족 일'], { careerTransition: { status: 'self-employed', title: '가족 사업 종사', annualIncome: 28000000 } }),
     ],
   },
   {
@@ -32,7 +32,7 @@ export const ADULT_DECISIONS = [
       choice('public-exam', '공무원·공공기관 시험을 준비한다', '생활비를 줄이며 긴 준비 기간을 감수합니다.', { knowledge: 4, happiness: -2 }, ['시험 준비'], { economyEffects: { cash: -2400000 } }),
       choice('internship', '인턴과 프로젝트를 찾는다', '불확실하지만 일하는 사람과 결과물을 만듭니다.', { knowledge: 3, relationships: 2 }, ['경험']),
       choice('license', '현장 자격증을 취득한다', '분명한 기술로 채용 문을 넓힙니다.', { knowledge: 3, health: -1 }, ['자격증']),
-      choice('available-job', '지금 가능한 일부터 시작한다', '소득을 먼저 만들고 다음 이동을 준비합니다.', { happiness: 1, knowledge: 1 }, ['소득 우선'], { careerStatus: 'employed' }),
+      choice('available-job', '지금 가능한 일부터 시작한다', '소득을 먼저 만들고 다음 이동을 준비합니다.', { happiness: 1, knowledge: 1 }, ['소득 우선'], { careerTransition: { status: 'employed', title: '서비스·현장 일자리', annualIncome: 30000000 } }),
     ],
   },
   {
@@ -126,7 +126,7 @@ export const ADULT_DECISIONS = [
     sourceKey: 'socialTrends2025',
     when: hasChild,
     choices: [
-      choice('leave', '육아휴직을 사용한다', '소득 일부를 포기하고 돌봄 시간을 확보합니다.', { relationships: 4, happiness: 1 }, ['육아휴직'], { economyEffects: { income: -600000 } }),
+      choice('leave', '육아휴직을 사용한다', '소득 일부를 포기하고 돌봄 시간을 확보합니다.', { relationships: 4, happiness: 1 }, ['육아휴직'], { incomeScale: 0.6 }),
       choice('shared-care', '동반자와 시간을 다시 나눈다', '서로의 근무와 돌봄표를 함께 바꿉니다.', { relationships: 3, health: -1 }, ['돌봄 분담']),
       choice('paid-care', '유료 돌봄을 이용한다', '경력은 이어가지만 매달 비용이 늘어납니다.', { knowledge: 2, happiness: 1 }, ['돌봄 비용'], { economyEffects: { fixedCosts: 700000 } }),
       choice('career-break', '한동안 일을 쉰다', '돌봄에 집중하지만 경력과 소득이 멈춥니다.', { relationships: 3, knowledge: -1 }, ['경력 중단'], { careerStatus: 'none', economyEffects: { income: -1200000 } }),
@@ -151,7 +151,7 @@ export const ADULT_DECISIONS = [
     sourceKey: 'socialTrends2025',
     when: (life) => isWorking(life) || life.career.status === 'none',
     choices: [
-      choice('open-shop', '작게 창업한다', '초기 자금을 쓰고 매출이 자리 잡을 시간을 버팁니다.', { knowledge: 3, happiness: 1 }, ['창업', '위험'], { careerStatus: 'self-employed', economyEffects: { cash: -12000000, debt: 5000000 } }),
+      choice('open-shop', '작게 창업한다', '초기 자금을 쓰고 매출이 자리 잡을 시간을 버팁니다.', { knowledge: 3, happiness: 1 }, ['창업', '위험'], { careerTransition: { status: 'self-employed', title: '소규모 자영업', annualIncome: 36000000 }, economyEffects: { cash: -12000000, debt: 5000000 } }),
       choice('side-project', '부업으로 먼저 시험한다', '본업을 유지하며 수요와 체력을 확인합니다.', { knowledge: 2, health: -2 }, ['부업']),
       choice('stay-employed', '현재 일을 유지한다', '안정적인 소득을 지키고 기회를 다음으로 미룹니다.', { happiness: 1 }, ['안정']),
     ],

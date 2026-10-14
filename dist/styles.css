@@ -458,6 +458,7 @@ main { position: relative; z-index: 1; }
 .decision-source a, .identity-source { color: var(--accent); text-underline-offset: 3px; }
 .identity-card em { color: var(--accent); font-style: normal; }
 .identity-notice { max-width: 620px; margin: 22px 0 16px; color: var(--ink-muted); font-size: 14px; line-height: 1.8; }
+.identity-method-note { max-width: 620px; margin: 0 0 14px; color: var(--ink-faint); font-size: 11px; line-height: 1.65; }
 .identity-source { display: inline-block; margin-bottom: 28px; font-size: 11px; }
 .identity-card .primary-button { width: 100%; }
 .dialog-topline { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }

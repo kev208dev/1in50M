@@ -132,3 +132,26 @@ test('정체성 발견이 열리면 시간과 건너뛰기가 멈추고 확인 �
   assert.equal(controller.getState().pendingIdentityDiscovery, false);
   assert.equal(controller.getState().identity.acknowledged, true);
 });
+
+test('18세 정체성 발견을 확인하면 졸업 뒤의 길을 건너뛰지 않는다', () => {
+  const clock = fakeClock();
+  const decisions = { ...completedDecisions };
+  delete decisions['after-graduation'];
+  delete decisions['queer-trusted-friend'];
+  const controller = createSimulationController({
+    clock,
+    initialLife: makeLifeAtAge(17, {
+      decisions,
+      identity: {
+        assigned: 'bisexual', label: '양성애자', discoveryAge: 18, discovered: false, acknowledged: false,
+      },
+    }),
+  });
+  controller.play();
+  clock.advance(8000);
+  assert.equal(controller.getState().pendingIdentityDiscovery, true);
+  const next = controller.acknowledgeIdentity();
+  assert.equal(next.pendingIdentityDiscovery, false);
+  assert.equal(next.pendingDecisionId, 'after-graduation');
+  assert.equal(controller.play(), false);
+});

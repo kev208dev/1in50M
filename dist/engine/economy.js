@@ -13,7 +13,7 @@ const finite = (value) => Number.isFinite(Number(value)) ? Math.round(Number(val
 
 export function calculateAnnualEconomy(life) {
   const current = normalizeLife(life);
-  const employed = ['employed', 'part-time'].includes(current.career.status);
+  const employed = ['employed', 'part-time', 'self-employed'].includes(current.career.status);
   const grossIncome = employed ? Math.max(current.career.annualIncome, current.economy.income * 12) : 0;
   const isDependent = current.age < 19;
   const monthlyHousing = isDependent ? 0 : HOUSING_MONTHLY_COST[current.housing.type] ?? 750000;

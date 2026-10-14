@@ -48,6 +48,9 @@ test('정체성 발견은 거절 선택 없는 가상 인물 사건으로 표시
   assert.match(html, /data-decision=["']source["']/);
   assert.doesNotMatch(html, /id=["']identity-(reject|cancel|close)-button["']/);
   assert.match(renderSource, /current\.identity\.label \?\? '성'\} 정체성/);
+  assert.match(html, /온라인 조사에 기반한 가상 시뮬레이션 값/);
+  assert.match(html, /공식 인구 비율이 아닙니다/);
+  assert.match(html, /서로 겹칠 수 있는 정체성을 단순화/);
 });
 
 test('PC 생애 화면은 뷰포트에 고정되고 내부 패널만 스크롤한다', () => {

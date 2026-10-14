@@ -140,6 +140,8 @@ export function createSimulationController({
     acknowledgeIdentity() {
       if (!life.pendingIdentityDiscovery) return structuredClone(life);
       life = normalizeLife(acknowledgeIdentityDiscovery(life));
+      const decision = getDecision(life);
+      if (decision) life = normalizeLife({ ...life, pendingDecisionId: decision.id });
       publish();
       return structuredClone(life);
     },

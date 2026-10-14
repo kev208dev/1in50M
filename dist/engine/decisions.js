@@ -30,14 +30,17 @@ export function isDecisionEligible(life, decision) {
 
 function chooseWeightedDecision(life, candidates) {
   if (candidates.length <= 1) return candidates[0] ?? null;
+  const highestPriority = Math.max(...candidates.map((item) => item.priority ?? 0));
+  const prioritized = candidates.filter((item) => (item.priority ?? 0) === highestPriority);
+  if (prioritized.length === 1) return prioritized[0];
   const rng = createRng(`${life.seed}:decision:${life.age}`);
-  const total = candidates.reduce((sum, item) => sum + Math.max(1, item.weight ?? 1), 0);
+  const total = prioritized.reduce((sum, item) => sum + Math.max(1, item.weight ?? 1), 0);
   let roll = rng.next() * total;
-  for (const candidate of candidates) {
+  for (const candidate of prioritized) {
     roll -= Math.max(1, candidate.weight ?? 1);
     if (roll < 0) return candidate;
   }
-  return candidates.at(-1) ?? null;
+  return prioritized.at(-1) ?? null;
 }
 
 export function getDecision(life) {
@@ -91,7 +94,24 @@ export function applyDecision(life, decisionId, choiceId) {
     education.status = selected.id === 'employment' ? 'completed' : 'enrolled';
   }
 
-  const career = { ...current.career };
+  let career = { ...current.career };
+  if (selected.careerTransition) {
+    const annualIncome = Math.max(0, Math.round(selected.careerTransition.annualIncome ?? 0));
+    career = {
+      groupId: selected.careerTransition.groupId ?? null,
+      careerId: selected.careerTransition.careerId ?? null,
+      title: selected.careerTransition.title,
+      status: selected.careerTransition.status,
+      years: 0,
+      annualIncome,
+      history: [...current.career.history, {
+        age: current.age,
+        title: selected.careerTransition.title,
+        action: 'started',
+      }],
+    };
+    economy.income = Math.round(annualIncome / 12);
+  }
   if (selected.careerStatus) {
     career.status = selected.careerStatus;
     if (selected.careerStatus === 'none') {
@@ -102,6 +122,10 @@ export function applyDecision(life, decisionId, choiceId) {
       career.annualIncome = 0;
       economy.income = 0;
     }
+  }
+  if (selected.incomeScale && career.annualIncome > 0) {
+    career.annualIncome = Math.round(career.annualIncome * selected.incomeScale);
+    economy.income = Math.round(career.annualIncome / 12);
   }
   if (decisionId === 'retirement-path') {
     career.status = choiceId === 'retire' || choiceId === 'community' ? 'retired' : choiceId === 'part-time' ? 'part-time' : career.status;
