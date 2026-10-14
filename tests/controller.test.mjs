@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { DECISIONS } from '../dist/data/decisions.js';
 import { createSimulationController } from '../dist/ui/controls.js';
 import { makeLifeAtAge, fakeClock } from './support/life-fixtures.mjs';
+
+const completedDecisions = Object.fromEntries(DECISIONS.map((decision) => [decision.id, 'fixture-choice']));
 
 test('1배속은 8초마다 한 해만 진행한다', () => {
   const clock = fakeClock();
@@ -15,7 +18,12 @@ test('1배속은 8초마다 한 해만 진행한다', () => {
 
 test('결정이 열리면 시간은 자동 정지한다', () => {
   const clock = fakeClock();
-  const controller = createSimulationController({ clock, initialLife: makeLifeAtAge(14) });
+  const controller = createSimulationController({
+    clock,
+    initialLife: makeLifeAtAge(14, {
+      decisions: { 'family-relocation': 'move-together', 'middle-school-rhythm': 'steady' },
+    }),
+  });
   controller.play();
   clock.advance(8000);
   assert.equal(controller.isPlaying(), false);
@@ -34,7 +42,10 @@ test('숨겨진 탭에서 지난 시간은 복귀 후 몰아서 처리하지 않
 
 test('속도를 바꿔도 타이머는 하나만 유지된다', () => {
   const clock = fakeClock();
-  const controller = createSimulationController({ clock, initialLife: makeLifeAtAge(8) });
+  const controller = createSimulationController({
+    clock,
+    initialLife: makeLifeAtAge(8, { decisions: { 'after-school-care': 'after-school' } }),
+  });
   controller.play();
   controller.setSpeed(16);
   controller.setSpeed(4);
@@ -71,6 +82,7 @@ test('조건을 충족하지 못한 직업은 직접 선택할 수 없다', () =
 test('컨트롤러는 한 해의 경력과 경제를 정확히 한 번만 반영한다', () => {
   const clock = fakeClock();
   const initialLife = makeLifeAtAge(31, {
+    decisions: completedDecisions,
     career: {
       groupId: 'management', careerId: 'management-1', title: '사무원', status: 'employed',
       years: 0, annualIncome: 36000000, history: [],

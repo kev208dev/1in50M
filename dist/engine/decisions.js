@@ -1,6 +1,7 @@
 import { DECISIONS, DECISION_BY_ID } from '../data/decisions.js';
 import { HOUSING_BY_ID } from '../data/housing.js';
 import { normalizeLife } from './life.js';
+import { createRng } from './random.js';
 
 function availability(life, choice) {
   if (choice.requiresPartner && !life.relationships.partner) {
@@ -19,12 +20,32 @@ function availability(life, choice) {
   return { enabled: true, reason: '' };
 }
 
+export function isDecisionEligible(life, decision) {
+  const [minimumAge, maximumAge] = decision.ageRange ?? [decision.age, decision.age];
+  return life.age >= minimumAge
+    && life.age <= maximumAge
+    && !life.decisions[decision.id]
+    && (typeof decision.when !== 'function' || decision.when(life));
+}
+
+function chooseWeightedDecision(life, candidates) {
+  if (candidates.length <= 1) return candidates[0] ?? null;
+  const rng = createRng(`${life.seed}:decision:${life.age}`);
+  const total = candidates.reduce((sum, item) => sum + Math.max(1, item.weight ?? 1), 0);
+  let roll = rng.next() * total;
+  for (const candidate of candidates) {
+    roll -= Math.max(1, candidate.weight ?? 1);
+    if (roll < 0) return candidate;
+  }
+  return candidates.at(-1) ?? null;
+}
+
 export function getDecision(life) {
   const current = normalizeLife(life);
   if (current.pendingDecisionId && DECISION_BY_ID[current.pendingDecisionId]) {
     return DECISION_BY_ID[current.pendingDecisionId];
   }
-  return DECISIONS.find((decision) => decision.age === current.age && !current.decisions[decision.id]) ?? null;
+  return chooseWeightedDecision(current, DECISIONS.filter((decision) => isDecisionEligible(current, decision)));
 }
 
 export function getChoices(life, decisionId) {
@@ -55,6 +76,9 @@ export function applyDecision(life, decisionId, choiceId) {
   }
   const economy = { ...current.economy };
   if (selected.cost && !selected.housingType) economy.cash -= selected.cost;
+  for (const [key, value] of Object.entries(selected.economyEffects ?? {})) {
+    if (key in economy) economy[key] += Number(value) || 0;
+  }
 
   const education = { ...current.education };
   if (selected.educationPath) {
@@ -68,6 +92,17 @@ export function applyDecision(life, decisionId, choiceId) {
   }
 
   const career = { ...current.career };
+  if (selected.careerStatus) {
+    career.status = selected.careerStatus;
+    if (selected.careerStatus === 'none') {
+      career.groupId = null;
+      career.careerId = null;
+      career.title = null;
+      career.years = 0;
+      career.annualIncome = 0;
+      economy.income = 0;
+    }
+  }
   if (decisionId === 'retirement-path') {
     career.status = choiceId === 'retire' || choiceId === 'community' ? 'retired' : choiceId === 'part-time' ? 'part-time' : career.status;
   }
@@ -94,7 +129,18 @@ export function applyDecision(life, decisionId, choiceId) {
     economy.fixedCosts = option.monthlyCost;
     housing = { ...current.housing, type: option.id };
   }
+  if (selected.housingRegion) housing = { ...housing, region: selected.housingRegion, district: '' };
   let relationships = relationshipChoice(current.relationships, choiceId, current.year);
+  if (selected.relationshipNote) {
+    relationships = {
+      ...relationships,
+      friends: [...relationships.friends, {
+        id: `friend-${decisionId}-${current.year}`,
+        name: selected.relationshipNote,
+        since: current.year,
+      }],
+    };
+  }
   if (decisionId === 'family-path' && choiceId === 'welcome-child') {
     relationships = {
       ...relationships,

@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { EDUCATION_PATHS } from '../dist/data/education.js';
+import { DECISIONS } from '../dist/data/decisions.js';
+import { getResearchSource } from '../dist/data/research.js';
 import { getDecision, getChoices, applyDecision } from '../dist/engine/decisions.js';
 import { makeLifeAtAge } from './support/life-fixtures.mjs';
 
@@ -11,9 +13,31 @@ test('고등학교 8개 경로를 모두 제공한다', () => {
 });
 
 test('15세에는 고등학교 결정이 열린다', () => {
-  const life = makeLifeAtAge(15);
+  const life = makeLifeAtAge(15, { decisions: { 'middle-school-rhythm': 'steady' } });
   assert.equal(getDecision(life).id, 'choose-high-school');
   assert.equal(getChoices(life, 'choose-high-school').length, 8);
+});
+
+test('생활 장면 30개가 고유한 id와 두 개 이상의 선택지를 가진다', () => {
+  assert.equal(DECISIONS.length, 30);
+  assert.equal(new Set(DECISIONS.map((item) => item.id)).size, 30);
+  assert.ok(DECISIONS.every((item) => item.choices.length >= 2));
+});
+
+test('같은 seed와 상태에서는 같은 조건부 장면이 선택된다', () => {
+  const life = makeLifeAtAge(25, { seed: 'repeatable-scene' });
+  assert.equal(getDecision(life)?.id, getDecision(structuredClone(life))?.id);
+});
+
+test('정체성을 발견하지 않은 삶에는 정체성 후속 장면이 열리지 않는다', () => {
+  const life = makeLifeAtAge(26, { identity: { assigned: null, discovered: false } });
+  assert.notEqual(getDecision(life)?.audience, 'lgbtq');
+});
+
+test('근거가 표시된 장면은 유효한 자료를 참조한다', () => {
+  for (const scene of DECISIONS.filter((item) => item.sourceKey)) {
+    assert.ok(getResearchSource(scene.sourceKey)?.url, scene.id);
+  }
 });
 
 test('선택 조건을 못 채운 경로도 이유와 함께 비활성으로 보인다', () => {
