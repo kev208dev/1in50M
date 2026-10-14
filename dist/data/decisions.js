@@ -27,19 +27,18 @@ const FORBIDDEN_OVERRIDE_IDS = new Set([
   'digital-healthcare-access',
 ]);
 
-function inferPersonalityTags(choiceItem, index) {
+function inferPersonalityTags(choiceItem) {
   const text = [choiceItem.id, choiceItem.label, choiceItem.description, ...(choiceItem.tags ?? [])].join(' ');
-  const matched = PERSONALITY_IDS.filter((id) => PERSONALITY_RULES[id].some((term) => text.includes(term)));
-  return matched.length > 0 ? matched : [PERSONALITY_IDS[index % PERSONALITY_IDS.length]];
+  return PERSONALITY_IDS.filter((id) => PERSONALITY_RULES[id].some((term) => text.includes(term)));
 }
 
 function enrichDecision(decision) {
   return {
     ...decision,
     overridePolicy: decision.overridePolicy ?? (FORBIDDEN_OVERRIDE_IDS.has(decision.id) ? 'forbidden' : 'allowed'),
-    choices: decision.choices.map((choiceItem, index) => ({
+    choices: decision.choices.map((choiceItem) => ({
       ...choiceItem,
-      personalityTags: choiceItem.personalityTags ?? inferPersonalityTags(choiceItem, index),
+      personalityTags: choiceItem.personalityTags ?? inferPersonalityTags(choiceItem),
     })),
   };
 }

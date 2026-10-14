@@ -8,6 +8,8 @@ import {
 import { makeLifeAtAge } from './support/life-fixtures.mjs';
 import { FINANCE_DECISIONS } from '../dist/data/decisions-finance.js';
 import { applyDecision } from '../dist/engine/decisions.js';
+import { getChoices } from '../dist/engine/decisions.js';
+import { calculateAnnualEconomy } from '../dist/engine/economy.js';
 
 const investedLife = makeLifeAtAge(35, {
   economy: {
@@ -82,4 +84,62 @@ test('금융 선택은 일반 결정 흐름에서도 자산과 기록에 반영�
   assert.equal(next.economy.assets.bonds, 5000000);
   assert.equal(next.economy.cash, 15000000);
   assert.equal(next.economy.transactions.at(-1).asset, 'bonds');
+});
+
+test('현금이 없어도 투자 결정을 미루고 생애를 계속할 수 있다', () => {
+  const life = makeLifeAtAge(24, {
+    economy: { cash: 0 },
+    pendingDecisionId: 'asset-allocation',
+  });
+  const available = getChoices(life, 'asset-allocation').filter((choice) => choice.enabled);
+  assert.ok(available.some((choice) => choice.id === 'defer-allocation'));
+  const next = applyDecision(life, 'asset-allocation', 'defer-allocation');
+  assert.equal(next.pendingDecisionId, null);
+});
+
+test('도박 빚은 주거를 바꿔도 사라지지 않는다', () => {
+  const life = makeLifeAtAge(32, {
+    economy: { cash: 1000000, debt: 900000, otherDebt: 900000, housingDebt: 0 },
+  });
+  const next = applyDecision(life, 'housing-path', 'with-family');
+  assert.equal(next.economy.otherDebt, 900000);
+  assert.equal(next.economy.housingDebt, 0);
+  assert.equal(next.economy.debt, 900000);
+});
+
+test('추가 부동산 매입은 기존 주택 가치를 지우지 않는다', () => {
+  const life = makeLifeAtAge(35, {
+    economy: {
+      cash: 30000000,
+      debt: 100000000,
+      housingDebt: 100000000,
+      otherDebt: 0,
+      homeValue: 300000000,
+    },
+  });
+  const next = applyFinancialAction(life, {
+    type: 'property', amount: 20000000, homeValue: 150000000, debt: 130000000,
+  });
+  assert.equal(next.economy.homeValue, 450000000);
+  assert.equal(next.economy.housingDebt, 230000000);
+  assert.equal(next.economy.debt, 230000000);
+});
+
+test('학자금 같은 비주거 부채는 주택 부채와 분리되어 해가 지나도 보존된다', () => {
+  const homeowner = makeLifeAtAge(20, {
+    economy: {
+      cash: 0,
+      homeValue: 300000000,
+      debt: 100000000,
+      housingDebt: 100000000,
+      otherDebt: 0,
+    },
+  });
+  const borrowed = applyDecision(homeowner, 'tuition-and-work', 'loan');
+  assert.equal(borrowed.economy.housingDebt, 100000000);
+  assert.equal(borrowed.economy.otherDebt, 8000000);
+  const afterYear = calculateAnnualEconomy(borrowed);
+  assert.equal(afterYear.economy.housingDebt, 100000000);
+  assert.equal(afterYear.economy.otherDebt, 8000000);
+  assert.equal(afterYear.economy.debt, 108000000);
 });

@@ -44,6 +44,25 @@ test('v3 저장은 새 필드가 없어도 v4로 정규화된다', () => {
   ));
 });
 
+test('기존 저장본의 단일 부채는 주택 보유 여부에 따라 안전하게 분류된다', () => {
+  const withHome = createLife(profile, 'legacy-home-debt');
+  withHome.economy.debt = 100000000;
+  withHome.economy.homeValue = 300000000;
+  delete withHome.economy.housingDebt;
+  delete withHome.economy.otherDebt;
+  const migratedHome = normalizeLife(withHome);
+  assert.equal(migratedHome.economy.housingDebt, 100000000);
+  assert.equal(migratedHome.economy.otherDebt, 0);
+
+  const withoutHome = createLife(profile, 'legacy-other-debt');
+  withoutHome.economy.debt = 900000;
+  delete withoutHome.economy.housingDebt;
+  delete withoutHome.economy.otherDebt;
+  const migratedOther = normalizeLife(withoutHome);
+  assert.equal(migratedOther.economy.housingDebt, 0);
+  assert.equal(migratedOther.economy.otherDebt, 900000);
+});
+
 test('연간 경제 계산 뒤에도 새 자산 항목이 보존된다', () => {
   const life = normalizeLife({
     ...createLife(profile, 'assets-persist'),

@@ -202,3 +202,16 @@ test('18세 정체성 발견을 확인하면 졸업 뒤의 길을 건너뛰지 �
   assert.equal(next.pendingDecisionId, 'after-graduation');
   assert.equal(controller.play(), false);
 });
+
+test('현금이 없는 자동 진행도 투자 결정에서 멈추지 않는다', () => {
+  const clock = fakeClock();
+  const controller = createSimulationController({
+    clock,
+    initialLife: makeLifeAtAge(24, { economy: { cash: 0 }, pendingDecisionId: 'asset-allocation' }),
+  });
+  controller.setAutoDecision(true);
+  assert.equal(controller.getState().pendingDecisionId, null);
+  assert.equal(controller.play(), true);
+  clock.advance(8000);
+  assert.equal(controller.getState().age, 25);
+});

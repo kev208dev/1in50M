@@ -66,6 +66,8 @@ export function createLife(profile, seed = profile?.id) {
       income: 0,
       fixedCosts: 0,
       debt: 0,
+      housingDebt: 0,
+      otherDebt: 0,
       deposit: 0,
       homeValue: 0,
       assets: {
@@ -124,9 +126,18 @@ export function normalizeLife(life) {
   copy.year = finite(copy.year, finite(copy.profile?.birthYear, 2026) + copy.age);
   copy.status = copy.age >= 90 || copy.status === 'review' ? 'review' : 'living';
   copy.stats = Object.fromEntries(STAT_KEYS.map((key) => [key, clamp(copy.stats?.[key], 0, 100)]));
+  const calculatedInfluence = createProfileInfluence(copy.profile);
   copy.profileInfluence = copy.profileInfluence?.modifiers
-    ? structuredClone(copy.profileInfluence)
-    : createProfileInfluence(copy.profile);
+    ? {
+        ...structuredClone(copy.profileInfluence),
+        modifiers: {
+          ...copy.profileInfluence.modifiers,
+          'first-impression': calculatedInfluence.modifiers['first-impression'],
+          'romance-first-impression': calculatedInfluence.modifiers['romance-first-impression'],
+          'service-impression': calculatedInfluence.modifiers['service-impression'],
+        },
+      }
+    : calculatedInfluence;
 
   const economy = copy.economy ?? {};
   const assets = economy.assets ?? {};
@@ -137,11 +148,24 @@ export function normalizeLife(life) {
     crypto: Math.max(0, finite(assets.crypto)),
     businessEquity: Math.max(0, finite(assets.businessEquity)),
   };
+  const rawDebt = Math.max(0, finite(economy.debt));
+  let housingDebt = Math.max(0, finite(economy.housingDebt));
+  let otherDebt = Math.max(0, finite(economy.otherDebt));
+  const unclassifiedDebt = Math.max(0, rawDebt - housingDebt - otherDebt);
+  if (unclassifiedDebt > 0) {
+    const businessDebt = Math.min(unclassifiedDebt, Math.max(0, finite(copy.business?.debt)));
+    otherDebt += businessDebt;
+    const remainder = unclassifiedDebt - businessDebt;
+    if (Math.max(0, finite(economy.homeValue)) > 0) housingDebt += remainder;
+    else otherDebt += remainder;
+  }
   copy.economy = {
     cash: finite(economy.cash),
     income: finite(economy.income),
     fixedCosts: Math.max(0, finite(economy.fixedCosts)),
-    debt: Math.max(0, finite(economy.debt)),
+    debt: housingDebt + otherDebt,
+    housingDebt,
+    otherDebt,
     deposit: normalizedAssets.deposits,
     homeValue: Math.max(0, finite(economy.homeValue)),
     assets: normalizedAssets,

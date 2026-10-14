@@ -1,6 +1,7 @@
 import { HOUSING_BY_ID } from '../data/housing.js';
 import { normalizeLife } from './life.js';
 import { createRng } from './random.js';
+import { applyHousingTransition } from './finance.js';
 
 export function updateRelationships(life) {
   const current = normalizeLife(life);
@@ -23,16 +24,7 @@ export function changeHousing(life, housingId) {
     return { ok: false, reason: `${option.requiredCash.toLocaleString('ko-KR')}원의 여유 자금이 필요합니다.`, life: current };
   }
 
-  const previousDeposit = current.economy.deposit;
-  const economy = {
-    ...current.economy,
-    cash: current.economy.cash + previousDeposit - option.requiredCash,
-    deposit: option.deposit ?? 0,
-    assets: { ...current.economy.assets, deposits: option.deposit ?? 0 },
-    homeValue: option.homeValue ?? 0,
-    debt: option.debt ?? 0,
-    fixedCosts: option.monthlyCost,
-  };
+  const economy = applyHousingTransition(current, option).economy;
   const next = normalizeLife({
     ...current,
     economy,

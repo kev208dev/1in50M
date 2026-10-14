@@ -108,6 +108,7 @@ export function createSimulationController({
 
   const initialDecision = life.pendingIdentityDiscovery ? null : getDecision(life);
   if (initialDecision) life = normalizeLife({ ...life, pendingDecisionId: initialDecision.id });
+  else if (life.pendingDecisionId) life = normalizeLife({ ...life, pendingDecisionId: null });
 
   return {
     getState: () => structuredClone(life),

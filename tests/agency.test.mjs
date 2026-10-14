@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { getOverrideRate, resolveAgencyChoice } from '../dist/engine/agency.js';
 import { makeLifeAtAge } from './support/life-fixtures.mjs';
+import { DECISION_BY_ID } from '../dist/data/decisions.js';
 
 const extremeLife = makeLifeAtAge(24, {
   profile: { personality: { strength: 'extreme', dominant: 'impulsive', label: '극도로 충동적' } },
@@ -57,4 +58,10 @@ test('10,000개 seed의 극단 성격 개입률은 28%에 수렴한다', () => {
   }
   const rate = overrides / 10000;
   assert.ok(rate >= 0.265 && rate <= 0.295, String(rate));
+});
+
+test('성격 근거가 없는 선택에는 위치 순서로 태그를 만들지 않는다', () => {
+  const artsAndSports = DECISION_BY_ID['private-education'].choices
+    .find((choice) => choice.id === 'arts-sports');
+  assert.deepEqual(artsAndSports.personalityTags, []);
 });

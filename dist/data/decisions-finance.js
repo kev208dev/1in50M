@@ -17,6 +17,7 @@ export const FINANCE_DECISIONS = [
       choice('buy-bonds', '채권을 산다', '낮은 변동성으로 이자를 기대합니다.', { knowledge: 1 }, ['안정', '관리'], { minimumCash: 5000000, financialAction: { type: 'buy', asset: 'bonds', amount: 5000000 } }),
       choice('domestic-stocks', '국내 주식에 투자한다', '기업의 성장과 시장 하락을 함께 감수합니다.', { knowledge: 1, happiness: -1 }, ['도전', '위험'], { minimumCash: 5000000, financialAction: { type: 'buy', asset: 'stocks', amount: 5000000, market: 'domestic' } }),
       choice('overseas-stocks', '해외 주식에 투자한다', '환율과 해외 시장의 변동까지 감수합니다.', { knowledge: 2, happiness: -1 }, ['도전', '위험'], { minimumCash: 5000000, financialAction: { type: 'buy', asset: 'stocks', amount: 5000000, market: 'overseas' } }),
+      choice('defer-allocation', '지금은 투자하지 않는다', '생활비와 비상 자금을 먼저 지키며 결정을 미룹니다.', { happiness: 1 }, ['유보', '안정']),
     ],
   },
   {

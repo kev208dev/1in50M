@@ -68,8 +68,19 @@ export function renderBirthSlot(root, result, { spinning = false } = {}) {
       makeNode(documentRef, 'span', 'slot-ghost', row.value),
     );
     windowNode.append(strip);
-    const detail = makeNode(documentRef, 'p', 'slot-detail', row.detail);
-    card.append(heading, windowNode, detail);
+    const disclosure = makeNode(documentRef, 'details', 'slot-detail-disclosure');
+    const summary = makeNode(documentRef, 'summary', 'slot-detail-toggle', '상세 보기');
+    summary.setAttribute('aria-label', `${row.label} 상세 보기`);
+    disclosure.append(
+      summary,
+      makeNode(documentRef, 'p', 'slot-detail slot-detail-mobile', row.detail),
+    );
+    card.append(
+      heading,
+      windowNode,
+      makeNode(documentRef, 'p', 'slot-detail slot-detail-desktop', row.detail),
+      disclosure,
+    );
     return card;
   });
   root.replaceChildren(...cards);

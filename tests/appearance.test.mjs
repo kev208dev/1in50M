@@ -7,6 +7,8 @@ import {
   createAppearance,
   describeAppearance,
 } from '../dist/engine/appearance.js';
+import { advanceYear, normalizeLife } from '../dist/engine/life.js';
+import { makeLifeAtAge } from './support/life-fixtures.mjs';
 
 test('외모는 여러 축을 가진 자연스러운 설명을 만든다', () => {
   const appearance = createAppearance(createRng('appearance-1'), {
@@ -44,4 +46,20 @@ test('건강 관리와 스트레스는 생애 중 관리 상태를 변화시킨�
   assert.ok(healthier.grooming > base.grooming);
   assert.ok(stressed.grooming < base.grooming);
   assert.equal(healthier.agePresentation, 25);
+});
+
+test('변화한 외모 점수는 현재 첫인상 영향에 다시 반영된다', () => {
+  let life = makeLifeAtAge(20, {
+    focusId: 'health',
+    profile: { appearance: { grooming: 44, socialRating: 44 } },
+  });
+  life = normalizeLife(life);
+  const before = life.profileInfluence.modifiers['first-impression'];
+  for (let year = 0; year < 10; year += 1) life = advanceYear(life, `appearance-${year}`);
+  assert.ok(life.profile.appearance.socialRating > 44);
+  assert.ok(life.profileInfluence.modifiers['first-impression'] > before);
+  assert.equal(
+    life.profileInfluence.modifiers['first-impression'],
+    appearanceInfluence(life.profile.appearance, 'first-impression'),
+  );
 });

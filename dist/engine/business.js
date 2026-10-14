@@ -37,6 +37,7 @@ export function startBusiness(life, plan) {
     ...current.economy,
     cash: current.economy.cash - capital,
     debt: current.economy.debt + debt,
+    otherDebt: (current.economy.otherDebt ?? 0) + debt,
     assets: { ...current.economy.assets, businessEquity: capital },
     transactions: [...(current.economy.transactions ?? []), {
       id: `tx-${current.year}-startup`, age: current.age, year: current.year,
@@ -58,12 +59,14 @@ export function advanceBusiness(life) {
   const assets = { ...current.economy.assets, businessEquity: outcome.status === 'sold' ? 0 : outcome.equity };
   let cash = current.economy.cash;
   let debt = current.economy.debt;
+  let otherDebt = current.economy.otherDebt ?? debt;
   if (outcome.status === 'sold') {
     cash += outcome.equity;
     debt = Math.max(0, debt - outcome.debt);
+    otherDebt = Math.max(0, otherDebt - outcome.debt);
   }
   current.business = outcome;
-  current.economy = { ...current.economy, cash, debt, assets };
+  current.economy = { ...current.economy, cash, debt, otherDebt, assets };
   if (outcome.status !== 'operating') {
     const sold = outcome.status === 'sold';
     const label = sold ? '창업 회사 매각' : '사업 폐업';

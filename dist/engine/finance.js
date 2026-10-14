@@ -40,7 +40,8 @@ export function applyFinancialAction(life, action = {}) {
   const amount = money(action.amount);
   const assets = { ...current.economy.assets };
   let cash = Number(current.economy.cash) || 0;
-  let debt = Number(current.economy.debt) || 0;
+  let housingDebt = Number(current.economy.housingDebt) || 0;
+  let otherDebt = Number(current.economy.otherDebt) || 0;
   let details = {};
 
   if (action.type === 'buy') {
@@ -70,14 +71,15 @@ export function applyFinancialAction(life, action = {}) {
     const roll = clampRoll(action.roll ?? createRng(`${current.seed}:gamble:${current.year}:${current.age}`).next());
     const payout = roll >= 0.995 ? stake * 20 : roll >= 0.55 ? Math.round(stake * 1.7) : 0;
     cash = cash - amount + payout;
-    debt += borrowed;
+    otherDebt += borrowed;
     details = { borrowed, payout, tier: payout >= stake * 20 ? 'big-win' : payout > 0 ? 'win' : 'loss' };
   } else if (action.type === 'property') {
     requireOwnCash(current, amount);
     cash -= amount;
-    current.economy.homeValue = money(action.homeValue);
-    debt += money(action.debt);
-    details = { homeValue: current.economy.homeValue, borrowed: money(action.debt) };
+    const addedHomeValue = money(action.homeValue);
+    current.economy.homeValue = money(current.economy.homeValue) + addedHomeValue;
+    housingDebt += money(action.debt);
+    details = { homeValue: addedHomeValue, borrowed: money(action.debt) };
   } else {
     throw new RangeError('알 수 없는 금융 행동입니다.');
   }
@@ -85,10 +87,36 @@ export function applyFinancialAction(life, action = {}) {
   current.economy = {
     ...current.economy,
     cash: Math.round(cash),
-    debt: money(debt),
+    debt: money(housingDebt + otherDebt),
+    housingDebt: money(housingDebt),
+    otherDebt: money(otherDebt),
     deposit: money(assets.deposits),
     assets,
     transactions: transaction(current, { ...action, amount }, details),
+  };
+  return current;
+}
+
+export function applyHousingTransition(life, option) {
+  const current = structuredClone(life);
+  const previousHousingDebt = money(current.economy.housingDebt);
+  const previousHomeValue = money(current.economy.homeValue);
+  const saleEquity = Math.max(0, previousHomeValue - previousHousingDebt);
+  const saleShortfall = Math.max(0, previousHousingDebt - previousHomeValue);
+  const otherDebt = money(current.economy.otherDebt) + saleShortfall;
+  const housingDebt = money(option.debt);
+  const deposit = money(option.deposit);
+  current.economy = {
+    ...current.economy,
+    cash: Math.round((Number(current.economy.cash) || 0)
+      + money(current.economy.deposit) + saleEquity - money(option.requiredCash)),
+    deposit,
+    assets: { ...current.economy.assets, deposits: deposit },
+    homeValue: money(option.homeValue),
+    housingDebt,
+    otherDebt,
+    debt: housingDebt + otherDebt,
+    fixedCosts: money(option.monthlyCost),
   };
   return current;
 }

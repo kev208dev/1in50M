@@ -266,7 +266,9 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
 .slot-strip > * { display: grid; min-height: clamp(30px, 5vh, 60px); place-items: center; }
 .slot-value { font-family: var(--font-display); font-size: clamp(15px, 1.65vw, 24px); font-weight: 500; line-height: 1.25; letter-spacing: -.035em; word-break: keep-all; }
 .slot-ghost { color: rgba(200, 208, 194, .16); font-family: var(--font-mono); font-size: 10px; }
-.slot-detail { position: relative; z-index: 1; min-height: 2.8em; margin: 0; color: rgba(200, 208, 194, .66); font-size: clamp(8px, .72vw, 10px); line-height: 1.4; word-break: keep-all; }
+.slot-detail-disclosure { position: relative; z-index: 2; display: none; min-width: 0; }
+.slot-detail-toggle { display: none; }
+.slot-detail { min-height: 2.8em; margin: 0; color: rgba(200, 208, 194, .66); font-size: clamp(8px, .72vw, 10px); line-height: 1.4; word-break: keep-all; }
 .slot-reel[data-slot="appearance"] .slot-value { font-family: var(--font-body); font-size: clamp(12px, 1.2vw, 17px); line-height: 1.45; }
 .slot-reel[data-slot="name"] .slot-value { color: var(--accent); font-size: clamp(25px, 3vw, 46px); }
 .birth-slot.is-spinning .slot-strip { animation: slot-roll 1.2s cubic-bezier(.16, .82, .22, 1) both; animation-delay: calc(var(--slot-index) * 45ms); }
@@ -690,7 +692,13 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
   .slot-strip > * { min-height: 24px; }
   .slot-value, .slot-reel[data-slot="appearance"] .slot-value { font-size: clamp(10px, 3.1vw, 13px); line-height: 1.25; }
   .slot-reel[data-slot="name"] .slot-value { font-size: clamp(19px, 6vw, 28px); }
-  .slot-detail { display: none; }
+  .slot-detail-desktop { display: none; }
+  .slot-detail-disclosure { display: block; align-self: end; font-family: var(--font-mono); font-size: 7px; }
+  .slot-detail-toggle { display: block; color: rgba(200, 208, 194, .72); cursor: pointer; list-style: none; text-align: right; }
+  .slot-detail-toggle::-webkit-details-marker { display: none; }
+  .slot-detail-toggle::after { content: ' +'; color: var(--accent); }
+  .slot-detail-disclosure[open] .slot-detail-toggle::after { content: ' −'; }
+  .slot-detail-mobile { position: absolute; right: -4px; bottom: calc(100% + 4px); width: min(240px, 72vw); max-height: 84px; min-height: 0; padding: 8px; overflow-y: auto; border: 1px solid var(--line-bright); border-radius: 7px; color: var(--ink); background: #111613; box-shadow: 0 10px 28px rgba(0, 0, 0, .42); font-size: 9px; }
   .slot-footer { gap: 8px; }
   .slot-notice { display: none; }
   .slot-actions { position: sticky; display: grid; grid-template-columns: .9fr 1.1fr; width: 100%; bottom: env(safe-area-inset-bottom); }

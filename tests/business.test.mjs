@@ -29,6 +29,7 @@ test('창업 자금이 부족하면 시작할 수 없고 시작하면 현금과 
   assert.equal(started.business.status, 'operating');
   assert.equal(started.economy.cash, 10000000);
   assert.equal(started.economy.assets.businessEquity, 20000000);
+  assert.equal(started.economy.otherDebt, 5000000);
 });
 
 test('사업 연간 진행은 같은 상태에서 결정적이고 정확히 한 해만 진행한다', () => {

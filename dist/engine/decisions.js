@@ -3,7 +3,7 @@ import { HOUSING_BY_ID } from '../data/housing.js';
 import { normalizeLife } from './life.js';
 import { createRng } from './random.js';
 import { resolveAgencyChoice } from './agency.js';
-import { applyFinancialAction } from './finance.js';
+import { applyFinancialAction, applyHousingTransition } from './finance.js';
 import { startBusiness } from './business.js';
 
 function availability(life, choice) {
@@ -49,9 +49,13 @@ function chooseWeightedDecision(life, candidates) {
 export function getDecision(life) {
   const current = normalizeLife(life);
   if (current.pendingDecisionId && DECISION_BY_ID[current.pendingDecisionId]) {
-    return DECISION_BY_ID[current.pendingDecisionId];
+    const pending = DECISION_BY_ID[current.pendingDecisionId];
+    return pending.choices.some((choiceItem) => availability(current, choiceItem).enabled) ? pending : null;
   }
-  return chooseWeightedDecision(current, DECISIONS.filter((decision) => isDecisionEligible(current, decision)));
+  return chooseWeightedDecision(current, DECISIONS.filter((decision) => (
+    isDecisionEligible(current, decision)
+    && decision.choices.some((choiceItem) => availability(current, choiceItem).enabled)
+  )));
 }
 
 export function getChoices(life, decisionId) {
@@ -83,7 +87,10 @@ export function applyDecision(life, decisionId, choiceId) {
   const economy = { ...current.economy };
   if (selected.cost && !selected.housingType) economy.cash -= selected.cost;
   for (const [key, value] of Object.entries(selected.economyEffects ?? {})) {
-    if (key in economy) economy[key] += Number(value) || 0;
+    if (key === 'debt') {
+      economy.otherDebt = Math.max(0, economy.otherDebt + (Number(value) || 0));
+      economy.debt = economy.housingDebt + economy.otherDebt;
+    } else if (key in economy) economy[key] += Number(value) || 0;
   }
 
   const education = { ...current.education };
@@ -148,13 +155,7 @@ export function applyDecision(life, decisionId, choiceId) {
   let housing = current.housing;
   if (selected.housingType) {
     const option = HOUSING_BY_ID[selected.housingType];
-    const recoveredDeposit = current.economy.deposit;
-    economy.cash = economy.cash + recoveredDeposit - option.requiredCash;
-    economy.deposit = option.deposit ?? 0;
-    economy.assets = { ...current.economy.assets, deposits: economy.deposit };
-    economy.homeValue = option.homeValue ?? 0;
-    economy.debt = option.debt ?? 0;
-    economy.fixedCosts = option.monthlyCost;
+    Object.assign(economy, applyHousingTransition({ ...current, economy }, option).economy);
     housing = { ...current.housing, type: option.id };
   }
   if (selected.housingRegion) housing = { ...housing, region: selected.housingRegion, district: '' };

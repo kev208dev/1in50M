@@ -30,6 +30,8 @@ export function calculateAnnualEconomy(life) {
     income: finite(grossIncome / 12),
     fixedCosts: finite(fixedCosts),
     debt,
+    housingDebt: current.economy.housingDebt,
+    otherDebt: current.economy.otherDebt,
     deposit,
     homeValue,
     assets: {

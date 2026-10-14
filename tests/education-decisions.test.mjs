@@ -32,7 +32,8 @@ test('생활 장면 34개 이상이 고유한 id와 두 개 이상의 선택지�
   assert.ok(DECISIONS.length >= 34);
   assert.equal(new Set(DECISIONS.map((item) => item.id)).size, DECISIONS.length);
   assert.ok(DECISIONS.every((item) => item.choices.length >= 2));
-  assert.ok(DECISIONS.every((item) => item.choices.every((choice) => choice.personalityTags.length >= 1)));
+  assert.ok(DECISIONS.every((item) => item.choices.every((choice) => Array.isArray(choice.personalityTags))));
+  assert.ok(DECISIONS.some((item) => item.choices.some((choice) => choice.personalityTags.length === 0)));
 });
 
 test('동의와 권리가 중요한 장면은 성격 개입을 금지한다', () => {
