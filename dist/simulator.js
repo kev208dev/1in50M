@@ -1,13 +1,4 @@
-import {
-  REGIONS,
-  FAMILY_TYPES,
-  OCCUPATIONS,
-  FINANCES,
-  HOUSING,
-  SIBLINGS,
-} from './data.js';
-
-const clamp = (value, min = 0, max = 100) => Math.min(max, Math.max(min, Math.round(value)));
+import { createBirthSlotResult, profileFromSlotResult } from './engine/birth-slot.js';
 
 export function weightedPick(items, randomValue = Math.random()) {
   if (!Array.isArray(items) || items.length === 0) {
@@ -26,51 +17,13 @@ export function weightedPick(items, randomValue = Math.random()) {
   return items.at(-1);
 }
 
-function randomIndex(length, randomFn) {
-  return Math.min(length - 1, Math.floor(Math.min(Math.max(randomFn(), 0), 1 - Number.EPSILON) * length));
-}
-
-function variation(randomFn, size = 6) {
-  return (randomFn() * size * 2) - size;
-}
-
-function createGuardians(familyType, randomFn) {
-  return Array.from({ length: familyType.guardianCount }, (_, index) => ({
-    label: familyType.value === '조부모와 함께 사는 가정' ? `주 보호자 ${index + 1}` : `보호자 ${index + 1}`,
-    occupation: weightedPick(OCCUPATIONS, randomFn()).value,
-  }));
-}
-
 export function createBirthProfile(randomFn = Math.random, year = 2026) {
-  const region = weightedPick(REGIONS, randomFn());
-  const district = region.districts[randomIndex(region.districts.length, randomFn)];
-  const familyType = weightedPick(FAMILY_TYPES, randomFn());
-  const finance = weightedPick(FINANCES, randomFn());
-  const housing = weightedPick(HOUSING, randomFn());
-  const siblings = weightedPick(SIBLINGS, randomFn());
-  const guardians = createGuardians(familyType, randomFn);
-
-  const stats = {
-    health: clamp(64 + variation(randomFn, 7)),
-    stability: clamp(57 + finance.stability + housing.stability + variation(randomFn, 6)),
-    education: clamp(56 + finance.education + variation(randomFn, 7)),
-    relationships: clamp(62 + variation(randomFn, 8)),
-  };
-
-  const idNumber = Math.floor(randomFn() * 0xffffff).toString(16).padStart(6, '0').toUpperCase();
-  return {
-    id: `KR-${year}-${region.code}-${idNumber}`,
-    birthYear: year,
-    region: { name: region.name, short: region.short, code: region.code },
-    district,
-    familyType: familyType.value,
-    guardians,
-    finance: finance.value,
-    housing: housing.value,
-    siblings: siblings.value,
-    stats,
-    summary: `${year}년, ${region.name} ${district}에서 새로운 삶이 시작됩니다.`,
-  };
+  const entropy = Array.from({ length: 4 }, () => (
+    Math.floor(Math.min(Math.max(randomFn(), 0), 1 - Number.EPSILON) * 0xffffffff)
+      .toString(16)
+      .padStart(8, '0')
+  )).join('-');
+  return profileFromSlotResult(createBirthSlotResult(entropy, year));
 }
 
 export function validateProfile(profile) {
@@ -86,6 +39,22 @@ export function validateProfile(profile) {
     && typeof guardian.label === 'string'
     && typeof guardian.occupation === 'string'
   ))) return false;
+  if (
+    !profile.appearance
+    || typeof profile.appearance.description !== 'string'
+    || !Number.isFinite(profile.appearance.socialRating)
+    || profile.appearance.socialRating < 0
+    || profile.appearance.socialRating > 100
+  ) return false;
+  if (
+    !profile.personality
+    || !['mixed', 'strong', 'extreme'].includes(profile.personality.strength)
+    || !Array.isArray(profile.personality.rolls)
+    || profile.personality.rolls.length !== 3
+    || typeof profile.personality.label !== 'string'
+    || (profile.personality.strength !== 'mixed' && typeof profile.personality.dominant !== 'string')
+  ) return false;
+  if (!profile.name || typeof profile.name.full !== 'string') return false;
   const stats = profile.stats;
   const statKeys = ['health', 'stability', 'education', 'relationships'];
   return Boolean(

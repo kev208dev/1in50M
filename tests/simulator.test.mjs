@@ -22,9 +22,24 @@ test('생성된 프로필은 필수 필드와 0~100 능력치를 가진다', () 
   assert.ok(Object.values(profile.stats).every((value) => value >= 0 && value <= 100));
 });
 
+test('난수 경계에서도 완전한 새 프로필을 만든다', () => {
+  for (const randomFn of [() => 0, () => 1 - Number.EPSILON]) {
+    const profile = createBirthProfile(randomFn, 2026);
+    assert.equal(validateProfile(profile), true);
+    assert.ok(profile.appearance.description);
+    assert.equal(profile.personality.rolls.length, 3);
+    assert.ok(profile.name.full);
+  }
+});
+
 test('렌더링할 수 없는 저장 프로필을 거부한다', () => {
   const valid = createBirthProfile(() => 0.42, 2026);
   assert.equal(validateProfile({ ...valid, id: 123 }), false);
   assert.equal(validateProfile({ ...valid, guardians: [null] }), false);
   assert.equal(validateProfile({ ...valid, stats: { ...valid.stats, surprise: 88 } }), false);
+  assert.equal(validateProfile({
+    ...valid,
+    appearance: { ...valid.appearance, socialRating: Number.NaN },
+  }), false);
+  assert.equal(validateProfile({ ...valid, personality: { strength: 'extreme' } }), false);
 });
