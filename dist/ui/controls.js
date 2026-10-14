@@ -7,6 +7,8 @@ import { acknowledgeIdentityDiscovery } from '../engine/identity.js';
 import { updateRelationships } from '../engine/relationships.js';
 import { advancePortfolio } from '../engine/finance.js';
 import { advanceBusiness } from '../engine/business.js';
+import { advanceCompanionLives } from '../engine/companions.js';
+import { tickInterval } from '../data/runtime-settings.js';
 
 const INTERVALS = { 1: 8000, 2: 4000, 4: 2000, 8: 1000, 12: 667, 16: 500 };
 
@@ -98,6 +100,9 @@ export function createSimulationController({
     life = calculateAnnualEconomy(life);
     for (const event of selectAnnualEvents(life)) life = applyEvent(life, event.id);
     life = updateRelationships(life);
+    if (Array.isArray(life.companions)) {
+      life = normalizeLife({ ...life, companions: advanceCompanionLives(life.companions, life.age) });
+    }
     publish();
     if (life.status === 'review') {
       playing = false;
@@ -116,7 +121,7 @@ export function createSimulationController({
       timerId = null;
       processYear();
       scheduleNext();
-    }, INTERVALS[speed]);
+    }, life.runtimeSettings ? tickInterval(life.runtimeSettings, speed) : INTERVALS[speed]);
   }
 
   const initialDecision = life.pendingIdentityDiscovery ? null : getDecision(life);

@@ -43,7 +43,11 @@ function createGuardians(rng, familyType) {
       : familyType.value === '조부모와 함께 사는 가정'
         ? ['부모 보호자', '조부모 보호자']
         : Array.from({ length: familyType.guardianCount }, (_, index) => `보호자 ${index + 1}`);
-  return labels.map((label) => ({ label, occupation: rng.weighted(OCCUPATIONS).value }));
+  return labels.map((label) => ({
+    label,
+    age: rng.int(label.includes('조부모') ? 52 : 21, label.includes('조부모') ? 76 : 48),
+    occupation: rng.weighted(OCCUPATIONS).value,
+  }));
 }
 
 function createName(rng) {
@@ -80,6 +84,15 @@ export function createBirthSlotResult(seed, year = 2026) {
   });
   const personality = createPersonality(rng);
   const name = createName(rng);
+  const religion = rng.weighted([
+    { value: '무종교', weight: 51 },
+    { value: '개신교', weight: 20 },
+    { value: '불교', weight: 17 },
+    { value: '천주교', weight: 11 },
+    { value: '기타 종교', weight: 1 },
+  ]).value;
+  const urbanicity = /구$/.test(region.district) ? '대도시 생활권' : /시$/.test(region.district) ? '도시 생활권' : '군·읍면 생활권';
+  const lifeExpectancy = Number((sex.id === 'female' ? rng.int(83, 89) : rng.int(77, 84)).toFixed(1));
 
   return {
     seed: normalizedSeed,
@@ -99,6 +112,10 @@ export function createBirthSlotResult(seed, year = 2026) {
     appearance,
     personality,
     name,
+    religion,
+    urbanicity,
+    lifeExpectancy,
+    childhoodSurvival: Number((99.4 + rng.next() * 0.5).toFixed(2)),
     simulationNotice: BIRTH_WEIGHT_NOTICE,
   };
 }
@@ -134,6 +151,10 @@ export function profileFromSlotResult(result) {
     appearance: structuredClone(result.appearance),
     personality: structuredClone(result.personality),
     name: structuredClone(result.name),
+    religion: result.religion,
+    urbanicity: result.urbanicity,
+    lifeExpectancy: result.lifeExpectancy,
+    childhoodSurvival: result.childhoodSurvival,
     stats,
     simulationNotice: result.simulationNotice,
     summary: `${result.year}년, ${result.region.name} ${result.region.district}에서 ${result.name.full}의 삶이 시작됩니다.`,

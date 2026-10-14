@@ -33,6 +33,14 @@
         <p class="eyebrow"><span>대한민국</span> RANDOM BIRTH SIMULATION</p>
         <h1 id="intro-title">다시 태어난다면,<br><em>어디에서 시작할까요?</em></h1>
         <p class="intro-lead">사는 곳도, 가족도, 형편도 고를 수 없습니다.<br>당신에게 주어진 단 하나의 시작을 확인해 보세요.</p>
+        <fieldset id="birth-settings" class="birth-settings">
+          <legend>삶의 조건 설정</legend>
+          <label><span>시대</span><select id="era-setting"><option value="random">무작위</option><option value="past">과거</option><option value="current">현재</option><option value="future">미래</option></select></label>
+          <label><span>생애 시간</span><select id="duration-setting"><option value="30">30분</option><option value="60">60분</option><option value="90">90분</option></select></label>
+          <label><span>비교</span><select id="comparison-setting"><option value="korea">대한민국 평균</option><option value="none">비교하지 않음</option></select></label>
+          <label class="setting-toggle"><input id="music-setting" type="checkbox" checked><span>음악</span></label>
+          <label class="setting-toggle"><input id="auto-setting" type="checkbox"><span>자동 결정</span></label>
+        </fieldset>
         <button id="birth-button" class="primary-button hero-button" type="button">
           <span>태어나기</span>
           <span class="button-arrow" aria-hidden="true">↗</span>
@@ -88,6 +96,17 @@
           <span>무작위 삶 생성기</span>
         </div>
         <div id="birth-slot" class="birth-slot" aria-live="polite"></div>
+      </div>
+
+      <div class="birth-context-grid">
+        <section class="birth-context-panel" aria-labelledby="certificate-details-title">
+          <div class="birth-context-heading"><span>BIRTH CERTIFICATE</span><h2 id="certificate-details-title">출생증명서</h2></div>
+          <div id="birth-certificate-details" class="birth-facts"></div>
+        </section>
+        <section class="birth-context-panel" aria-labelledby="companion-preview-title">
+          <div class="birth-context-heading"><span>SAME MOMENT</span><h2 id="companion-preview-title">함께 태어난 네 사람</h2></div>
+          <div id="companion-preview" class="companion-grid"></div>
+        </section>
       </div>
 
       <footer class="slot-footer">
@@ -212,6 +231,10 @@
           <details class="life-panel" open>
             <summary><span>07</span> 상태의 흐름</summary>
             <div class="panel-body mini-chart" aria-label="아직 상태 변화 기록이 없습니다."></div>
+          </details>
+          <details class="life-panel" open>
+            <summary><span>08</span> 같은 순간의 삶</summary>
+            <div id="companion-lives" class="companion-grid companion-grid-life panel-body"></div>
           </details>
         </aside>
       </div>

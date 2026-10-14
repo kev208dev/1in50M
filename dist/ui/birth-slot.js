@@ -87,3 +87,45 @@ export function renderBirthSlot(root, result, { spinning = false } = {}) {
   root.classList.toggle('is-spinning', spinning);
   root.setAttribute('aria-busy', String(spinning));
 }
+
+export function renderBirthCertificate(root, result) {
+  if (!root || !result) return;
+  const documentRef = root.ownerDocument;
+  const facts = [
+    ['이름', result.name.full],
+    ['출생', `${result.year}년 · ${result.region.name} ${result.region.district}`],
+    ['생활권', result.urbanicity],
+    ['가족', result.household.summary],
+    ['보호자', result.household.guardians.map((item) => `${item.label} ${item.age}세 · ${item.occupation}`).join(' / ')],
+    ['가정 형편', `${result.finance.value} · ${result.housing.value}`],
+    ['종교 환경', result.religion],
+    ['외모', result.appearance.description],
+    ['성격', result.personality.label],
+    ['기대수명', `약 ${result.lifeExpectancy}세`],
+  ];
+  root.replaceChildren(...facts.map(([label, value]) => {
+    const item = makeNode(documentRef, 'div', 'birth-fact');
+    item.append(makeNode(documentRef, 'span', 'birth-fact-label', label), makeNode(documentRef, 'strong', 'birth-fact-value', value));
+    return item;
+  }));
+}
+
+export function renderCompanionLives(root, companions) {
+  if (!root) return;
+  const documentRef = root.ownerDocument;
+  root.replaceChildren(...(companions ?? []).map((companion, index) => {
+    const card = makeNode(documentRef, 'article', 'companion-card');
+    const top = makeNode(documentRef, 'div', 'companion-card-top');
+    top.append(
+      makeNode(documentRef, 'span', 'companion-index', String(index + 1).padStart(2, '0')),
+      makeNode(documentRef, 'b', `companion-status is-${companion.status}`, companion.status === 'living' ? `${companion.age}세` : `${companion.age}세에 기억됨`),
+    );
+    card.append(
+      top,
+      makeNode(documentRef, 'strong', 'companion-name', companion.name),
+      makeNode(documentRef, 'p', 'companion-summary', `${companion.currentRegion} · ${companion.career ?? companion.familyType}`),
+      makeNode(documentRef, 'small', 'companion-notice', companion.simulationNotice),
+    );
+    return card;
+  }));
+}

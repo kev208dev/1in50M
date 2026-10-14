@@ -137,6 +137,12 @@ main { position: relative; z-index: 1; }
   line-height: 1.85;
   word-break: keep-all;
 }
+.birth-settings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto auto; gap: 7px; max-width: 720px; margin: -14px 0 24px; padding: 0; border: 0; }
+.birth-settings legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.birth-settings label { display: grid; gap: 5px; min-width: 0; color: var(--ink-muted); font-family: var(--font-mono); font-size: 8px; letter-spacing: .08em; }
+.birth-settings select { min-width: 0; height: 38px; padding: 0 10px; border: 1px solid var(--line-bright); border-radius: 0; color: var(--ink); background: var(--surface); font: inherit; }
+.birth-settings .setting-toggle { display: flex; min-height: 38px; padding: 0 10px; align-items: center; align-self: end; gap: 7px; border: 1px solid var(--line-bright); cursor: pointer; }
+.setting-toggle input { accent-color: var(--accent); }
 
 .primary-button, .secondary-button, .text-button {
   min-height: 54px;
@@ -232,7 +238,7 @@ body[data-view="profile"] { height: 100dvh; overflow: hidden; }
 body[data-view="profile"] main { height: calc(100dvh - 80px); }
 .slot-view {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
   gap: clamp(12px, 2vh, 22px);
   height: 100%;
   min-height: 0;
@@ -279,6 +285,23 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
 .slot-actions { display: flex; flex: 0 0 auto; gap: 8px; bottom: 0; }
 .slot-actions button { min-height: 50px; white-space: nowrap; }
 .is-drawing .slot-actions .reroll-icon { animation: spin .65s linear infinite; }
+.birth-context-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 152px; min-height: 0; }
+.birth-context-panel { display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 12px; min-height: 0; padding: 11px; overflow: hidden; border: 1px solid var(--line); background: rgba(26, 33, 28, .7); }
+.birth-context-heading span { color: var(--accent); font-family: var(--font-mono); font-size: 7px; letter-spacing: .1em; }
+.birth-context-heading h2 { margin: 5px 0 0; font-family: var(--font-display); font-size: 17px; font-weight: 500; }
+.birth-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 12px; min-height: 0; overflow-y: auto; }
+.birth-fact { min-width: 0; }
+.birth-fact span, .birth-fact strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.birth-fact-label { color: var(--ink-muted); font-family: var(--font-mono); font-size: 7px; }
+.birth-fact-value { margin-top: 2px; font-size: 9px; font-weight: 400; }
+.companion-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; min-height: 0; overflow-y: auto; }
+.companion-card { min-width: 0; padding: 7px 8px; border: 1px solid var(--line); background: var(--bg); }
+.companion-card-top { display: flex; justify-content: space-between; gap: 6px; color: var(--ink-muted); font-family: var(--font-mono); font-size: 7px; }
+.companion-status.is-living { color: var(--accent); }
+.companion-name { display: block; margin-top: 5px; font-size: 10px; }
+.companion-summary { margin: 2px 0 0; overflow: hidden; color: var(--ink-muted); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.companion-notice { display: none; }
+.companion-grid-life { grid-template-columns: 1fr; max-height: 220px; }
 
 @keyframes slot-roll {
   0% { transform: translateY(-34%); filter: blur(0); }
@@ -652,6 +675,7 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
   .intro-view { grid-template-columns: 1fr; min-height: auto; padding-top: 58px; }
   .intro-visual { width: min(86vw, 500px); order: -1; }
   .intro-copy { text-align: center; }
+  .birth-settings { margin-left: auto; margin-right: auto; text-align: left; }
   .intro-copy .eyebrow { line-height: 1.7; }
   .hero-button { margin: 0 auto; }
   .intro-facts { margin-top: 0; overflow-x: auto; }
@@ -679,7 +703,7 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
 
 @media (max-width: 720px) {
   body[data-view="profile"] main { height: calc(100dvh - 68px); }
-  .slot-view { gap: 9px; padding: 12px 12px calc(8px + env(safe-area-inset-bottom)); }
+  .slot-view { gap: 7px; padding: 10px 12px calc(8px + env(safe-area-inset-bottom)); }
   .slot-heading { align-items: center; }
   .slot-heading h1 { font-size: clamp(26px, 8vw, 38px); }
   .slot-heading .eyebrow { margin-bottom: 3px; font-size: 8px; }
@@ -703,6 +727,11 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
   .slot-reel[data-slot="sex"] .slot-detail-mobile,
   .slot-reel[data-slot="personality"] .slot-detail-mobile { right: auto; left: -4px; }
   .slot-footer { gap: 8px; }
+  .birth-context-grid { grid-template-columns: 1fr; max-height: 106px; }
+  .birth-context-panel { grid-template-columns: 90px minmax(0, 1fr); padding: 7px; }
+  .birth-context-panel:first-child { display: none; }
+  .birth-context-heading h2 { font-size: 13px; }
+  .companion-grid { grid-template-columns: repeat(4, minmax(105px, 1fr)); overflow-x: auto; overflow-y: hidden; }
   .slot-notice { display: none; }
   .slot-actions { position: sticky; display: grid; grid-template-columns: .9fr 1.1fr; width: 100%; bottom: env(safe-area-inset-bottom); }
   .slot-actions button { min-height: 48px; padding: 0 10px; justify-content: center; font-size: 11px; }
@@ -717,6 +746,8 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
   .intro-visual { width: 92vw; margin-left: calc((92vw - 100%) / -2); }
   .intro-copy h1 { font-size: clamp(39px, 12vw, 58px); }
   .intro-lead br { display: none; }
+  .birth-settings { grid-template-columns: 1fr 1fr; }
+  .birth-settings label:nth-of-type(3) { grid-column: 1 / -1; }
   .intro-facts div { padding-left: 14px; padding-right: 14px; margin-right: 0; }
   .profile-kicker { flex-direction: column; gap: 8px; }
   .birth-certificate { min-height: 450px; padding: 34px 28px; }

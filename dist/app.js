@@ -1,6 +1,8 @@
 import { validateProfile } from './simulator.js';
 import { CAREER_GROUPS } from './data/careers.js';
 import { createBirthSlotResult, profileFromSlotResult } from './engine/birth-slot.js';
+import { createCompanionLives, advanceCompanionLives } from './engine/companions.js';
+import { normalizeRuntimeSettings, resolveBirthYear } from './data/runtime-settings.js';
 import { createLife } from './engine/life.js';
 import { getDecision, getChoices } from './engine/decisions.js';
 import { createLifeSummary } from './engine/summary.js';
@@ -22,7 +24,12 @@ import {
   renderResult,
   formatWon,
 } from './ui/render.js';
-import { renderBirthSlot, slotDuration } from './ui/birth-slot.js';
+import {
+  renderBirthSlot,
+  renderBirthCertificate,
+  renderCompanionLives,
+  slotDuration,
+} from './ui/birth-slot.js';
 
 const viewNames = ['intro', 'profile', 'future', 'life', 'result', 'past-lives'];
 const views = Object.fromEntries(viewNames.map((name) => [name, document.querySelector(`#${name}-view`)]));
@@ -49,6 +56,8 @@ const agencyDialog = document.querySelector('#agency-dialog');
 const careerDialog = document.querySelector('#career-dialog');
 let candidateProfile = null;
 let candidateResult = null;
+let candidateCompanions = [];
+let runtimeSettings = normalizeRuntimeSettings();
 let controller = null;
 let isDrawing = false;
 let lastFocused = null;
@@ -93,13 +102,29 @@ function nextBirthSeed() {
   return `${randomPart}-${spinCounter}`;
 }
 
+function readRuntimeSettings() {
+  return normalizeRuntimeSettings({
+    era: document.querySelector('#era-setting').value,
+    durationMinutes: Number(document.querySelector('#duration-setting').value),
+    comparison: document.querySelector('#comparison-setting').value,
+    music: document.querySelector('#music-setting').checked,
+    autoDecision: document.querySelector('#auto-setting').checked,
+  });
+}
+
 async function spinBirthSlot() {
   if (isDrawing) return;
   setDrawDisabled(true);
   showView('profile');
-  candidateResult = createBirthSlotResult(nextBirthSeed(), 2026);
+  runtimeSettings = readRuntimeSettings();
+  const seed = nextBirthSeed();
+  const birthYear = resolveBirthYear(runtimeSettings, seed, new Date().getFullYear());
+  candidateResult = createBirthSlotResult(seed, birthYear);
   candidateProfile = profileFromSlotResult(candidateResult);
+  candidateCompanions = createCompanionLives(candidateProfile, seed);
   renderBirthSlot(document.querySelector('#birth-slot'), candidateResult, { spinning: !reduceMotion.matches });
+  renderBirthCertificate(document.querySelector('#birth-certificate-details'), candidateResult);
+  renderCompanionLives(document.querySelector('#companion-preview'), candidateCompanions);
   renderProfileContext(candidateProfile);
   await wait(slotDuration(reduceMotion.matches));
   renderBirthSlot(document.querySelector('#birth-slot'), candidateResult);
@@ -132,6 +157,7 @@ function updateMoment(life) {
 
 function renderCurrentLife(life) {
   renderLife(views.life, life);
+  renderCompanionLives(document.querySelector('#companion-lives'), advanceCompanionLives(life.companions ?? [], life.age));
   updateMoment(life);
   updatePlayback();
   saveCurrentLife(storage, life);
@@ -192,7 +218,11 @@ function startLife(life) {
     onAgencyOverride: (resolution) => { pendingAgencyResolution = resolution; },
     onComplete: finishLife,
   });
-  const current = controller.getState();
+  let current = controller.getState();
+  if (current.runtimeSettings?.autoDecision) {
+    controller.setAutoDecision(true);
+    current = controller.getState();
+  }
   renderCurrentLife(current);
   showView('life');
   if (current.status === 'review') {
@@ -203,12 +233,18 @@ function startLife(life) {
     openIdentityDiscovery(current);
   } else if (current.pendingDecisionId) {
     openDecision(getDecision(current), current);
+  } else {
+    controller.play();
+    updatePlayback();
   }
 }
 
 function beginCandidateLife() {
   if (!candidateProfile || isDrawing) return;
-  startLife(createLife(candidateProfile, candidateProfile.id));
+  const life = createLife(candidateProfile, candidateProfile.id);
+  life.runtimeSettings = structuredClone(runtimeSettings);
+  life.companions = structuredClone(candidateCompanions);
+  startLife(life);
   liveRegion.textContent = '선택한 출생 조건으로 삶을 시작했습니다.';
 }
 
