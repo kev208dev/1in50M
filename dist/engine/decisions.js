@@ -7,6 +7,7 @@ import { resolveAgencyChoice } from './agency.js';
 import { applyFinancialAction, applyHousingTransition } from './finance.js';
 import { startBusiness } from './business.js';
 import { applyRiskEffects } from './wellbeing.js';
+import { applyDiminishingEffects, describeAppliedChanges } from './stat-effects.js';
 
 function availability(life, choice) {
   if (Number.isFinite(choice.maximumAge) && life.age > choice.maximumAge) {
@@ -97,10 +98,8 @@ export function applyDecision(life, decisionId, choiceId) {
   if (!decision || !selected) throw new RangeError('알 수 없는 결정 또는 선택입니다.');
   if (!selected.enabled) throw new RangeError(selected.reason || '현재 선택할 수 없습니다.');
 
-  const stats = { ...current.stats };
-  for (const [key, value] of Object.entries(selected.effects ?? {})) {
-    if (key in stats) stats[key] += Number(value) || 0;
-  }
+  const stats = applyDiminishingEffects(current, selected.effects).stats;
+  const changes = Object.fromEntries(Object.keys(stats).map((key) => [key, stats[key] - current.stats[key]]));
   const economy = { ...current.economy };
   if (selected.cost && !selected.housingType) {
     if (selected.payer === 'household' && current.age < 18) economy.householdSupport -= selected.cost;
@@ -214,10 +213,11 @@ export function applyDecision(life, decisionId, choiceId) {
       age: current.age,
       year: current.year,
       type: 'decision',
-      text: `${decision.title}: ${selected.label}`,
+      text: `${decision.title}: ${selected.label}.${describeAppliedChanges(changes) ? ` ${describeAppliedChanges(changes)}` : ''}`,
       decisionId,
       choiceId,
       label: selected.label,
+      changes,
     }],
     milestones: [...current.milestones, { age: current.age, type: 'decision', label: selected.label }],
   };

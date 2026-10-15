@@ -5,6 +5,7 @@ import { IDENTITY_NOTICE } from '../data/identity.js';
 import { getResearchSource } from '../data/research.js';
 import { normalizeLife } from '../engine/life.js';
 import { survivalCurve } from '../engine/mortality.js';
+import { describeEffectDirections } from '../engine/stat-effects.js';
 import { filterPublicLives } from '../community.js';
 import { characterViewModel } from '../engine/life-character.js';
 import { characterSvg, STAGE_LABELS } from './character-art.js';
@@ -102,6 +103,7 @@ export function createLifeViewModel(life) {
     debt: formatWon(current.economy.debt),
     netWorth: formatWon(current.economy.netWorth),
     dopamine: current.economy.dopamine,
+    canUseFinance: current.age >= 19 && current.status === 'living',
     education: EDUCATION_BY_ID[current.education.schoolType]?.label ?? (current.education.level === 'childhood' ? '미취학' : '일반 경로'),
     career: current.career.title ?? (current.career.status === 'retired' ? '은퇴' : '아직 정하지 않음'),
     housing: HOUSING_BY_ID[current.housing.type]?.label ?? '가족과 동거',
@@ -180,6 +182,8 @@ export function renderLife(root, life) {
   renderTextFields(root, '[data-life="debt"]', model.debt);
   renderTextFields(root, '[data-life="net-worth"]', model.netWorth);
   renderTextFields(root, '[data-life="dopamine"]', model.dopamine);
+  const financeButton = root.querySelector('#finance-menu-button');
+  if (financeButton) financeButton.hidden = !model.canUseFinance;
   renderTextFields(root, '[data-life="education"]', model.education);
   renderTextFields(root, '[data-life="career"]', model.career);
   renderTextFields(root, '[data-life="housing"]', model.housing);
@@ -325,14 +329,10 @@ export function renderLife(root, life) {
   return model;
 }
 
-const EFFECT_LABELS = { health: '건강', happiness: '행복', knowledge: '지식', relationships: '관계' };
-
 /** 선택지의 비용·위험·예상 영향을 사람이 읽을 수 있는 짧은 문구로 만든다. */
 export function choiceMeta(choice) {
   const cost = Number(choice.cost ?? choice.financialAction?.amount ?? choice.businessPlan?.capital ?? 0) || 0;
-  const effects = Object.entries(choice.effects ?? {})
-    .filter(([key, value]) => EFFECT_LABELS[key] && Number(value))
-    .map(([key, value]) => `${EFFECT_LABELS[key]} ${Number(value) > 0 ? '+' : '−'}${Math.abs(Number(value))}`);
+  const effects = describeEffectDirections(choice.effects);
   const tags = choice.tags ?? [];
   const negative = Object.values(choice.effects ?? {}).reduce((sum, value) => sum + Math.min(0, Number(value) || 0), 0);
   const actionType = choice.financialAction?.type;
@@ -342,7 +342,7 @@ export function choiceMeta(choice) {
   return {
     cost: cost > 0 ? formatWon(cost) : '없음',
     risk,
-    effect: effects.slice(0, 3).join(' · ') || '큰 변화 없음',
+    effect: effects.slice(0, 3).join(' · ') || '방향을 알 수 없음',
   };
 }
 

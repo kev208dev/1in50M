@@ -19,6 +19,7 @@ import { selectEraEvent, applyEraEvent } from './era-events.js';
 import { normalizeRiskFactors, normalizeWellbeingHabits } from './wellbeing.js';
 import { defaultServiceState, ensureServiceAssessment } from './service.js';
 import { PUBLIC_DATA_VERSION } from '../data/public-statistics.js';
+import { applyDiminishingEffects } from './stat-effects.js';
 
 const STAT_KEYS = ['health', 'happiness', 'knowledge', 'relationships'];
 
@@ -343,11 +344,11 @@ export function advanceYear(life, tickId = `age-${Number(life?.age ?? 0) + 1}`) 
   const nextAge = current.age + 1;
   const rng = createRng(`${current.seed}:${current.rngState}:${nextAge}`);
   const focus = FOCUS_BY_ID[current.focusId];
-  const stats = { ...current.stats };
-  for (const key of STAT_KEYS) stats[key] += focus.effects?.[key] ?? 0;
-  stats.health += nextAge > 55 ? -1 : 0;
-  stats.happiness += rng.int(-1, 1);
-  stats.knowledge += nextAge <= 24 ? 1 : 0;
+  const annualEffects = Object.fromEntries(STAT_KEYS.map((key) => [key, focus.effects?.[key] ?? 0]));
+  annualEffects.health += nextAge > 55 ? -1 : 0;
+  annualEffects.happiness += rng.int(-1, 1);
+  annualEffects.knowledge += nextAge <= 24 ? 1 : 0;
+  const stats = applyDiminishingEffects(current, annualEffects).stats;
 
   const education = { ...current.education };
   const completionAge = { university: 22, college: 20, training: 19 }[education.level];

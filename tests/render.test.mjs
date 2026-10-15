@@ -6,6 +6,7 @@ import {
   formatAge,
   getVisibleLifeLog,
   renderTextFields,
+  choiceMeta,
 } from '../dist/ui/render.js';
 import { makeLifeAtAge, makeMaleLifeAtAge } from './support/life-fixtures.mjs';
 import { createLifeSummary } from '../dist/engine/summary.js';
@@ -35,6 +36,17 @@ test('나이와 원화 수치를 사람이 읽을 수 있게 표시한다', () =
   assert.equal(formatAge(24), '24세');
   assert.equal(formatWon(123456789), '1억 2,346만원');
   assert.equal(formatWon(-2500000), '-250만원');
+});
+
+test('선택지는 정확한 증감 수치 대신 삶의 방향만 보여준다', () => {
+  const meta = choiceMeta({ effects: { knowledge: 5, happiness: -1 } });
+  assert.equal(meta.effect, '배움에 도움 · 마음의 여유 감소');
+  assert.doesNotMatch(meta.effect, /\+5|−1|5|1/);
+});
+
+test('금융 메뉴는 성인기부터 사용할 수 있다', () => {
+  assert.equal(createLifeViewModel(makeLifeAtAge(18)).canUseFinance, false);
+  assert.equal(createLifeViewModel(makeLifeAtAge(19)).canUseFinance, true);
 });
 
 test('미성년 화면은 개인 현금 대신 가정 지원을 구분해 표시한다', () => {

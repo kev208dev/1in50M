@@ -39,9 +39,9 @@ test('사건 효과는 최대 3개, 미성년의 현금 변화는 가정 지원�
   assert.equal(money[0].label, '가정 지원');
 });
 
-test('선택지 카드는 비용·위험·예상 영향을 요약한다', () => {
-  assert.deepEqual(choiceMeta({ effects: { knowledge: 3, happiness: -1 }, tags: ['사교육'], cost: 2400000 }), { cost: '240만원', risk: '낮음', effect: '지식 +3 · 행복 −1' });
+test('선택지 카드는 비용·위험·효과 방향을 수치 없이 요약한다', () => {
+  assert.deepEqual(choiceMeta({ effects: { knowledge: 3, happiness: -1 }, tags: ['사교육'], cost: 2400000 }), { cost: '240만원', risk: '낮음', effect: '배움에 도움 · 마음의 여유 감소' });
   assert.equal(choiceMeta({ effects: { happiness: -3, health: -1 }, tags: ['충동', '위험'], financialAction: { type: 'gamble', amount: 100000 } }).risk, '높음');
   assert.equal(choiceMeta({ effects: {}, tags: ['도전'] }).risk, '보통');
-  assert.equal(choiceMeta({ effects: {} }).effect, '큰 변화 없음');
+  assert.equal(choiceMeta({ effects: {} }).effect, '방향을 알 수 없음');
 });
