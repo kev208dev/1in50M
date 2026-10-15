@@ -7,6 +7,7 @@ import { normalizeLife } from '../engine/life.js';
 import { survivalCurve } from '../engine/mortality.js';
 import { filterPublicLives } from '../community.js';
 import { characterViewModel } from '../engine/life-character.js';
+import { characterSvg, STAGE_LABELS } from './character-art.js';
 
 const STAT_LABELS = {
   health: '건강',
@@ -55,8 +56,17 @@ export function getVisibleLifeLog(history, limit = 8) {
     .slice(0, Math.max(0, limit));
 }
 
+function relationshipLabel(relationships) {
+  const children = relationships.children?.length ?? 0;
+  if (relationships.partner) return children ? `동반자 · 자녀 ${children}명` : '동반자와 함께';
+  if (children) return `자녀 ${children}명`;
+  const friends = relationships.friends?.length ?? 0;
+  return friends ? `가족 · 친구 ${friends}명` : '가족과 함께';
+}
+
 export function createLifeViewModel(life) {
   const current = normalizeLife(life);
+  const character = characterViewModel(current);
   const milestones = new Map(current.milestones.map((item) => [item.age, item]));
   const appearance = current.profile?.appearance?.description ?? '외모 정보 없음';
   const personality = current.profile?.personality?.label ?? '혼합 성향';
@@ -73,6 +83,11 @@ export function createLifeViewModel(life) {
     ? `${businessLabels[current.business.sector] ?? current.business.sector} 사업 · ${businessStatus[current.business.status] ?? current.business.status}`
     : '운영 중인 사업 없음';
   return {
+    name: current.profile?.name?.full ?? '이름 없는 삶',
+    birthplace: `${current.profile?.region?.name ?? '대한민국'} ${current.profile?.district ?? ''}`.trim(),
+    stageLabel: STAGE_LABELS[character.stage] ?? '',
+    relationship: relationshipLabel(current.relationships),
+    yearAge: `${current.year}년 · ${formatAge(current.age)}`,
     age: formatAge(current.age),
     ageNumber: current.age,
     year: String(current.year),
@@ -118,7 +133,7 @@ export function createLifeViewModel(life) {
       state: age < current.age ? 'past' : age === current.age ? 'current' : 'future',
       milestone: milestones.get(age) ?? null,
     })),
-    character: characterViewModel(current),
+    character,
   };
 }
 
@@ -138,7 +153,21 @@ function makeNode(root, tag, className, text) {
 export function renderLife(root, life) {
   const model = createLifeViewModel(life);
   renderTextFields(root, '#age-display', model.age);
-  renderTextFields(root, '#year-display', model.year);
+  renderTextFields(root, '#year-display', `${model.year}년`);
+  renderTextFields(root, '[data-life="name"]', model.name);
+  renderTextFields(root, '[data-life="birthplace"]', `${model.birthplace} 출생`);
+  renderTextFields(root, '[data-life="stage"]', model.stageLabel);
+  renderTextFields(root, '[data-life="relationship"]', model.relationship);
+  renderTextFields(root, '[data-life="year-age"]', model.yearAge);
+  const portrait = root.querySelector('#life-portrait');
+  if (portrait && portrait.dataset.stage !== model.character.stage) {
+    portrait.innerHTML = characterSvg(model.character.stage);
+    portrait.dataset.stage = model.character.stage;
+  }
+  if (portrait) {
+    portrait.dataset.pose = model.character.pose;
+    portrait.setAttribute('aria-label', `${model.stageLabel} 단계 캐릭터 · ${model.age}`);
+  }
   renderTextFields(root, '[data-life="location"]', model.location);
   renderTextFields(root, '[data-life="cash"]', model.cash);
   renderTextFields(root, '[data-life="household-support"]', model.householdSupport);
@@ -237,7 +266,7 @@ export function renderLife(root, life) {
     character.style.setProperty('--character-tone', model.character.tone);
     character.setAttribute('role', 'img');
     character.setAttribute('aria-label', `${model.age} 생애 진행 ${model.character.progress}%`);
-    character.innerHTML = '<svg viewBox="0 0 64 96" aria-hidden="true"><circle class="character-head" cx="32" cy="19" r="12"/><path class="character-body" d="M20 40 Q32 31 44 40 L48 72 Q40 80 32 80 Q24 80 16 72Z"/><path class="character-limbs" d="M19 45 8 62M45 45l11 17M24 77l-5 15M40 77l5 15"/></svg>';
+    character.innerHTML = characterSvg(model.character.stage, { ground: false });
     const track = makeNode(root, 'div', 'life-character-track');
     track.style.setProperty('--life-progress', `${model.character.progress}%`);
     const line = makeNode(root, 'span', 'life-character-line');
@@ -293,28 +322,61 @@ export function renderLife(root, life) {
   return model;
 }
 
+const EFFECT_LABELS = { health: '건강', happiness: '행복', knowledge: '지식', relationships: '관계' };
+
+/** 선택지의 비용·위험·예상 영향을 사람이 읽을 수 있는 짧은 문구로 만든다. */
+export function choiceMeta(choice) {
+  const cost = Number(choice.cost ?? choice.financialAction?.amount ?? choice.businessPlan?.capital ?? 0) || 0;
+  const effects = Object.entries(choice.effects ?? {})
+    .filter(([key, value]) => EFFECT_LABELS[key] && Number(value))
+    .map(([key, value]) => `${EFFECT_LABELS[key]} ${Number(value) > 0 ? '+' : '−'}${Math.abs(Number(value))}`);
+  const tags = choice.tags ?? [];
+  const negative = Object.values(choice.effects ?? {}).reduce((sum, value) => sum + Math.min(0, Number(value) || 0), 0);
+  const actionType = choice.financialAction?.type;
+  let risk = '낮음';
+  if (actionType === 'gamble' || tags.includes('대출') || negative <= -5 || (tags.includes('위험') && (tags.includes('충동') || tags.includes('창업')))) risk = '높음';
+  else if (tags.includes('위험') || tags.includes('도전') || tags.includes('충동') || negative <= -2 || actionType === 'lottery') risk = '보통';
+  return {
+    cost: cost > 0 ? formatWon(cost) : '없음',
+    risk,
+    effect: effects.slice(0, 3).join(' · ') || '큰 변화 없음',
+  };
+}
+
 export function renderDecision(
   dialog,
   decision,
   choices,
   currentAge = decision.age ?? decision.ageRange?.[0],
 ) {
-  renderTextFields(dialog, '[data-decision="kicker"]', `${currentAge}세의 결정`);
+  renderTextFields(dialog, '[data-decision="kicker"]', `${currentAge}세 · 중요한 결정`);
   renderTextFields(dialog, '[data-decision="title"]', decision.title);
   renderTextFields(dialog, '[data-decision="prompt"]', decision.prompt);
   const list = dialog.querySelector('[data-decision="choices"]');
   if (!list) return;
+  list.dataset.count = String(choices.length);
   list.replaceChildren(...choices.map((choice, index) => {
     const button = makeNode(dialog, 'button', 'decision-choice');
     button.type = 'button';
     button.dataset.choiceId = choice.id;
     button.disabled = !choice.enabled;
-    const number = makeNode(dialog, 'span', 'decision-number', String(index + 1).padStart(2, '0'));
+    if (!choice.enabled) button.dataset.state = 'locked';
+    const top = makeNode(dialog, 'span', 'choice-top');
+    top.append(makeNode(dialog, 'span', 'decision-number', String.fromCharCode(65 + index)));
+    if (!choice.enabled) top.append(makeNode(dialog, 'span', 'choice-lock', '잠김'));
     const copy = makeNode(dialog, 'span', 'decision-copy');
-    copy.append(makeNode(dialog, 'strong', '', choice.label), makeNode(dialog, 'small', '', choice.enabled ? choice.description : choice.reason));
+    copy.append(makeNode(dialog, 'strong', '', choice.label), makeNode(dialog, 'small', '', choice.description));
+    const meta = choiceMeta(choice);
+    const metaList = makeNode(dialog, 'span', 'choice-meta');
+    for (const [label, value, className] of [['비용', meta.cost, ''], ['위험', meta.risk, `risk-${meta.risk}`], ['예상 영향', meta.effect, 'is-effect']]) {
+      const row = makeNode(dialog, 'span', 'choice-meta-row');
+      row.append(makeNode(dialog, 'i', '', label), makeNode(dialog, 'b', className, value));
+      metaList.append(row);
+    }
     const tags = makeNode(dialog, 'span', 'decision-tags');
     for (const tag of choice.tags ?? []) tags.append(makeNode(dialog, 'i', '', tag));
-    button.append(number, copy, tags);
+    button.append(top, copy, metaList, tags);
+    if (!choice.enabled) button.append(makeNode(dialog, 'span', 'choice-note', `조건 부족 · ${choice.reason}`));
     return button;
   }));
 

@@ -118,16 +118,6 @@
         </footer>
       </div>
     </section>
-      </div>
-
-      <footer class="slot-footer">
-        <p class="slot-notice">현재 결과는 실제 인구통계가 아닌 체험용 가상 시뮬레이션입니다. 일부 검증 자료와 <strong>창작용 가중치</strong>를 함께 사용하며, 마음에 들지 않으면 계속 다시 돌릴 수 있습니다.</p>
-        <div class="slot-actions" aria-label="출생 슬롯 동작">
-          <button id="slot-spin-button" class="secondary-button" type="button"><span class="reroll-icon" aria-hidden="true">↻</span> 다시 돌리기</button>
-          <button id="slot-accept-button" class="primary-button" type="button">이 삶으로 시작하기 <span aria-hidden="true">→</span></button>
-        </div>
-      </footer>
-    </section>
 
     <section id="life-view" class="life-view" data-mobile-panel="story" aria-label="생애 시뮬레이션" hidden>
       <header class="life-toolbar">
@@ -135,20 +125,11 @@
           <span id="age-display">0세</span>
           <span class="life-clock-divider"></span>
           <span id="year-display">2026</span>
-          <small data-life="location">대한민국</small>
+          <small data-life="stage">영아</small>
+          <small class="life-clock-location" data-life="location">대한민국</small>
         </div>
-        <div class="playback-controls" aria-label="시간 진행">
-          <button id="play-button" class="play-button" type="button" aria-label="삶 재생">▶</button>
-          <div id="speed-controls" class="speed-controls" role="group" aria-label="진행 속도">
-            <button type="button" data-speed="1" aria-pressed="true">1×</button>
-            <button type="button" data-speed="2" aria-pressed="false">2×</button>
-            <button type="button" data-speed="4" aria-pressed="false">4×</button>
-            <button type="button" data-speed="8" aria-pressed="false">8×</button>
-            <button type="button" data-speed="12" aria-pressed="false">12×</button>
-            <button type="button" data-speed="16" aria-pressed="false">16×</button>
-          </div>
-          <button id="skip-button" class="toolbar-button" type="button">다음 결정까지</button>
-          <button id="auto-button" class="toolbar-button" type="button" aria-pressed="false">자동 결정</button>
+        <div class="life-toolbar-actions">
+          <button id="source-button" class="icon-button" type="button" aria-label="안내와 데이터 출처 보기"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v5M10 6.2v.1"/></svg></button>
         </div>
       </header>
 
@@ -162,6 +143,13 @@
 
       <div class="life-layout">
         <aside class="life-sidebar life-sidebar-left">
+          <section class="life-profile-card" aria-label="인물">
+            <div id="life-portrait" class="life-portrait" role="img" aria-label="성장 단계 캐릭터"></div>
+            <div class="life-identity">
+              <strong data-life="name">이름</strong>
+              <span data-life="birthplace">대한민국</span>
+            </div>
+          </section>
           <details id="stats-panel" class="life-panel" open>
             <summary><span>01</span> 현재 상태</summary>
             <div class="panel-body" data-life-list="stats"></div>
@@ -209,18 +197,18 @@
         <section class="life-story" aria-label="현재 인생 기록">
           <div class="current-moment">
             <div class="moment-scan" aria-hidden="true"></div>
-            <p class="eyebrow"><span>NOW</span> LIFE IN PROGRESS</p>
-            <h1><span id="moment-age">0</span>번째 해가<br><em>흐르고 있습니다.</em></h1>
+            <p class="moment-kicker"><i aria-hidden="true"></i><span>지금 일어난 일</span> · <span data-life="year-age">0세</span></p>
+            <h1 id="moment-title"><span id="moment-age">0</span>번째 해가<br><em>흐르고 있습니다.</em></h1>
             <p id="moment-copy">아직 아무것도 정해지지 않은 첫해입니다. 시간은 천천히, 그러나 멈추지 않고 흐릅니다.</p>
           </div>
 
-          <section class="map-section" aria-labelledby="map-title">
-            <div class="life-section-heading">
-              <div><p class="eyebrow">LIFE MAP / 00—90</p><h2 id="map-title">인생 지도</h2></div>
-              <span>한 칸은 한 해</span>
-            </div>
-            <div id="life-map" class="life-map" aria-label="0세부터 90세까지의 삶"></div>
+          <section class="life-status-grid" aria-label="현재 학교·직업·주거·관계">
+            <article class="status-tile"><span class="status-label"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 7 10 3l8 4-8 4Z"/><path d="M5 9v4.5c0 1.5 10 1.5 10 0V9"/></svg>학교</span><strong data-life="education">미취학</strong></article>
+            <article class="status-tile"><span class="status-label"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="6" width="15" height="10.5" rx="2"/><path d="M7 6V4.5h6V6M2.5 10.5h15"/></svg>직업</span><strong data-life="career">아직 정하지 않음</strong></article>
+            <article class="status-tile"><span class="status-label"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 9l7-5.5L17 9v7.5H3Z"/><path d="M8 16.5V12h4v4.5"/></svg>주거</span><strong data-life="housing">가족과 동거</strong><small data-life="location">대한민국</small></article>
+            <article class="status-tile status-tile-accent"><span class="status-label"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16.5C5 13 2.5 10.5 2.5 7.5A3.8 3.8 0 0 1 10 6a3.8 3.8 0 0 1 7.5 1.5c0 3-2.5 5.5-7.5 9Z"/></svg>관계</span><strong data-life="relationship">가족과 함께</strong></article>
           </section>
+
 
           <section class="log-section" aria-labelledby="log-title">
             <div class="life-section-heading">
@@ -266,6 +254,29 @@
           </details>
         </aside>
       </div>
+
+      <footer class="life-timeline-bar">
+        <div class="playback-controls" aria-label="시간 진행">
+          <button id="play-button" class="play-button" type="button" aria-label="삶 재생">▶</button>
+          <div id="speed-controls" class="speed-controls" role="group" aria-label="진행 속도">
+            <button type="button" data-speed="1" aria-pressed="true">1×</button>
+            <button type="button" data-speed="2" aria-pressed="false">2×</button>
+            <button type="button" data-speed="4" aria-pressed="false">4×</button>
+            <button type="button" data-speed="8" aria-pressed="false">8×</button>
+            <button type="button" data-speed="12" aria-pressed="false">12×</button>
+            <button type="button" data-speed="16" aria-pressed="false">16×</button>
+          </div>
+          <button id="skip-button" class="toolbar-button" type="button">다음 결정까지</button>
+          <button id="auto-button" class="toolbar-button" type="button" aria-pressed="false">자동 결정</button>
+        </div>
+        <section class="map-section" aria-labelledby="map-title">
+            <div class="life-section-heading">
+              <div><p class="eyebrow">LIFE MAP / 00—90</p><h2 id="map-title">인생 지도</h2></div>
+              <span>한 칸은 한 해</span>
+            </div>
+            <div id="life-map" class="life-map" aria-label="0세부터 90세까지의 삶"></div>
+          </section>
+      </footer>
     </section>
 
     <section id="result-view" class="view result-view" aria-labelledby="result-title" hidden>
@@ -381,6 +392,38 @@
       <h2 id="career-title" tabindex="-1">어떤 일을<br>시작할까요?</h2>
       <p class="decision-prompt">직업군별 세부 직업을 살펴보세요. 조건이 부족한 경로도 준비해야 할 이유와 함께 남아 있습니다.</p>
       <div id="career-groups" class="career-groups"></div>
+    </div>
+  </dialog>
+
+  <dialog id="event-dialog" class="event-dialog" aria-labelledby="event-title">
+    <div class="event-stage">
+      <span class="event-year-backdrop" data-event="year" aria-hidden="true"></span>
+      <div class="event-content">
+        <p class="event-badge"><i aria-hidden="true"></i><span data-event="badge">역사적 사실</span></p>
+        <p class="event-when" data-event="when"></p>
+        <h2 id="event-title" tabindex="-1" data-event="title">대형 사건</h2>
+        <span class="event-accent" aria-hidden="true"></span>
+        <p class="event-text" data-event="text"></p>
+        <div class="event-impacts" data-event="impacts"></div>
+      </div>
+      <div class="event-footer">
+        <button id="event-continue-button" class="primary-button" type="button">이 삶을 계속 살아간다 <span aria-hidden="true">→</span></button>
+        <p class="event-source" data-event="source"></p>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="source-dialog" class="decision-dialog source-dialog" aria-labelledby="source-title">
+    <div class="decision-card source-card">
+      <div class="dialog-topline"><h2 id="source-title" tabindex="-1">안내와 데이터 출처</h2><button id="source-close-button" class="icon-button" type="button" aria-label="닫기"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"/></svg></button></div>
+      <p class="decision-prompt">이 게임의 결과는 실제 인구통계가 아닌 체험용 가상 시뮬레이션입니다. 일부 검증 자료와 창작용 가중치를 함께 사용합니다.</p>
+      <ul class="source-list">
+        <li><div><strong>출생 지역 · 시대별 인구</strong><span>통계청 인구동향 등을 참고한 창작용 가중치</span></div><b class="source-tag">검증 + 창작</b></li>
+        <li><div><strong>역사 사건</strong><span>우리역사넷 연표, 국가기록원 등 사건마다 출처 표기</span></div><b class="source-tag">역사적 사실</b></li>
+        <li><div><strong>미래 사건</strong><span>정부 전망 보고서를 바탕으로 만든 가상 시나리오</span></div><b class="source-tag is-future">미래 전망</b></li>
+        <li><div><strong>돈 · 투자 · 복권</strong><span>가상 수익률이며 실제 투자·도박 조언이 아닙니다</span></div><b class="source-tag">가상</b></li>
+      </ul>
+      <button id="source-ok-button" class="secondary-button source-ok" type="button">확인</button>
     </div>
   </dialog>
 

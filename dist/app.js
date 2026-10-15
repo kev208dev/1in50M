@@ -3,6 +3,7 @@ import { CAREER_GROUPS } from './data/careers.js';
 import { createBirthSlotResult, profileFromSlotResult } from './engine/birth-slot.js';
 import { normalizeRuntimeSettings, resolveBirthYear } from './data/runtime-settings.js';
 import { createKoreaMap } from './ui/korea-map.js';
+import { detectBigEvents, renderBigEvent } from './ui/big-event.js';
 import { createLife } from './engine/life.js';
 import { getDecision, getChoices } from './engine/decisions.js';
 import { REFLECTION_BY_ID } from './data/reflections.js';
@@ -59,6 +60,12 @@ const identityDialog = document.querySelector('#identity-dialog');
 const reflectionDialog = document.querySelector('#reflection-dialog');
 const agencyDialog = document.querySelector('#agency-dialog');
 const careerDialog = document.querySelector('#career-dialog');
+const eventDialog = document.querySelector('#event-dialog');
+const sourceDialog = document.querySelector('#source-dialog');
+const blockingDialogs = [decisionDialog, identityDialog, reflectionDialog, agencyDialog, careerDialog, eventDialog, sourceDialog];
+let previousLifeSnapshot = null;
+let bigEventQueue = [];
+let resumeAfterBigEvents = false;
 let candidateProfile = null;
 let candidateResult = null;
 let runtimeSettings = normalizeRuntimeSettings();
@@ -173,14 +180,80 @@ function updatePlayback() {
   });
 }
 
+function momentHeadline(life) {
+  const latest = life.history.at(-1);
+  if (!latest || latest.age !== life.age) return null;
+  const headline = latest.title ?? latest.label ?? null;
+  if (headline) return headline;
+  return latest.type === 'decision' || latest.type === 'event' || latest.type === 'career' ? latest.text?.split(/[:.]/)[0] : null;
+}
+
+function setMomentTitle(age, headline) {
+  const title = document.querySelector('#moment-title');
+  if (!title) return;
+  if (headline) {
+    title.textContent = headline;
+    title.classList.add('is-event');
+    return;
+  }
+  title.classList.remove('is-event');
+  const ageNode = document.createElement('span');
+  ageNode.id = 'moment-age';
+  ageNode.textContent = String(age);
+  const em = document.createElement('em');
+  em.textContent = '흐르고 있습니다.';
+  title.replaceChildren(ageNode, '번째 해가', document.createElement('br'), em);
+}
+
 function updateMoment(life) {
-  document.querySelector('#moment-age').textContent = String(life.age);
+  setMomentTitle(life.age, momentHeadline(life));
   const latest = life.history.at(-1);
   document.querySelector('#moment-copy').textContent = latest?.text ?? '새로운 삶이 시작되었습니다.';
   controls.career.hidden = life.age < 19 || Boolean(life.career.careerId) || life.status !== 'living';
 }
 
+function anyDialogOpen() {
+  return blockingDialogs.some((dialog) => dialog?.open);
+}
+
+function showNextBigEvent() {
+  if (!controller || anyDialogOpen()) return;
+  const next = bigEventQueue.shift();
+  if (!next) {
+    if (resumeAfterBigEvents && controller.getState().status === 'living' && !controller.getState().pendingDecisionId) {
+      controller.play();
+    }
+    resumeAfterBigEvents = false;
+    updatePlayback();
+    return;
+  }
+  if (controller.isPlaying()) {
+    resumeAfterBigEvents = true;
+    controller.pause();
+  }
+  updatePlayback();
+  lastFocused = document.activeElement;
+  renderBigEvent(eventDialog, next, controller.getState().profile?.name?.full ?? '');
+  main.inert = true;
+  eventDialog.showModal();
+  document.querySelector('#event-title').focus();
+  liveRegion.textContent = `${next.year}년, ${next.title}`;
+}
+
+function trackBigEvents(life) {
+  const events = detectBigEvents(previousLifeSnapshot, life);
+  previousLifeSnapshot = life;
+  if (!events.length || controller?.isAutoDecision()) return;
+  bigEventQueue.push(...events);
+  if (controller?.isPlaying()) {
+    resumeAfterBigEvents = true;
+    controller.pause();
+  }
+  setTimeout(showNextBigEvent, 0);
+}
+
 function renderCurrentLife(life) {
+  trackBigEvents(life);
   renderLife(views.life, life);
   updateMoment(life);
   updatePlayback();
@@ -192,6 +265,7 @@ function unlockBackground(dialog, focus = true) {
   main.inert = false;
   if (dialog.open) dialog.close();
   if (focus && lastFocused?.isConnected) lastFocused.focus();
+  if (dialog !== eventDialog && dialog !== sourceDialog && bigEventQueue.length) setTimeout(showNextBigEvent, 0);
 }
 
 function openDecision(decision, life) {
@@ -247,6 +321,9 @@ function finishLife(life) {
 
 function startLife(life) {
   controller?.destroy();
+  previousLifeSnapshot = null;
+  bigEventQueue = [];
+  resumeAfterBigEvents = false;
   controller = createSimulationController({
     initialLife: life,
     onState: renderCurrentLife,
@@ -456,6 +533,27 @@ reflectionDialog.querySelector('[data-reflection="choices"]').addEventListener('
   updatePlayback();
 });
 
+eventDialog.addEventListener('cancel', (event) => event.preventDefault());
+document.querySelector('#event-continue-button').addEventListener('click', () => {
+  unlockBackground(eventDialog);
+  showNextBigEvent();
+});
+
+document.querySelector('#source-button').addEventListener('click', () => {
+  if (sourceDialog.open) return;
+  lastFocused = document.activeElement;
+  main.inert = true;
+  sourceDialog.showModal();
+  document.querySelector('#source-title').focus();
+});
+['#source-close-button', '#source-ok-button'].forEach((selector) => {
+  document.querySelector(selector).addEventListener('click', () => unlockBackground(sourceDialog));
+});
+sourceDialog.addEventListener('cancel', (event) => {
+  event.preventDefault();
+  unlockBackground(sourceDialog);
+});
+
 document.querySelector('#career-close-button').addEventListener('click', () => unlockBackground(careerDialog));
 careerDialog.addEventListener('cancel', (event) => {
   event.preventDefault();
@@ -541,7 +639,7 @@ document.querySelector('#life-map').addEventListener('click', (event) => {
   const life = controller.getState();
   if (age > life.age) return;
   const memories = life.history.filter((item) => item.age === age);
-  document.querySelector('#moment-age').textContent = String(age);
+  setMomentTitle(age, memories.at(-1)?.title ?? null);
   document.querySelector('#moment-copy').textContent = memories.map((item) => item.text).join(' · ') || `${age}세의 기록은 아직 비어 있습니다.`;
   liveRegion.textContent = `${age}세의 기록을 보고 있습니다.`;
 });
