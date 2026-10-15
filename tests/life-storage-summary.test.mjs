@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { saveCurrentLife, loadCurrentLife, archiveLife, listPastLives, deletePastLife, clearPastLives } from '../dist/storage.js';
-import { createLifeSummary } from '../dist/engine/summary.js';
+import { createLifeSummary, representativeMoment, normalizeEpitaph } from '../dist/engine/summary.js';
 import { memoryStorage, makeLifeAtAge } from './support/life-fixtures.mjs';
 import { normalizeLife } from '../dist/engine/life.js';
 
@@ -117,4 +117,17 @@ test('공개용 순자산 구간은 정확한 금액을 노출하지 않는다',
   const publicLife = toPublicLife(summary);
   assert.equal('netWorth' in publicLife, false);
   assert.match(publicLife.netWorthBand, /원|미만|이상/);
+});
+
+test('대표 사건은 마지막 사건보다 영향 점수가 큰 사건을 고른다', () => {
+  const life = makeLifeAtAge(70, { history: [
+    { id: 'major', age: 30, year: 2010, type: 'decision', text: '오랜 진로를 정했다.', changes: { happiness: 12 }, duration: 20 },
+    { id: 'minor', age: 69, year: 2049, type: 'event', text: '산책했다.', changes: { happiness: 1 } },
+  ] });
+  assert.equal(representativeMoment(life).id, 'major');
+});
+
+test('추모 메시지는 앞뒤 공백을 제거하고 길이를 제한한다', () => {
+  assert.equal(normalizeEpitaph('  잘 살았어요  '), '잘 살았어요');
+  assert.equal(normalizeEpitaph('가'.repeat(300)).length, 120);
 });

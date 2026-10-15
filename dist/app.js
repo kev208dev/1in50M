@@ -18,6 +18,7 @@ import {
   loadCurrentLife,
   clearCurrentLife,
   archiveLife,
+  saveSummaryEpitaph,
   listPastLives,
   deletePastLife,
   clearPastLives,
@@ -793,6 +794,16 @@ document.querySelector('#publish-life-button').addEventListener('click', async (
     publishButton.textContent = '다시 공개하기';
     liveRegion.textContent = '공개하지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
   }
+});
+document.querySelector('#result-epitaph')?.addEventListener('input', (event) => {
+  if (!lastCompletedSummary) return;
+  const value = String(event.currentTarget.value ?? '').trim().slice(0, 120);
+  lastCompletedSummary.epitaph = value;
+  saveSummaryEpitaph(storage, lastCompletedSummary.id, value);
+});
+document.querySelector('#result-memorial-button')?.addEventListener('click', async () => {
+  await refreshCommunity();
+  showView('memorial');
 });
 document.querySelectorAll('[data-community-list], [data-memorial-list]').forEach((list) => {
   list.addEventListener('click', async (event) => {

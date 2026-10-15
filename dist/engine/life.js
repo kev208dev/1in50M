@@ -116,6 +116,7 @@ export function createLife(profile, seed = profile?.id) {
     pendingReflectionId: null,
     reflections: {},
     endedReason: null,
+    epitaph: '',
     conditions: { chronic: [], losses: [], care: [] },
     cohort: createCohortPeers(profile, initialSeed),
     riskFactors: { academicStress: 0, sleepDebt: 0, caffeineLoad: 0, support: 45 },
@@ -264,6 +265,7 @@ export function normalizeLife(life) {
     ? String(copy.pendingReflectionId)
     : null;
   copy.endedReason = typeof copy.endedReason === 'string' ? copy.endedReason : null;
+  copy.epitaph = String(copy.epitaph ?? '').trim().slice(0, 120);
   copy.conditions = {
     chronic: Array.isArray(copy.conditions?.chronic) ? [...new Set(copy.conditions.chronic.map(String))] : [],
     losses: Array.isArray(copy.conditions?.losses) ? [...new Set(copy.conditions.losses.map(String))] : [],

@@ -88,6 +88,22 @@ export function archiveLife(storage = getSafeStorage(), life) {
   }
 }
 
+export function saveSummaryEpitaph(storage = getSafeStorage(), summaryId, epitaph) {
+  try {
+    if (!storage || !summaryId) return false;
+    const normalized = String(epitaph ?? '').trim().slice(0, 120);
+    const lives = listPastLives(storage);
+    const target = lives.find((item) => item.id === summaryId);
+    if (!target) return false;
+    storage.setItem(PAST_KEY, JSON.stringify(lives.map((item) => (
+      item.id === summaryId ? { ...item, epitaph: normalized } : item
+    ))));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function deletePastLife(storage = getSafeStorage(), summaryId) {
   try {
     if (!storage) return false;

@@ -97,3 +97,9 @@ test('설정된 클라이언트는 익명 세션으로 presence 인원을 센다
   assert.deepEqual(await client.connectPresence(), { mode: 'online', count: 2 });
   client.destroy();
 });
+
+test('한마디가 있으면 공개 삶의 회고 문구로 우선 저장한다', () => {
+  const summary = createLifeSummary(makeLifeAtAge(72));
+  summary.epitaph = '서로를 기억하며 살았습니다.';
+  assert.equal(toPublicLife(summary).reflection, summary.epitaph);
+});

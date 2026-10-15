@@ -613,6 +613,11 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
 .cohort-card p { margin: 6px 0; font-size: 11px; line-height: 1.45; }
 .cohort-preview-panel { position: absolute; right: 32px; bottom: 28px; width: min(420px, 35vw); z-index: 4; }
 .result-cohort { margin-top: 24px; }
+.result-death, .result-epitaph { margin-top: 20px; padding: 18px; border: 1px solid var(--line); background: rgba(255,255,255,.025); }
+.result-death { display: flex; justify-content: space-between; gap: 16px; }
+.result-death span, .result-epitaph label span { color: var(--ink-muted); font: 10px var(--font-mono); }
+.result-epitaph label { display: grid; gap: 8px; }
+.result-epitaph textarea { width: 100%; resize: vertical; min-height: 72px; padding: 12px; border: 1px solid var(--line); color: var(--ink); background: var(--bg); font: inherit; }
 .dialog-topline { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 .career-dialog { width: min(980px, calc(100% - 32px)); }
 .career-groups { display: grid; gap: 20px; max-height: 52vh; overflow-y: auto; padding-right: 8px; }

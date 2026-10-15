@@ -348,6 +348,9 @@
         </aside>
 
         <div class="result-main">
+          <section class="result-death" aria-label="생애 종료 이유">
+            <span>마지막 기록</span><strong data-result="death-reason">삶을 마쳤습니다</strong>
+          </section>
           <dl class="result-facts result-summary">
             <div><dt>최종 순자산</dt><dd class="is-accent" data-result="net-worth">0원</dd><small>마지막 해 기준</small></div>
             <div><dt>가장 오래 한 일</dt><dd data-result="career">—</dd><small data-result="residence">대한민국</small></div>
@@ -386,9 +389,15 @@
             <div id="cohort-result" class="cohort-grid"></div>
           </section>
 
+          <section class="result-epitaph" aria-labelledby="result-epitaph-title">
+            <h2 id="result-epitaph-title">이 삶에 남기는 한마디</h2>
+            <label><span>추모관과 익명 공개 기록에 선택적으로 남습니다.</span><textarea id="result-epitaph" maxlength="120" rows="3" placeholder="이 삶을 기억할 한마디를 남겨 보세요."></textarea></label>
+          </section>
+
           <p class="simulation-notice result-notice">공개 통계 기반 시뮬레이션입니다. 자료가 없는 구간은 <strong>모델링 값</strong>이며 금융 결과는 실제 투자·도박 조언이 아닙니다.</p>
           <div class="result-actions">
-            <button id="publish-life-button" class="primary-button" type="button">이 삶을 익명 공개</button>
+            <button id="result-memorial-button" class="primary-button" type="button">추모관 보기</button>
+            <button id="publish-life-button" class="secondary-button" type="button">이 삶을 익명 공개</button>
             <button id="new-life-button" class="secondary-button result-primary-white" type="button">새로운 삶 시작</button>
             <button id="share-life-button" class="secondary-button" type="button">공유하기</button>
             <button id="past-lives-button" class="text-button" type="button">전생 기록 보기</button>

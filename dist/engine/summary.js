@@ -1,6 +1,23 @@
 import { normalizeLife } from './life.js';
 import { EDUCATION_BY_ID } from '../data/education.js';
 
+export function normalizeEpitaph(value) {
+  return String(value ?? '').trim().slice(0, 120);
+}
+
+export function representativeMoment(life) {
+  const candidates = (life?.history ?? [])
+    .filter((item) => ['decision', 'event', 'era-event', 'career', 'housing', 'finance'].includes(item.type))
+    .map((item) => ({
+      item,
+      score: Object.values(item.changes ?? {}).reduce((sum, value) => sum + Math.abs(Number(value) || 0), 0)
+        + Math.min(20, Number(item.duration) || 0)
+        + (item.type === 'era-event' ? 3 : 0),
+    }))
+    .sort((a, b) => b.score - a.score || Number(a.item.year) - Number(b.item.year));
+  return candidates[0]?.item ?? life?.history?.[0] ?? null;
+}
+
 function turningPoints(life) {
   const financePoints = (life.economy.transactions ?? [])
     .filter((item) => item.type !== 'market')
@@ -121,6 +138,7 @@ export function createLifeSummary(life) {
   const influenceSentence = influences.length
     ? `${influences.slice(0, 2).map((item) => `${item.label}이 ${item.direction}하게`).join(', ')} 작용했습니다.`
     : '출생 조건의 영향은 한 방향으로 단정할 수 없었습니다.';
+  const representative = representativeMoment(current);
 
   return {
     id: `${current.seed}-${current.year}`,
@@ -141,6 +159,15 @@ export function createLifeSummary(life) {
     statChanges,
     influences,
     turningPoints: turningPoints(current),
+    representativeMoment: representative ? {
+      id: representative.id,
+      age: representative.age,
+      year: representative.year,
+      type: representative.type,
+      label: representative.title ?? representative.label ?? representative.text,
+    } : null,
+    endedReason: current.endedReason,
+    epitaph: normalizeEpitaph(current.epitaph),
     narrative: `${region}에서 시작한 삶은 ${finalRegion}에서 ${current.age}세의 시간을 맞았습니다. ${influenceSentence} ${school} 경로를 지나 ${longestCareer}의 시간을 보냈고, 숫자로 다 담을 수 없는 선택과 관계가 한 사람의 생애를 만들었습니다.`,
     completedAt: new Date().toISOString(),
   };

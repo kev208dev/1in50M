@@ -29,6 +29,7 @@ function aliasFor(summary) {
 
 export function toPublicLife(summary) {
   const point = summary?.turningPoints?.at(-1)?.label;
+  const epitaph = String(summary?.epitaph ?? '').trim().slice(0, 120);
   return {
     id: String(summary?.id ?? `life-${Date.now()}`),
     alias: aliasFor(summary),
@@ -37,7 +38,7 @@ export function toPublicLife(summary) {
     finalRegion: regionOnly(summary?.finalResidence),
     career: String(summary?.longestCareer ?? '직업 기록 없음').slice(0, 60),
     netWorthBand: netWorthBand(summary?.netWorth),
-    reflection: String(point ?? summary?.narrative ?? '한 사람의 삶이 기록되었습니다.').slice(0, 180),
+    reflection: String(epitaph || point || summary?.narrative || '한 사람의 삶이 기록되었습니다.').slice(0, 180),
     completedAt: summary?.completedAt ?? new Date().toISOString(),
   };
 }

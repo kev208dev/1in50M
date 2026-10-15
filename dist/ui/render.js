@@ -541,6 +541,11 @@ export function renderPublicLifeDetail(root, life, { memorial = false } = {}) {
 const ENDING_LABELS = {
   'caffeine-cardiac': '건강 문제로 영면',
   'self-harm': '삶을 마쳤습니다',
+  'cardiovascular-disease': '심혈관 질환으로 영면',
+  cancer: '암으로 영면',
+  'respiratory-disease': '호흡기 질환으로 영면',
+  'age-related-disease': '노년의 질환으로 영면',
+  other: '삶을 마쳤습니다',
 };
 
 export function resultEnding(summary, life = null) {
@@ -564,6 +569,7 @@ export function koreaPosition(summary) {
 }
 
 function highlightPoint(summary) {
+  if (summary.representativeMoment) return summary.representativeMoment;
   const points = summary.turningPoints ?? [];
   const generic = new Set(['삶의 시작', '배움의 시작', '첫 진로의 갈림길', '삶의 기반을 만든 시간', '지나온 삶을 돌아본 날', '출생']);
   const meaningful = points.filter((point) => !generic.has(point.label));
@@ -588,6 +594,7 @@ export function renderResult(root, summary, life = null) {
   const birthYear = current ? current.year - current.age : null;
   const ending = resultEnding(summary, current);
   renderTextFields(root, '[data-result="ending"]', ending);
+  renderTextFields(root, '[data-result="death-reason"]', ending);
   root.querySelector('.result-badge')?.classList.toggle('is-complete', summary.age >= 90);
   renderTextFields(root, '[data-result="name"]', current?.profile?.name?.full ?? '한 사람');
   renderTextFields(root, '[data-result="years"]', birthYear ? `${birthYear} — ${current.year}` : '—');
@@ -624,6 +631,8 @@ export function renderResult(root, summary, life = null) {
   renderTextFields(root, '[data-result="career"]', summary.longestCareer);
   renderTextFields(root, '[data-result="net-worth"]', formatWon(summary.netWorth));
   renderTextFields(root, '[data-result="narrative"]', summary.narrative);
+  const epitaph = root.querySelector('#result-epitaph');
+  if (epitaph) epitaph.value = summary.epitaph ?? '';
   renderTextFields(root, '[data-result="family"]', `가까운 관계 ${summary.family.closeRelationships}명 · 동반자 ${summary.family.hasPartner ? '있음' : '없음'} · 자녀 ${summary.family.children}명`);
   const statChart = root.querySelector('[data-result="stats"]');
   if (statChart) {
