@@ -1,4 +1,49 @@
 export const RESEARCH_SOURCES = {
+  lifeTable2024: {
+    label: '통계청 2024년 생명표',
+    year: 2024,
+    url: 'https://kostat.go.kr/board.es?act=view&bid=208&list_no=439533&mid=a10301060100',
+  },
+  birthsByDistrict: {
+    label: '통계청 인구동향조사 · 시군구 출생아 수',
+    year: 2025,
+    url: 'https://kosis.kr/edu/visualStats/detail.do?ixId=1123&menuId=M_05',
+  },
+  causesOfDeath2024: {
+    label: '통계청 사망원인통계 · 성·연령별 사망원인',
+    year: 2024,
+    url: 'https://kosis.kr/visual/nsportalStats/detailContents.do?listId=A&statJipyoId=3641&vStatJipyoId=4860',
+  },
+  educationStatistics: {
+    label: '한국교육개발원 교육통계서비스',
+    year: 2024,
+    url: 'https://kess.kedi.re.kr/mobile/kessTheme/zipyo?itemCode=03&menuId=m_02_03_01&survCd=3394&survSeq=0000&uppCd1=030201',
+  },
+  hwaseongCity2001: {
+    label: '화성시 시 승격 연혁 · 2001년 군에서 시로 승격',
+    year: 2001,
+    url: 'https://www.hscity.go.kr/www/intro/gnrlSttus/ctyhst/ctyhst01.jsp',
+  },
+  afterSchoolCare2004: {
+    label: '교육부 초등돌봄교실 정책 · 2004년 시범 운영',
+    year: 2004,
+    url: 'https://www.moe.go.kr/',
+  },
+  meisterSchool2010: {
+    label: '교육부 마이스터고 제도 · 2010년 개교',
+    year: 2010,
+    url: 'https://www.moe.go.kr/',
+  },
+  autonomousSchool2010: {
+    label: '교육부 자율형 사립고 제도',
+    year: 2010,
+    url: 'https://www.moe.go.kr/',
+  },
+  bitcoinWhitepaper: {
+    label: 'Bitcoin whitepaper and network history',
+    year: 2008,
+    url: 'https://bitcoin.org/bitcoin.pdf',
+  },
   privateEducation2024: {
     label: '교육부 2024년 초중고 사교육비 조사',
     year: 2024,
