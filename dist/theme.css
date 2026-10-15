@@ -983,3 +983,35 @@ body[data-view="life"] .logo b { font-size: 26px; }
   .network-back { position: static; transform: none; align-self: flex-start; }
   .network-tabs { gap: 24px; }
 }
+
+
+/* Figma Desktop - 1 (1440 x 1024): title screen fidelity */
+body[data-view="title"] { background:#000; }
+body[data-view="title"] .site-header { position:absolute; top:0; left:0; right:0; z-index:5; min-height:0; padding:64px max(20px, calc((100vw - 1440px)/2 + 80px)) 0; }
+body[data-view="title"] .site-header .logo { transform-origin:top left; transform:scale(1.4); }
+body[data-view="title"] main { min-height:100svh; }
+body[data-view="title"] .title-view { box-sizing:border-box; width:min(100%,1440px); min-height:100svh; padding:0; display:block; position:relative; overflow:hidden; }
+body[data-view="title"] .title-view::before { content:""; z-index:0; background:none; }
+body[data-view="title"] .title-view::after { content:""; position:absolute; z-index:0; left:50%; top:-6.84%; width:50%; height:105.47%; background:#000 url("./title-photo.png") center/cover no-repeat; opacity:.5; pointer-events:none; }
+body[data-view="title"] .title-quote { position:relative; z-index:1; width:100%; margin:0; padding:0; animation:none; }
+body[data-view="title"] .title-quote p { font-family:'Noto Serif KR',serif; font-size:clamp(26px,3.333vw,48px); line-height:1.43; font-weight:600; letter-spacing:0; }
+body[data-view="title"] .title-quote-en { position:absolute; top:22.36svh; left:14.167%; width:75.5%; }
+body[data-view="title"] .title-quote-ko { position:absolute; top:43.85svh; left:14.167%; margin:0!important; width:62%; }
+body[data-view="title"] .title-quote footer { position:absolute; top:64.94svh; left:65%; width:20%; margin:0; font-size:clamp(26px,3.333vw,48px); line-height:1.35; font-weight:700; text-align:left; white-space:nowrap; }
+body[data-view="title"] .press-any-key { position:absolute; z-index:2; top:87.89svh; left:50%; width:auto; transform:translateX(-50%); margin:0; padding:0; white-space:nowrap; border:0; color:#a6a6a6; font-size:clamp(16px,2.5vw,36px); letter-spacing:0; animation:none; }
+body[data-view="title"] .press-any-key::after { content:none; }
+@media(min-width:1441px) {
+  body[data-view="title"] .title-quote p, body[data-view="title"] .title-quote footer { font-size:48px; }
+  body[data-view="title"] .press-any-key { font-size:36px; }
+}
+@media(max-width:760px) {
+  body[data-view="title"] .site-header { padding:30px 24px 0; }
+  body[data-view="title"] .site-header .logo { transform:scale(.85); }
+  body[data-view="title"] .title-view { min-height:max(700px,100svh); }
+  body[data-view="title"] .title-view::after { left:40%; top:0; width:75%; height:100%; background-position:45% center; opacity:.32; }
+  body[data-view="title"] .title-quote-en { top:27%; left:6%; width:88%; }
+  body[data-view="title"] .title-quote-ko { top:47%; left:6%; width:88%; }
+  body[data-view="title"] .title-quote p { font-size:clamp(20px,5vw,34px); line-height:1.55; }
+  body[data-view="title"] .title-quote footer { top:77%; left:auto; right:6%; width:auto; font-size:clamp(18px,4.2vw,30px); }
+  body[data-view="title"] .press-any-key { top:90%; font-size:clamp(12px,3.5vw,22px); }
+}
