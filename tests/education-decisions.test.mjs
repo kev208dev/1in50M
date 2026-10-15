@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { EDUCATION_PATHS } from '../dist/data/education.js';
+import { EDUCATION_PATHS, educationStateForAge } from '../dist/data/education.js';
 import { DECISIONS } from '../dist/data/decisions.js';
 import { getResearchSource } from '../dist/data/research.js';
 import { getDecision, getChoices, applyDecision } from '../dist/engine/decisions.js';
@@ -10,6 +10,27 @@ test('고등학교 8개 경로를 모두 제공한다', () => {
   assert.deepEqual(new Set(EDUCATION_PATHS.map((path) => path.id)), new Set([
     'general', 'vocational', 'meister', 'autonomous', 'special-purpose', 'arts', 'sports', 'alternative',
   ]));
+});
+
+test('학령 상태는 나이에 맞게 자동 갱신된다', () => {
+  assert.equal(educationStateForAge(0, {}).label, '영아');
+  assert.equal(educationStateForAge(5, {}).label, '유아·미취학');
+  assert.equal(educationStateForAge(7, {}).label, '초등학교');
+  assert.equal(educationStateForAge(13, {}).label, '중학교');
+});
+
+test('시대에 존재하지 않은 교육 선택지는 표시되지 않는다', () => {
+  const in1992 = makeLifeAtAge(7, { year: 1992 });
+  assert.equal(getChoices(in1992, 'after-school-care').some((item) => item.id === 'after-school'), false);
+  const in2000 = makeLifeAtAge(15, { year: 2000 });
+  const ids = getChoices(in2000, 'choose-high-school').map((item) => item.id);
+  assert.equal(ids.includes('meister'), false);
+  assert.equal(ids.includes('autonomous'), false);
+});
+
+test('자사고 표시 비용과 잠금 비용이 같다', () => {
+  const option = EDUCATION_PATHS.find((item) => item.id === 'autonomous');
+  assert.equal(option.minimumCash, option.cost);
 });
 
 test('15세에는 고등학교 결정이 열린다', () => {

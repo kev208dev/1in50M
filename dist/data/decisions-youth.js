@@ -24,7 +24,7 @@ export const YOUTH_DECISIONS = [
     prompt: '보호자가 돌아오기 전까지 오후 시간을 어디에서 보낼까요?',
     sourceKey: 'socialTrends2025',
     choices: [
-      choice('after-school', '학교 돌봄교실에 간다', '익숙한 공간에서 또래와 저녁까지 지냅니다.', { relationships: 2, knowledge: 1 }, ['돌봄', '또래']),
+      choice('after-school', '학교 돌봄교실에 간다', '익숙한 공간에서 또래와 저녁까지 지냅니다.', { relationships: 2, knowledge: 1 }, ['돌봄', '또래'], { availableFrom: 2004 }),
       choice('academy', '동네 학원으로 간다', '배움은 늘지만 이동과 숙제가 하루를 채웁니다.', { knowledge: 3, happiness: -1 }, ['사교육', '피로']),
       choice('relative', '가까운 가족에게 간다', '조부모나 친척과 일상을 나눕니다.', { relationships: 3, happiness: 1 }, ['가족 돌봄']),
       choice('home', '집에서 스스로 보낸다', '혼자만의 리듬을 익히지만 심심한 날도 생깁니다.', { knowledge: 1, relationships: -1 }, ['자율']),

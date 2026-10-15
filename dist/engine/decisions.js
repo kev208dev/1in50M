@@ -8,6 +8,9 @@ import { applyFinancialAction, applyHousingTransition } from './finance.js';
 import { startBusiness } from './business.js';
 import { applyRiskEffects } from './wellbeing.js';
 import { applyDiminishingEffects, describeAppliedChanges } from './stat-effects.js';
+import { isAvailableInYear } from './historical-context.js';
+
+const visibleChoices = (life, decision) => decision.choices.filter((choice) => isAvailableInYear(choice, life.year));
 
 function availability(life, choice) {
   if (Number.isFinite(choice.maximumAge) && life.age > choice.maximumAge) {
@@ -45,6 +48,7 @@ export function isDecisionEligible(life, decision) {
   const [minimumAge, maximumAge] = decision.ageRange ?? [decision.age, decision.age];
   return life.age >= minimumAge
     && life.age <= maximumAge
+    && isAvailableInYear(decision, life.year)
     && !life.decisions[decision.id]
     && (typeof decision.when !== 'function' || decision.when(life));
 }
@@ -68,11 +72,11 @@ export function getDecision(life) {
   const current = normalizeLife(life);
   if (current.pendingDecisionId && DECISION_BY_ID[current.pendingDecisionId]) {
     const pending = DECISION_BY_ID[current.pendingDecisionId];
-    return pending.choices.some((choiceItem) => availability(current, choiceItem).enabled) ? pending : null;
+    return visibleChoices(current, pending).some((choiceItem) => availability(current, choiceItem).enabled) ? pending : null;
   }
   return chooseWeightedDecision(current, DECISIONS.filter((decision) => (
     isDecisionEligible(current, decision)
-    && decision.choices.some((choiceItem) => availability(current, choiceItem).enabled)
+    && visibleChoices(current, decision).some((choiceItem) => availability(current, choiceItem).enabled)
   )));
 }
 
@@ -80,7 +84,7 @@ export function getChoices(life, decisionId) {
   const current = normalizeLife(life);
   const decision = DECISION_BY_ID[decisionId];
   if (!decision) return [];
-  return decision.choices.map((item) => ({ ...item, ...availability(current, item) }));
+  return visibleChoices(current, decision).map((item) => ({ ...item, ...availability(current, item) }));
 }
 
 function relationshipChoice(relationships, choiceId, year) {

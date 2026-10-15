@@ -20,6 +20,7 @@ import { normalizeRiskFactors, normalizeWellbeingHabits } from './wellbeing.js';
 import { defaultServiceState, ensureServiceAssessment } from './service.js';
 import { PUBLIC_DATA_VERSION } from '../data/public-statistics.js';
 import { applyDiminishingEffects } from './stat-effects.js';
+import { educationStateForAge } from '../data/education.js';
 
 const STAT_KEYS = ['health', 'happiness', 'knowledge', 'relationships'];
 
@@ -92,7 +93,7 @@ export function createLife(profile, seed = profile?.id) {
       netWorth: 0,
     },
     business: null,
-    education: { level: 'childhood', status: 'not-started', schoolType: null, skills: [] },
+    education: { level: 'infant', status: 'not-started', schoolType: null, skills: [] },
     career: {
       groupId: null,
       careerId: null,
@@ -350,7 +351,7 @@ export function advanceYear(life, tickId = `age-${Number(life?.age ?? 0) + 1}`) 
   annualEffects.knowledge += nextAge <= 24 ? 1 : 0;
   const stats = applyDiminishingEffects(current, annualEffects).stats;
 
-  const education = { ...current.education };
+  let education = educationStateForAge(nextAge, current.education);
   const completionAge = { university: 22, college: 20, training: 19 }[education.level];
   if (education.status === 'enrolled' && completionAge && nextAge >= completionAge) {
     education.status = 'completed';

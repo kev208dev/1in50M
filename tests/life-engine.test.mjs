@@ -4,6 +4,7 @@ import { createBirthProfile } from '../dist/simulator.js';
 import { createLife, advanceYear, normalizeLife, setFocus } from '../dist/engine/life.js';
 import { getInfluenceModifier } from '../dist/engine/profile-influence.js';
 import { calculateAnnualEconomy } from '../dist/engine/economy.js';
+import { makeLifeAtAge } from './support/life-fixtures.mjs';
 
 const profile = createBirthProfile(() => 0.42, 2026);
 
@@ -122,6 +123,13 @@ test('진학 과정은 정해진 나이에 수료 상태로 전환한다', () =>
   life = { ...life, age: 21, year: 2047, education: { level: 'university', status: 'enrolled', schoolType: 'general', skills: [] } };
   const next = advanceYear(life, 'graduation');
   assert.equal(next.education.status, 'completed');
+});
+
+test('학교 선택 전 교육 상태도 해마다 실제 학령으로 갱신된다', () => {
+  const six = makeLifeAtAge(6, { education: { level: 'preschool', status: 'not-started', schoolType: null, skills: [] } });
+  const seven = advanceYear(six, 'school-age-seven');
+  assert.equal(seven.education.level, 'elementary');
+  assert.equal(seven.education.status, 'enrolled');
 });
 
 test('건강이 완전히 소진된 중년의 삶은 90세 전에 회고로 전환할 수 있다', () => {

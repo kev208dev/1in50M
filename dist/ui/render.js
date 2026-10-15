@@ -1,5 +1,5 @@
 import { FOCUS_BY_ID } from '../data/focuses.js';
-import { EDUCATION_BY_ID } from '../data/education.js';
+import { EDUCATION_BY_ID, educationStateForAge } from '../data/education.js';
 import { HOUSING_BY_ID } from '../data/housing.js';
 import { IDENTITY_NOTICE } from '../data/identity.js';
 import { getResearchSource } from '../data/research.js';
@@ -104,7 +104,7 @@ export function createLifeViewModel(life) {
     netWorth: formatWon(current.economy.netWorth),
     dopamine: current.economy.dopamine,
     canUseFinance: current.age >= 19 && current.status === 'living',
-    education: EDUCATION_BY_ID[current.education.schoolType]?.label ?? (current.education.level === 'childhood' ? '미취학' : '일반 경로'),
+    education: educationStateForAge(current.age, current.education).label,
     career: current.career.title ?? (current.career.status === 'retired' ? '은퇴' : '아직 정하지 않음'),
     housing: HOUSING_BY_ID[current.housing.type]?.label ?? '가족과 동거',
     focus: FOCUS_BY_ID[current.focusId]?.label ?? '휴식과 균형',

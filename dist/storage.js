@@ -8,7 +8,7 @@ const PAST_KEY = 'oneIn50mPastLivesV2';
 const LEGACY_KEY = 'oneIn50mState';
 const PUBLIC_KEY = 'oneIn50mPublicLivesV1';
 const EMPTY_STATE = Object.freeze({ current: null, previous: null });
-const EDUCATION_LEVELS = new Set(['childhood', 'elementary', 'middle-school', 'high-school', 'university', 'college', 'training', 'completed']);
+const EDUCATION_LEVELS = new Set(['childhood', 'infant', 'preschool', 'elementary', 'middle-school', 'high-school', 'university', 'college', 'training', 'completed']);
 
 export function getSafeStorage(scope = globalThis) {
   try {
