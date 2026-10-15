@@ -2,7 +2,7 @@ import { validateProfile } from './simulator.js';
 import { CAREER_GROUPS } from './data/careers.js';
 import { createBirthSlotResult, profileFromSlotResult } from './engine/birth-slot.js';
 import { normalizeRuntimeSettings, resolveBirthYear } from './data/runtime-settings.js';
-import { mapRegionState } from './data/korea-map.js';
+import { createKoreaMap } from './ui/korea-map.js';
 import { createLife } from './engine/life.js';
 import { getDecision, getChoices } from './engine/decisions.js';
 import { REFLECTION_BY_ID } from './data/reflections.js';
@@ -34,7 +34,7 @@ import {
   slotDuration,
 } from './ui/birth-slot.js';
 
-const viewNames = ['intro', 'profile', 'future', 'life', 'result', 'past-lives', 'community', 'memorial'];
+const viewNames = ['title', 'intro', 'profile', 'future', 'life', 'result', 'past-lives', 'community', 'memorial'];
 const views = Object.fromEntries(viewNames.map((name) => [name, document.querySelector(`#${name}-view`)]));
 const storage = getSafeStorage(window);
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -85,35 +85,22 @@ function setText(field, value) {
   });
 }
 
-function renderKoreaMap(regionCode = null) {
-  const root = document.querySelector('#intro-region-points');
-  if (!root) return;
-  const namespace = 'http://www.w3.org/2000/svg';
-  const points = mapRegionState(regionCode).map((point, index) => {
-    const group = document.createElementNS(namespace, 'g');
-    group.classList.add('korea-region-point');
-    if (point.selected) group.classList.add('is-selected');
-    group.dataset.regionCode = point.code;
-    group.style.setProperty('--point-index', String(index));
-    group.setAttribute('aria-label', `${point.label}${point.selected ? ', 선택된 출생지' : ''}`);
-    const title = document.createElementNS(namespace, 'title');
-    title.textContent = point.label;
-    const circle = document.createElementNS(namespace, 'circle');
-    circle.setAttribute('cx', String(point.x));
-    circle.setAttribute('cy', String(point.y));
-    circle.setAttribute('r', point.selected ? '2.3' : '1.35');
-    group.append(title, circle);
-    return group;
-  });
-  root.replaceChildren(...points);
-  root.closest('svg')?.classList.toggle('has-selection', Boolean(regionCode));
+const koreaMaps = {
+  intro: createKoreaMap(document.querySelector('#intro-korea-map')),
+  slot: createKoreaMap(document.querySelector('#slot-korea-map'), { label: '출생 지역 지도' }),
+};
+
+function renderKoreaMap(regionCode = null, label) {
+  koreaMaps.slot?.resetZoom();
+  koreaMaps.slot?.setBirth(regionCode, label);
+  if (!regionCode) koreaMaps.intro?.resetZoom();
 }
 
 function renderProfileContext(profile) {
   if (!validateProfile(profile)) return;
   setText('future-location', `${profile.region.name} ${profile.district}`);
   setText('future-birth-summary', `${profile.birthYear}년 ${profile.region.short}, ${profile.familyType}`);
-  renderKoreaMap(profile.region.code);
+  renderKoreaMap(profile.region.code, `${profile.region.name} ${profile.district}`);
 }
 
 function showView(name) {
@@ -581,4 +568,17 @@ community.subscribe((lives) => {
 });
 void refreshCommunity();
 renderKoreaMap();
-showView('intro');
+
+function leaveTitle() {
+  if (document.body.dataset.view !== 'title') return;
+  showView('intro');
+  document.querySelector('#birth-button')?.focus({ preventScroll: true });
+}
+document.addEventListener('keydown', (event) => {
+  if (document.body.dataset.view !== 'title' || event.isComposing) return;
+  if (['Shift', 'Control', 'Alt', 'Meta', 'Tab'].includes(event.key)) return;
+  event.preventDefault();
+  leaveTitle();
+});
+views.title?.addEventListener('click', leaveTitle);
+showView('title');
