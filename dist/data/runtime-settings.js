@@ -7,7 +7,7 @@ export const DURATION_OPTIONS = [30, 60, 90];
 
 export const DEFAULT_RUNTIME_SETTINGS = Object.freeze({
   era: 'random',
-  durationMinutes: 30,
+  durationMinutes: 60,
   comparison: 'korea',
   music: true,
   autoDecision: false,

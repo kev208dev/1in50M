@@ -25,6 +25,7 @@ export function calculateAnnualEconomy(life) {
   const debt = Math.max(0, finite(current.economy.debt));
   const deposit = Math.max(0, finite(current.economy.deposit));
   const homeValue = Math.max(0, finite(current.economy.homeValue));
+  const vehicleValue = Math.max(0, finite(current.economy.vehicleValue));
   const economy = {
     cash,
     householdSupport: current.economy.householdSupport,
@@ -35,6 +36,7 @@ export function calculateAnnualEconomy(life) {
     otherDebt: current.economy.otherDebt,
     deposit,
     homeValue,
+    vehicleValue,
     assets: {
       ...current.economy.assets,
       deposits: deposit,
@@ -49,6 +51,7 @@ export function calculateAnnualEconomy(life) {
       + current.economy.assets.crypto
       + current.economy.assets.businessEquity
       + homeValue
+      + vehicleValue
       - debt
     ),
   };

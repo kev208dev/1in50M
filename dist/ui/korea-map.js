@@ -1,5 +1,6 @@
 import { KOREA_REGION_SHAPES, KOREA_MAP_VIEWBOX } from '../data/korea-regions.js';
 import { REGIONS } from '../data.js';
+import { DOKDO_POINT } from '../data/korea-map.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const FULL_VIEW = [0, 0, KOREA_MAP_VIEWBOX.width, KOREA_MAP_VIEWBOX.height];
@@ -69,11 +70,19 @@ export function createKoreaMap(host, { interactive = true, label = '대한민국
     preserveAspectRatio: 'xMidYMid meet',
   });
   const regionLayer = svgNode('g', { class: 'kmap-regions' });
+  const territoryLayer = svgNode('g', { class: 'kmap-territories', 'aria-label': '독도' });
+  const dokdoX = (DOKDO_POINT.x / 100) * KOREA_MAP_VIEWBOX.width;
+  const dokdoY = (DOKDO_POINT.y / 100) * KOREA_MAP_VIEWBOX.height;
+  territoryLayer.append(
+    svgNode('circle', { class: 'kmap-dokdo-dot', cx: dokdoX, cy: dokdoY, r: 3.2 }),
+    svgNode('text', { class: 'kmap-dokdo-label', x: dokdoX + 8, y: dokdoY + 4 }),
+  );
+  territoryLayer.lastChild.textContent = '독도';
   const markerLayer = svgNode('g', { class: 'kmap-marker', 'aria-hidden': 'true' });
   markerLayer.style.display = 'none';
   for (const radius of [26, 15, 8]) markerLayer.append(svgNode('circle', { class: `kmap-marker-ring kmap-marker-ring-${radius}`, r: radius }));
   markerLayer.append(svgNode('circle', { class: 'kmap-marker-dot', r: 4.5 }));
-  svg.append(regionLayer, markerLayer);
+  svg.append(regionLayer, territoryLayer, markerLayer);
 
   const groups = new Map();
   for (const shape of KOREA_REGION_SHAPES) {

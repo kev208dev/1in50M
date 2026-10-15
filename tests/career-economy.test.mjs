@@ -28,7 +28,7 @@ test('연간 경제 계산은 유한한 원화 수치를 만든다', () => {
   life = acceptCareer(life, getCareerOffers(life)[0].career.id);
   const next = calculateAnnualEconomy(life);
   for (const [key, value] of Object.entries(next.economy)) {
-    if (!['assets', 'transactions', 'lastReturns'].includes(key)) assert.ok(Number.isFinite(value), key);
+    if (!['assets', 'transactions', 'lastReturns', 'pendingLotteryDraw'].includes(key)) assert.ok(Number.isFinite(value), key);
   }
   for (const [key, value] of Object.entries(next.economy.assets)) {
     assert.ok(Number.isFinite(value), key);

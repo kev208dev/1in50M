@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   advancePortfolio,
   applyFinancialAction,
+  purchaseLotteryTicket,
+  revealLotteryBroadcast,
   resolveLottery,
 } from '../dist/engine/finance.js';
 import { makeLifeAtAge } from './support/life-fixtures.mjs';
@@ -150,4 +152,26 @@ test('학자금 같은 비주거 부채는 주택 부채와 분리되어 해가 
   assert.equal(afterYear.economy.housingDebt, 100000000);
   assert.equal(afterYear.economy.otherDebt, 8000000);
   assert.equal(afterYear.economy.debt, 108000000);
+});
+
+test('복권 결과는 방송을 확인하기 전까지 지급액을 공개하거나 반영하지 않는다', () => {
+  const life = makeLifeAtAge(35, { economy: { cash: 100000 } });
+  const waiting = purchaseLotteryTicket(life, { amount: 10000, roll: 0.9999999 });
+  assert.equal(waiting.economy.cash, 90000);
+  assert.equal(waiting.economy.pendingLotteryDraw.revealed, false);
+  assert.equal(waiting.economy.transactions.at(-1).type, 'lottery-ticket');
+  const revealed = revealLotteryBroadcast(waiting);
+  assert.ok(revealed.economy.cash >= 1000000000);
+  assert.equal(revealed.economy.pendingLotteryDraw, null);
+  assert.equal(revealed.economy.transactions.at(-1).tier, 'jackpot');
+});
+
+test('가상자산 거래는 도파민을 올리고 자동차는 자산과 유지비를 만든다', () => {
+  const life = makeLifeAtAge(35, { year: 2026, economy: { cash: 30000000 } });
+  const crypto = applyFinancialAction(life, { type: 'buy', asset: 'crypto', amount: 2000000 });
+  assert.ok(crypto.economy.dopamine > life.economy.dopamine);
+  const car = applyFinancialAction(crypto, { type: 'vehicle', amount: 10000000, vehicleValue: 18000000, debt: 8000000, monthlyCost: 350000 });
+  assert.equal(car.economy.vehicleValue, 18000000);
+  assert.ok(car.economy.otherDebt >= 8000000);
+  assert.ok(car.economy.fixedCosts >= 350000);
 });

@@ -5,7 +5,7 @@ import { calculateAnnualEconomy } from '../engine/economy.js';
 import { selectAnnualEvents, applyEvent } from '../engine/events.js';
 import { acknowledgeIdentityDiscovery } from '../engine/identity.js';
 import { updateRelationships } from '../engine/relationships.js';
-import { advancePortfolio } from '../engine/finance.js';
+import { advancePortfolio, applyFinancialAction, purchaseLotteryTicket, revealLotteryBroadcast } from '../engine/finance.js';
 import { advanceBusiness } from '../engine/business.js';
 import { tickInterval } from '../data/runtime-settings.js';
 import { evaluateSurvival } from '../engine/mortality.js';
@@ -241,6 +241,52 @@ export function createSimulationController({
     },
     setFocus(focusId) {
       life = applyFocus(life, focusId);
+      publish();
+      return structuredClone(life);
+    },
+    performFinancialAction(action) {
+      if (life.status !== 'living') return structuredClone(life);
+      const before = life;
+      life = action.type === 'lottery-ticket'
+        ? purchaseLotteryTicket(life, action)
+        : applyFinancialAction(life, action);
+      const labels = {
+        buy: action.asset === 'stocks' ? '주식을 매수했습니다.' : action.asset === 'crypto' ? '비트코인을 매수했습니다. 도파민이 올라갑니다.' : '금융 자산을 매수했습니다.',
+        sell: action.asset === 'stocks' ? '주식을 매도했습니다.' : action.asset === 'crypto' ? '비트코인을 매도했습니다.' : '금융 자산을 매도했습니다.',
+        property: `${action.region ?? '선택한 지역'}의 부동산을 매입했습니다.`,
+        vehicle: '자동차를 구매했습니다. 차량 가치와 매달 유지비가 반영됩니다.',
+        'lottery-ticket': '복권을 샀습니다. 결과는 로또 방송을 확인할 때 공개됩니다.',
+      };
+      life = normalizeLife({
+        ...life,
+        history: [...before.history, {
+          id: `finance-${life.year}-${life.economy.transactions.length}`,
+          age: life.age,
+          year: life.year,
+          type: 'finance',
+          text: labels[action.type] ?? '금융 거래를 완료했습니다.',
+        }],
+      });
+      publish();
+      return structuredClone(life);
+    },
+    revealLotteryBroadcast() {
+      if (!life.economy.pendingLotteryDraw) return structuredClone(life);
+      const next = revealLotteryBroadcast(life);
+      const transactionItem = next.economy.transactions.at(-1);
+      const resultText = transactionItem.payout > 0
+        ? `로또 방송 결과 ${transactionItem.tier === 'jackpot' ? '1등에 당첨되었습니다' : `${transactionItem.payout.toLocaleString('ko-KR')}원을 받았습니다`}.`
+        : '로또 방송 결과, 이번에는 당첨되지 않았습니다.';
+      life = normalizeLife({
+        ...next,
+        history: [...life.history, {
+          id: `lottery-broadcast-${life.year}-${next.economy.transactions.length}`,
+          age: life.age,
+          year: life.year,
+          type: 'finance',
+          text: resultText,
+        }],
+      });
       publish();
       return structuredClone(life);
     },

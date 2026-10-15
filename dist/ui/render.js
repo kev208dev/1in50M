@@ -76,6 +76,7 @@ export function createLifeViewModel(life) {
     ['주식', current.economy.assets.stocks],
     ['가상자산', current.economy.assets.crypto],
     ['사업 지분', current.economy.assets.businessEquity],
+    ['자동차', current.economy.vehicleValue],
   ].map(([label, value]) => ({ label, value: formatWon(value), rawValue: value }));
   const businessLabels = { food: '식음료', online: '온라인', manufacturing: '제조업', other: '기타' };
   const businessStatus = { operating: '운영 중', closed: '폐업', sold: '매각 완료' };
@@ -100,6 +101,7 @@ export function createLifeViewModel(life) {
     fixedCosts: formatWon(current.economy.fixedCosts),
     debt: formatWon(current.economy.debt),
     netWorth: formatWon(current.economy.netWorth),
+    dopamine: current.economy.dopamine,
     education: EDUCATION_BY_ID[current.education.schoolType]?.label ?? (current.education.level === 'childhood' ? '미취학' : '일반 경로'),
     career: current.career.title ?? (current.career.status === 'retired' ? '은퇴' : '아직 정하지 않음'),
     housing: HOUSING_BY_ID[current.housing.type]?.label ?? '가족과 동거',
@@ -177,6 +179,7 @@ export function renderLife(root, life) {
   renderTextFields(root, '[data-life="costs"]', model.fixedCosts);
   renderTextFields(root, '[data-life="debt"]', model.debt);
   renderTextFields(root, '[data-life="net-worth"]', model.netWorth);
+  renderTextFields(root, '[data-life="dopamine"]', model.dopamine);
   renderTextFields(root, '[data-life="education"]', model.education);
   renderTextFields(root, '[data-life="career"]', model.career);
   renderTextFields(root, '[data-life="housing"]', model.housing);

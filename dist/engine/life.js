@@ -74,6 +74,9 @@ export function createLife(profile, seed = profile?.id) {
       otherDebt: 0,
       deposit: 0,
       homeValue: 0,
+      vehicleValue: 0,
+      dopamine: 0,
+      pendingLotteryDraw: null,
       assets: {
         deposits: 0,
         bonds: 0,
@@ -181,6 +184,11 @@ export function normalizeLife(life) {
     otherDebt,
     deposit: normalizedAssets.deposits,
     homeValue: Math.max(0, finite(economy.homeValue)),
+    vehicleValue: Math.max(0, finite(economy.vehicleValue)),
+    dopamine: clamp(economy.dopamine, 0, 100),
+    pendingLotteryDraw: economy.pendingLotteryDraw && typeof economy.pendingLotteryDraw === 'object'
+      ? { ...economy.pendingLotteryDraw, revealed: false }
+      : null,
     assets: normalizedAssets,
     transactions: Array.isArray(economy.transactions)
       ? economy.transactions.filter((item) => item && typeof item === 'object').slice(-100)
@@ -195,6 +203,7 @@ export function normalizeLife(life) {
     copy.economy.cash
       + Object.values(copy.economy.assets).reduce((sum, value) => sum + value, 0)
       + copy.economy.homeValue
+      + copy.economy.vehicleValue
       - copy.economy.debt,
   );
   if (copy.business && typeof copy.business === 'object') {

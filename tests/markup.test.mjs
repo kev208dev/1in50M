@@ -71,8 +71,17 @@ test('PC 생애 화면은 뷰포트에 고정되고 내부 패널만 스크롤�
   assert.match(css, /@media \(min-width: 960px\)[\s\S]*\.life-sidebar[\s\S]*overflow-y:\s*auto/);
 });
 
-test('모바일 생애 화면은 문서 스크롤을 유지한다', () => {
-  assert.match(css, /@media \(max-width: 959px\)[\s\S]*body\[data-view="life"\][\s\S]*overflow-y:\s*auto/);
+test('모바일 생애 화면도 페이지 자체는 고정하고 선택 패널만 내부 스크롤한다', () => {
+  assert.match(css, /@media \(max-width: 959px\)[\s\S]*body\[data-view="life"\][^}]*overflow:\s*hidden/);
+  assert.match(css, /@media \(max-width: 959px\)[\s\S]*\.life-layout[^}]*overflow:\s*hidden/);
+});
+
+test('돈 요약·투자 메뉴·복권 방송·하단 시스템 메시지 UI가 존재한다', () => {
+  for (const id of ['money-hud', 'finance-menu-button', 'finance-dialog', 'lottery-broadcast-button', 'system-feed']) {
+    assert.match(html, new RegExp(`id=["']${id}["']`));
+  }
+  assert.match(html, /대한민국 전도에서 투자 지역을 고르세요/);
+  assert.match(appSource, /renderSystemFeed/);
 });
 
 test('생애 화면은 외모·성격 칩과 자산 상세, 투자 안내를 제공한다', () => {

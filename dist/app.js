@@ -3,8 +3,9 @@ import { CAREER_GROUPS } from './data/careers.js';
 import { createBirthSlotResult, profileFromSlotResult } from './engine/birth-slot.js';
 import { normalizeRuntimeSettings, resolveBirthYear } from './data/runtime-settings.js';
 import { mapRegionState } from './data/korea-map.js';
-import { createKoreaMap } from './ui/korea-map.js';
+import { createKoreaMap, regionLabel } from './ui/korea-map.js';
 import { detectBigEvents, renderBigEvent } from './ui/big-event.js';
+import { renderSystemFeed } from './ui/system-feed.js';
 import { createLife } from './engine/life.js';
 import { getDecision, getChoices } from './engine/decisions.js';
 import { REFLECTION_BY_ID } from './data/reflections.js';
@@ -65,9 +66,10 @@ const identityDialog = document.querySelector('#identity-dialog');
 const reflectionDialog = document.querySelector('#reflection-dialog');
 const agencyDialog = document.querySelector('#agency-dialog');
 const careerDialog = document.querySelector('#career-dialog');
+const financeDialog = document.querySelector('#finance-dialog');
 const eventDialog = document.querySelector('#event-dialog');
 const sourceDialog = document.querySelector('#source-dialog');
-const blockingDialogs = [decisionDialog, identityDialog, reflectionDialog, agencyDialog, careerDialog, eventDialog, sourceDialog];
+const blockingDialogs = [decisionDialog, identityDialog, reflectionDialog, agencyDialog, careerDialog, financeDialog, eventDialog, sourceDialog];
 let previousLifeSnapshot = null;
 let bigEventQueue = [];
 let resumeAfterBigEvents = false;
@@ -80,6 +82,8 @@ let lastFocused = null;
 let spinCounter = 0;
 let pendingAgencyResolution = null;
 let lastCompletedSummary = null;
+let selectedPropertyRegion = null;
+let resumeAfterFinance = false;
 
 function syncFigmaStageScale() {
   document.documentElement.style.setProperty('--figma-stage-scale', String(fitFigmaStage(window.innerWidth, window.innerHeight)));
@@ -134,7 +138,16 @@ function setText(field, value) {
 const koreaMaps = {
   intro: createKoreaMap(document.querySelector('#intro-korea-map')),
   slot: createKoreaMap(document.querySelector('#slot-korea-map'), { label: '출생 지역 지도' }),
+  investment: createKoreaMap(document.querySelector('#investment-korea-map'), { label: '부동산 투자 지역 선택 지도' }),
 };
+
+document.querySelector('#investment-korea-map')?.addEventListener('kmap:zoom', (event) => {
+  selectedPropertyRegion = event.detail.code;
+  const label = document.querySelector('#property-region-label');
+  const buy = document.querySelector('#property-buy-button');
+  if (label) label.textContent = selectedPropertyRegion ? regionLabel(selectedPropertyRegion) : '지역을 선택하세요';
+  if (buy) buy.disabled = !selectedPropertyRegion;
+});
 
 function renderKoreaMap(regionCode = null, label) {
   koreaMaps.slot?.resetZoom();
@@ -305,10 +318,66 @@ function trackBigEvents(life) {
 function renderCurrentLife(life) {
   trackBigEvents(life);
   renderLife(views.life, life);
+  renderSystemFeed(document.querySelector('#system-feed'), life);
+  updateFinanceDialog(life);
   updateMoment(life);
   updatePlayback();
   saveCurrentLife(storage, life);
   controls.continue.hidden = false;
+}
+
+function updateFinanceDialog(life = controller?.getState()) {
+  if (!life) return;
+  financeDialog?.querySelectorAll('[data-life="dopamine"]').forEach((node) => { node.textContent = String(life.economy.dopamine ?? 0); });
+  const pendingDraw = Boolean(life.economy.pendingLotteryDraw);
+  const buyLottery = financeDialog?.querySelector('[data-finance-action="lottery-buy"]');
+  const broadcast = document.querySelector('#lottery-broadcast-button');
+  if (buyLottery) buyLottery.disabled = pendingDraw || life.economy.cash < 10000;
+  if (broadcast) broadcast.disabled = !pendingDraw;
+}
+
+function openFinanceMenu() {
+  if (!controller || financeDialog.open) return;
+  resumeAfterFinance = controller.isPlaying();
+  controller.pause();
+  updatePlayback();
+  updateFinanceDialog();
+  lastFocused = document.activeElement;
+  main.inert = true;
+  financeDialog.showModal();
+  document.querySelector('#finance-title').focus();
+}
+
+function closeFinanceMenu() {
+  unlockBackground(financeDialog);
+  if (resumeAfterFinance && controller?.getState().status === 'living' && !controller.getState().pendingDecisionId) controller.play();
+  resumeAfterFinance = false;
+  updatePlayback();
+}
+
+function financeAction(actionId) {
+  if (!controller) return;
+  const actions = {
+    'stock-buy': { type: 'buy', asset: 'stocks', amount: 1000000 },
+    'stock-sell': { type: 'sell', asset: 'stocks', amount: 1000000 },
+    'crypto-buy': { type: 'buy', asset: 'crypto', amount: 2000000 },
+    'crypto-sell': { type: 'sell', asset: 'crypto', amount: 2000000 },
+    'lottery-buy': { type: 'lottery-ticket', amount: 10000 },
+    'car-buy': { type: 'vehicle', amount: 8000000, vehicleValue: 16000000, debt: 8000000, monthlyCost: 300000 },
+    'property-buy': { type: 'property', amount: 20000000, homeValue: 150000000, debt: 130000000, region: selectedPropertyRegion ? regionLabel(selectedPropertyRegion) : null },
+  };
+  const feedback = document.querySelector('#finance-feedback');
+  try {
+    const next = actionId === 'lottery-broadcast'
+      ? controller.revealLotteryBroadcast()
+      : controller.performFinancialAction(actions[actionId]);
+    feedback.textContent = next.history.at(-1)?.text ?? '거래가 반영되었습니다.';
+    feedback.dataset.tone = 'success';
+    updateFinanceDialog(next);
+  } catch (error) {
+    feedback.textContent = error?.message ?? '이 거래를 진행할 수 없습니다.';
+    feedback.dataset.tone = 'error';
+  }
 }
 
 function unlockBackground(dialog, focus = true) {
@@ -535,6 +604,7 @@ controls.auto.addEventListener('click', () => {
   updatePlayback();
 });
 controls.career.addEventListener('click', openCareerPicker);
+document.querySelector('#finance-menu-button').addEventListener('click', openFinanceMenu);
 
 document.querySelector('#life-panel-tabs').addEventListener('click', (event) => {
   const button = event.target.closest('[data-life-panel-target]');
@@ -623,6 +693,17 @@ document.querySelector('#source-button').addEventListener('click', () => {
 sourceDialog.addEventListener('cancel', (event) => {
   event.preventDefault();
   unlockBackground(sourceDialog);
+});
+
+document.querySelector('#finance-close-button').addEventListener('click', closeFinanceMenu);
+financeDialog.addEventListener('cancel', (event) => {
+  event.preventDefault();
+  closeFinanceMenu();
+});
+financeDialog.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-finance-action]');
+  if (!button || button.disabled) return;
+  financeAction(button.dataset.financeAction);
 });
 
 document.querySelector('#career-close-button').addEventListener('click', () => unlockBackground(careerDialog));

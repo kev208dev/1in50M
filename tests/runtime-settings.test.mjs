@@ -7,10 +7,16 @@ import {
 } from '../dist/data/runtime-settings.js';
 
 test('진행 시간과 설정값을 허용 목록으로 정규화한다', () => {
+  assert.equal(normalizeRuntimeSettings().durationMinutes, 60);
   assert.equal(normalizeRuntimeSettings({ durationMinutes: 60 }).durationMinutes, 60);
-  assert.equal(normalizeRuntimeSettings({ durationMinutes: 45 }).durationMinutes, 30);
+  assert.equal(normalizeRuntimeSettings({ durationMinutes: 45 }).durationMinutes, 60);
   assert.equal(normalizeRuntimeSettings({ era: '1970s' }).era, '1970s');
   assert.equal(normalizeRuntimeSettings({ era: 'invalid' }).era, 'random');
+});
+
+test('기본 생애는 60분이며 1배속에서 한 해가 40초다', () => {
+  assert.equal(tickInterval({}, 1), 40000);
+  assert.equal(tickInterval({}, 16), 2500);
 });
 
 test('30분 생애의 1배속은 한 해당 20초다', () => {

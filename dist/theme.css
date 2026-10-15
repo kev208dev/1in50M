@@ -817,6 +817,86 @@ body[data-view="life"] .logo b { font-size: 26px; }
 .event-footer .primary-button { min-height: 58px; padding: 0 26px; font-size: 16px; }
 .event-source { margin: 0; color: var(--ink-faint); font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; }
 
+/* 핵심 돈 정보는 스크롤 없이 항상 보인다. */
+.money-hud { position: absolute; left: clamp(150px, 13vw, 210px); top: 50%; display: flex; gap: clamp(10px, 1.8vw, 28px); margin: 0; transform: translateY(-50%); }
+.money-hud div { display: grid; gap: 2px; }
+.money-hud dt { color: var(--ink-faint); font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em; }
+.money-hud dd { margin: 0; color: var(--ink); font-family: var(--font-display); font-size: 14px; font-weight: 700; }
+.money-hud div:first-child dd, .money-hud div:last-child dd { color: var(--accent); }
+.finance-menu-button { display: inline-flex; align-items: center; }
+
+/* 원작처럼 사건과 선택 결과가 화면 하단에 시간순으로 쌓이는 시스템 로그. */
+.life-timeline-bar { grid-template-columns: auto minmax(0, 1fr); }
+.system-feed-shell { grid-column: 1 / -1; display: grid; grid-template-columns: 150px minmax(0, 1fr); min-width: 0; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.system-feed-heading { display: flex; align-items: center; gap: 8px; color: var(--accent); font-family: var(--font-mono); font-size: 10px; letter-spacing: .09em; }
+.system-feed { display: flex; gap: 8px; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
+.system-feed-item { display: grid; grid-template-columns: auto auto minmax(150px, 1fr); gap: 8px; align-items: center; flex: 0 0 min(390px, 72vw); padding: 8px 10px; border-left: 2px solid rgba(255,255,255,.2); background: rgba(255,255,255,.035); }
+.system-feed-item.is-choice { border-left-color: var(--accent); }
+.system-feed-item.is-history { border-left-color: #8bbcff; }
+.system-feed-item.is-finance { border-left-color: #ffd36e; }
+.system-feed-item b { color: var(--ink); font-family: var(--font-mono); font-size: 9px; white-space: nowrap; }
+.system-feed-item span { color: var(--ink-faint); font-family: var(--font-mono); font-size: 9px; white-space: nowrap; }
+.system-feed-item p { margin: 0; overflow: hidden; color: var(--ink-muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+
+.finance-dialog { width: min(1100px, calc(100% - 36px)); }
+.finance-card { max-height: calc(100dvh - 40px); overflow-y: auto; }
+.finance-feedback { margin: 0 0 18px; padding: 12px 14px; border: 1px solid var(--line); color: var(--ink-muted); background: rgba(255,255,255,.03); }
+.finance-feedback[data-tone="success"] { border-color: rgba(61,240,138,.45); color: var(--accent); }
+.finance-feedback[data-tone="error"] { border-color: rgba(255,110,110,.55); color: #ff9a9a; }
+.finance-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.finance-experience { padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.035); }
+.finance-experience h3 { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 8px; font-family: var(--font-display); font-size: 18px; }
+.finance-experience h3 b { color: var(--accent); font-family: var(--font-mono); font-size: 10px; }
+.finance-experience p { min-height: 40px; margin: 0 0 14px; color: var(--ink-muted); font-size: 12px; line-height: 1.55; }
+.finance-experience > div:not(.investment-korea-map) { display: flex; flex-wrap: wrap; gap: 8px; }
+.finance-experience button { min-height: 38px; padding: 0 12px; border: 1px solid var(--line-bright); border-radius: 9px; color: var(--ink); background: transparent; cursor: pointer; }
+.finance-experience button:hover:not(:disabled) { color: #000; background: var(--accent); border-color: var(--accent); }
+.finance-experience.is-risk { border-color: rgba(255,211,110,.35); }
+.real-estate-experience { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr minmax(240px, 420px); column-gap: 24px; }
+.real-estate-experience h3, .real-estate-experience > p, .property-choice { grid-column: 1; }
+.investment-korea-map { grid-column: 2; grid-row: 1 / span 4; height: 310px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #000; }
+.property-choice { align-items: center; justify-content: space-between; }
+.property-choice span { color: var(--ink-muted); font-size: 12px; }
+.property-choice strong { color: var(--accent); }
+
+.kmap-dokdo-dot { fill: var(--accent); stroke: #fff; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.kmap-dokdo-label { fill: var(--ink); font-family: var(--font-body); font-size: 11px; font-weight: 700; paint-order: stroke; stroke: #000; stroke-width: 3px; }
+
+/* 근거 표기는 기능은 유지하되 플레이를 방해하지 않게 축소한다. */
+.log-source, .decision-source, .identity-source, .event-source, .investment-notice { opacity: .2; font-size: 8px; transition: opacity .2s ease; }
+.log-source:hover, .decision-source:hover, .identity-source:hover, .event-source:hover, .investment-notice:hover { opacity: .8; }
+
+@media (max-width: 959px) {
+  body[data-view="life"] { height: 100dvh; overflow: hidden; }
+  body[data-view="life"] main { height: 100dvh; overflow: hidden; }
+  .life-view { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; height: 100%; min-height: 0; overflow: hidden; }
+  .life-toolbar { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; padding: 8px 12px; }
+  .money-hud { position: static; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; transform: none; }
+  .money-hud div { min-width: 0; }
+  .money-hud dd { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+  .life-toolbar-actions { position: static; transform: none; }
+  .finance-menu-button { display: inline-flex; min-height: 38px; padding: 0 10px; font-size: 11px; }
+  .life-layout { min-height: 0; overflow: hidden; }
+  .life-layout > .life-story, .life-layout > .life-sidebar { min-height: 0; overflow-y: auto; }
+  .life-timeline-bar { position: static; display: grid; max-height: 210px; margin: 0; border-right: 0; border-bottom: 0; border-left: 0; border-radius: 18px 18px 0 0; overflow: hidden; }
+  .system-feed-shell { grid-template-columns: 1fr; gap: 6px; }
+  .system-feed-heading { display: none; }
+  .system-feed-item { flex-basis: min(330px, 86vw); }
+  .finance-grid { grid-template-columns: 1fr; }
+  .real-estate-experience { grid-column: auto; display: block; }
+  .investment-korea-map { height: 260px; margin-bottom: 12px; }
+}
+
+@media (max-width: 560px) {
+  .life-toolbar { grid-template-columns: auto 1fr auto; }
+  .money-hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .money-hud div:nth-child(2), .money-hud div:nth-child(3) { display: none; }
+  .finance-menu-button { display: inline-grid; width: 38px; padding: 0; place-items: center; font-size: 0; }
+  .finance-menu-button::after { content: '돈'; font-size: 10px; }
+  .finance-dialog { width: 100%; }
+  .finance-card { max-height: 100dvh; }
+}
+
 @media (max-width: 560px) {
   .decision-dialog { border-radius: 0; }
   .decision-choices { grid-template-columns: 1fr; max-height: none; }

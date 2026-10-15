@@ -43,6 +43,18 @@ export const FINANCE_DECISIONS = [
     ],
   },
   {
+    id: 'major-purchase', ageRange: [27, 55], weight: 2,
+    title: '차와 집, 무엇을 소유할까',
+    prompt: prompt('큰 구매는 편리함과 안정뿐 아니라 매달 나가는 비용과 빚도 만듭니다.'),
+    notice: FICTIONAL_INVESTMENT_NOTICE,
+    choices: [
+      choice('buy-used-car', '중고차를 산다 · 선납 800만원', '차량가 1,600만원 · 대출 800만원 · 월 유지비 30만원', { happiness: 2 }, ['이동', '대출'], { minimumCash: 8000000, financialAction: { type: 'vehicle', amount: 8000000, vehicleValue: 16000000, debt: 8000000, monthlyCost: 300000 } }),
+      choice('buy-family-car', '새 차를 산다 · 선납 1,500만원', '차량가 3,500만원 · 대출 2,000만원 · 월 유지비 55만원', { happiness: 3 }, ['이동', '대출'], { minimumCash: 15000000, financialAction: { type: 'vehicle', amount: 15000000, vehicleValue: 35000000, debt: 20000000, monthlyCost: 550000 } }),
+      choice('buy-first-home', '작은 집을 산다 · 현금 3,000만원', '주택가 2억 4,000만원 · 주택담보대출 2억 1,000만원', { happiness: 3 }, ['자산', '대출', '계획'], { minimumCash: 30000000, financialAction: { type: 'property', amount: 30000000, homeValue: 240000000, debt: 210000000, region: '거주 지역' } }),
+      choice('delay-major-purchase', '아직 사지 않는다', '현금 흐름을 지키고 다음 기회를 기다립니다.', { happiness: 1 }, ['유보', '안정']),
+    ],
+  },
+  {
     id: 'startup-capital', ageRange: [27, 55], weight: 2,
     title: '내 사업에 전 재산을 걸까',
     prompt: prompt('창업은 폐업과 부채, 드문 대규모 매각 가능성을 모두 가집니다.'),

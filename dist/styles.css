@@ -707,9 +707,9 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
 }
 
 @media (max-width: 959px) {
-  body[data-view="life"] { height: auto; overflow-y: auto; }
-  body[data-view="life"] main { height: auto; }
-  .life-view { display: block; height: auto; min-height: 100svh; overflow: visible; }
+  body[data-view="life"] { height: 100dvh; overflow: hidden; }
+  body[data-view="life"] main { height: 100dvh; overflow: hidden; }
+  .life-view { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; height: 100%; min-height: 0; overflow: hidden; }
   .site-header { min-height: 68px; }
   .system-status > span:nth-child(2) { display: none; }
   .intro-view { grid-template-columns: 1fr; min-height: auto; padding-top: 58px; }
@@ -731,7 +731,8 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
   .life-panel-tabs { position: sticky; top: 0; z-index: 11; display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--line); background: rgba(17, 22, 19, .96); }
   .life-panel-tabs button { min-height: 42px; border: 0; border-right: 1px solid var(--line); color: var(--ink-muted); background: transparent; font-size: 11px; cursor: pointer; }
   .life-panel-tabs button[aria-pressed="true"] { color: var(--bg); background: var(--accent); }
-  .life-layout { display: flex; flex-direction: column; border: 0; }
+  .life-layout { display: flex; min-height: 0; flex-direction: column; border: 0; overflow: hidden; }
+  .life-layout > .life-story, .life-layout > .life-sidebar { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
   .life-story { order: 1; }
   .current-moment { display: block; min-height: 240px; }
   .life-sidebar-left { order: 2; border-top: 1px solid var(--line); border-right: 0; }

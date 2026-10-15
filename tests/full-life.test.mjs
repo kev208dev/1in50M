@@ -37,7 +37,7 @@ test('100개 seed가 선택지 고갈이나 NaN 없이 완주한다', () => {
     assert.ok(result.age <= 90);
     assert.ok(Object.values(result.stats).every(Number.isFinite));
     assert.ok(Object.entries(result.economy)
-      .filter(([key]) => !['assets', 'transactions', 'lastReturns'].includes(key))
+      .filter(([key]) => !['assets', 'transactions', 'lastReturns', 'pendingLotteryDraw'].includes(key))
       .every(([, value]) => Number.isFinite(value)));
     assert.ok(Object.values(result.economy.assets).every(Number.isFinite));
     assert.equal(result.pendingDecisionId, null);

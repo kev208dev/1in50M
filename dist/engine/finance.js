@@ -3,6 +3,7 @@ import { createRng } from './random.js';
 
 const clampRoll = (value) => Math.max(0, Math.min(1, Number(value) || 0));
 const money = (value) => Math.max(0, Math.round(Number(value) || 0));
+const dopamine = (value) => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
 
 export function compoundAsset(value, model, marketRoll) {
   const centered = (clampRoll(marketRoll) * 2) - 1;
@@ -16,6 +17,37 @@ export function resolveLottery(roll, stake) {
   }
   if (clampRoll(roll) >= 0.995) return { payout: amount * 50, tier: 'minor' };
   return { payout: 0, tier: 'none' };
+}
+
+export function purchaseLotteryTicket(life, { amount = 10000, roll } = {}) {
+  const current = structuredClone(life);
+  if (current.economy.pendingLotteryDraw) throw new RangeError('먼저 기다리는 복권 방송을 확인해 주세요.');
+  const stake = money(amount);
+  requireOwnCash(current, stake);
+  const drawRoll = roll ?? createRng(`${current.seed}:lottery:${current.year}:${current.age}`).next();
+  const result = resolveLottery(drawRoll, stake);
+  current.economy.cash -= stake;
+  current.economy.pendingLotteryDraw = {
+    id: `lottery-${current.year}-${current.age}`,
+    amount: stake,
+    payout: result.payout,
+    tier: result.tier,
+    revealed: false,
+  };
+  current.economy.transactions = transaction(current, { type: 'lottery-ticket', amount: stake }, { resultHidden: true });
+  return current;
+}
+
+export function revealLotteryBroadcast(life) {
+  const current = structuredClone(life);
+  const draw = current.economy.pendingLotteryDraw;
+  if (!draw) return current;
+  current.economy.cash = Math.round((Number(current.economy.cash) || 0) + money(draw.payout));
+  current.economy.pendingLotteryDraw = null;
+  current.economy.transactions = transaction(current, { type: 'lottery', amount: draw.amount }, {
+    payout: money(draw.payout), tier: draw.tier,
+  });
+  return current;
 }
 
 function transaction(life, action, details = {}) {
@@ -79,7 +111,15 @@ export function applyFinancialAction(life, action = {}) {
     const addedHomeValue = money(action.homeValue);
     current.economy.homeValue = money(current.economy.homeValue) + addedHomeValue;
     housingDebt += money(action.debt);
-    details = { homeValue: addedHomeValue, borrowed: money(action.debt) };
+    details = { homeValue: addedHomeValue, borrowed: money(action.debt), region: action.region ?? null };
+  } else if (action.type === 'vehicle') {
+    requireOwnCash(current, amount);
+    cash -= amount;
+    const addedVehicleValue = money(action.vehicleValue);
+    current.economy.vehicleValue = money(current.economy.vehicleValue) + addedVehicleValue;
+    otherDebt += money(action.debt);
+    current.economy.fixedCosts = money(current.economy.fixedCosts) + money(action.monthlyCost);
+    details = { vehicleValue: addedVehicleValue, borrowed: money(action.debt), monthlyCost: money(action.monthlyCost) };
   } else {
     throw new RangeError('알 수 없는 금융 행동입니다.');
   }
@@ -93,6 +133,7 @@ export function applyFinancialAction(life, action = {}) {
     deposit: money(assets.deposits),
     assets,
     transactions: transaction(current, { ...action, amount }, details),
+    dopamine: dopamine((current.economy.dopamine ?? 0) + (action.type === 'buy' && action.asset === 'crypto' ? 24 : 0)),
   };
   return current;
 }
@@ -144,6 +185,7 @@ export function advancePortfolio(life, { marketRoll } = {}) {
     assets,
     deposit: money(assets.deposits),
     lastReturns,
+    dopamine: dopamine((current.economy.dopamine ?? 0) - 6 + Math.abs(lastReturns.crypto ?? 0) * 30),
     transactions: transaction(current, { type: 'market', amount: 0 }, { marketRegime }),
   };
   return current;

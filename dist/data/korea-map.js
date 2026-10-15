@@ -18,6 +18,11 @@ export const KOREA_MAP_POINTS = [
   { code: 'JJU', label: '제주특별자치도', x: 31, y: 94 },
 ];
 
+// 독도는 광역자치단체 선택지가 아니라 대한민국 영토 표식으로 지도에 별도 표시한다.
+export const DOKDO_POINT = Object.freeze({
+  code: 'DOKDO', label: '독도', x: 92, y: 31, territory: true,
+});
+
 export function mapRegionState(regionCode) {
   return KOREA_MAP_POINTS.map((point) => ({
     ...point,

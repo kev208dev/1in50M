@@ -52,7 +52,7 @@
         <fieldset id="birth-settings" class="birth-settings">
           <legend>삶의 조건 설정</legend>
           <label><span>시대</span><select id="era-setting"><option value="random">완전 무작위</option><option value="1950s">1950년대</option><option value="1960s">1960년대</option><option value="1970s">1970년대</option><option value="1980s">1980년대</option><option value="1990s">1990년대</option><option value="2000s">2000년대</option><option value="2010s">2010년대</option><option value="2020s">2020년대</option><option value="future">미래 대한민국</option></select></label>
-          <label><span>생애 시간</span><select id="duration-setting"><option value="30">30분</option><option value="60">60분</option><option value="90">90분</option></select></label>
+          <label><span>생애 시간</span><select id="duration-setting"><option value="30">30분</option><option value="60" selected>60분</option><option value="90">90분</option></select></label>
           <label><span>비교</span><select id="comparison-setting"><option value="korea">대한민국 평균</option><option value="none">비교하지 않음</option></select></label>
           <label class="setting-toggle"><input id="music-setting" type="checkbox" checked><span>음악</span></label>
           <label class="setting-toggle"><input id="auto-setting" type="checkbox"><span>자동 결정</span></label>
@@ -170,7 +170,14 @@
           <small data-life="stage">영아</small>
           <small class="life-clock-location" data-life="location">대한민국</small>
         </div>
+        <dl id="money-hud" class="money-hud" aria-label="핵심 자산 현황">
+          <div><dt>순자산</dt><dd data-life="net-worth">0원</dd></div>
+          <div><dt>현금</dt><dd data-life="cash">0원</dd></div>
+          <div><dt>월 소득</dt><dd data-life="income">0원</dd></div>
+          <div><dt>도파민</dt><dd><span data-life="dopamine">0</span>/100</dd></div>
+        </dl>
         <div class="life-toolbar-actions">
+          <button id="finance-menu-button" class="toolbar-button finance-menu-button" type="button">투자·구매</button>
           <button id="source-button" class="icon-button" type="button" aria-label="안내와 데이터 출처 보기"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v5M10 6.2v.1"/></svg></button>
         </div>
       </header>
@@ -298,6 +305,10 @@
       </div>
 
       <footer class="life-timeline-bar">
+        <section class="system-feed-shell" aria-label="연속 시스템 메시지">
+          <div class="system-feed-heading"><span class="status-dot"></span><strong>SYSTEM MESSAGE</strong></div>
+          <div id="system-feed" class="system-feed" role="log" aria-live="polite" aria-relevant="additions"></div>
+        </section>
         <div class="playback-controls" aria-label="시간 진행">
           <button id="play-button" class="play-button" type="button" aria-label="삶 재생">▶</button>
           <div id="speed-controls" class="speed-controls" role="group" aria-label="진행 속도">
@@ -464,6 +475,38 @@
       <h2 id="career-title" tabindex="-1">어떤 일을<br>시작할까요?</h2>
       <p class="decision-prompt">직업군별 세부 직업을 살펴보세요. 조건이 부족한 경로도 준비해야 할 이유와 함께 남아 있습니다.</p>
       <div id="career-groups" class="career-groups"></div>
+    </div>
+  </dialog>
+
+  <dialog id="finance-dialog" class="decision-dialog finance-dialog" aria-labelledby="finance-title">
+    <div class="decision-card finance-card">
+      <div class="dialog-topline"><p class="eyebrow"><span>MONEY LAB</span> 직접 체험</p><button id="finance-close-button" class="text-button" type="button">닫기 ×</button></div>
+      <h2 id="finance-title" tabindex="-1">돈을 직접 움직여<br><em>결과를 확인하세요.</em></h2>
+      <p id="finance-feedback" class="finance-feedback" aria-live="polite">금액과 위험을 확인한 뒤 선택하세요.</p>
+      <div class="finance-grid">
+        <section class="finance-experience">
+          <h3>주식 체험</h3><p>100만원 단위로 매수·매도합니다. 해가 바뀔 때 시장 수익률이 반영됩니다.</p>
+          <div><button type="button" data-finance-action="stock-buy">주식 100만원 매수</button><button type="button" data-finance-action="stock-sell">주식 100만원 매도</button></div>
+        </section>
+        <section class="finance-experience is-risk">
+          <h3>비트코인 위험 체험 <b>도파민 <span data-life="dopamine">0</span>/100</b></h3><p>200만원 단위. 변동폭이 매우 크며 거래할수록 도파민 수치가 올라갑니다.</p>
+          <div><button type="button" data-finance-action="crypto-buy">비트코인 200만원 매수</button><button type="button" data-finance-action="crypto-sell">비트코인 200만원 매도</button></div>
+        </section>
+        <section class="finance-experience lottery-experience">
+          <h3>로또 방송</h3><p>복권을 사도 결과는 자동 공개되지 않습니다.</p>
+          <div><button type="button" data-finance-action="lottery-buy">복권 1만원 구매</button><button id="lottery-broadcast-button" type="button" data-finance-action="lottery-broadcast">로또 방송 확인하기</button></div>
+        </section>
+        <section class="finance-experience">
+          <h3>자동차 구매</h3><p>중고차 1,600만원 · 선납 800만원 · 대출 800만원 · 월 유지비 30만원</p>
+          <div><button type="button" data-finance-action="car-buy">중고차 구매</button></div>
+        </section>
+        <section class="finance-experience real-estate-experience">
+          <h3>부동산 투자</h3><p>대한민국 전도에서 투자 지역을 고르세요. 선납 2,000만원 · 매입가 1억 5,000만원 · 대출 1억 3,000만원</p>
+          <div id="investment-korea-map" class="investment-korea-map"></div>
+          <div class="property-choice"><span>선택 지역: <strong id="property-region-label">지역을 선택하세요</strong></span><button id="property-buy-button" type="button" data-finance-action="property-buy" disabled>이 지역 땅 사기</button></div>
+        </section>
+      </div>
+      <p class="decision-footnote">모든 금액과 수익률은 체험용 가상 데이터이며 실제 투자 조언이 아닙니다.</p>
     </div>
   </dialog>
 
