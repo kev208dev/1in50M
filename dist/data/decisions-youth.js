@@ -105,13 +105,16 @@ export const YOUTH_DECISIONS = [
     ],
   },
   {
-    id: 'service-path', ageRange: [20, 22],
+    id: 'service-path', ageRange: [19, 24], priority: 110,
     title: '복무와 다음 시간',
-    prompt: '이 시기의 의무와 생활 계획을 단순화한 가상 선택입니다. 실제 법률 판정이 아닙니다.',
+    prompt: '자동 판정된 복무 상태를 바탕으로 시작 시기를 정합니다.',
+    when: (life) => ['active', 'supplementary'].includes(life.service?.status)
+      && !life.service.completed
+      && (!life.service.nextAssessmentAge || life.age >= life.service.nextAssessmentAge),
     choices: [
-      choice('active-service', '현역 복무', '일정 기간 새로운 환경에서 생활합니다.', { health: -2, relationships: -1, knowledge: 1 }, ['시간 필요']),
-      choice('alternative-service', '대체·보충 복무', '생활과 복무를 조율합니다.', { happiness: -1, knowledge: 1 }, ['생활 조율']),
-      choice('not-applicable', '면제·비대상', '현재의 학업이나 일을 이어 갑니다.', { happiness: 1 }, ['현재 경로 유지']),
+      choice('serve-now', '지금 복무를 시작한다', '판정된 복무 형태로 생활을 전환합니다.', { health: -2, relationships: -1, knowledge: 1 }, ['시간 필요'], { serviceStatuses: ['active', 'supplementary'], serviceAction: 'complete' }),
+      choice('defer-study', '학업을 마친 뒤 시작한다', '진행 중인 학기를 정리하고 다음 해에 다시 일정을 잡습니다.', { knowledge: 1, happiness: -1 }, ['학업', '유보'], { serviceStatuses: ['active', 'supplementary'], serviceAction: 'defer' }),
+      choice('defer-work', '현재 일을 정리한 뒤 시작한다', '업무 인수인계 시간을 확보하고 다음 해에 다시 일정을 잡습니다.', { relationships: 1, happiness: -1 }, ['일', '유보'], { serviceStatuses: ['active', 'supplementary'], serviceAction: 'defer' }),
     ],
   },
 ];

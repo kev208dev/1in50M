@@ -17,6 +17,7 @@ import { advancePortfolio } from './finance.js';
 import { advanceBusiness } from './business.js';
 import { selectEraEvent, applyEraEvent } from './era-events.js';
 import { normalizeRiskFactors, normalizeWellbeingHabits } from './wellbeing.js';
+import { defaultServiceState, ensureServiceAssessment } from './service.js';
 
 const STAT_KEYS = ['health', 'happiness', 'knowledge', 'relationships'];
 
@@ -111,6 +112,7 @@ export function createLife(profile, seed = profile?.id) {
     mentalHealthState: 'stable',
     identity: createIdentityArc(initialSeed),
     pendingIdentityDiscovery: false,
+    service: defaultServiceState(),
     decisions: {},
     history: [{
       id: 'birth',
@@ -276,6 +278,19 @@ export function normalizeLife(life) {
   copy.pendingIdentityDiscovery = Boolean(copy.pendingIdentityDiscovery)
     && copy.identity.discovered
     && !copy.identity.acknowledged;
+  const service = copy.service && typeof copy.service === 'object' ? copy.service : defaultServiceState();
+  const serviceStatuses = new Set(['unassessed', 'active', 'supplementary', 'wartime-labor', 'exempt', 'recheck', 'not-target', 'completed']);
+  copy.service = {
+    status: serviceStatuses.has(service.status) ? service.status : 'unassessed',
+    grade: Number.isInteger(Number(service.grade)) && Number(service.grade) >= 1 && Number(service.grade) <= 7
+      ? Number(service.grade)
+      : null,
+    assessedAge: Number.isFinite(Number(service.assessedAge)) ? clamp(service.assessedAge, 0, 90) : null,
+    completed: Boolean(service.completed),
+    nextAssessmentAge: Number.isFinite(Number(service.nextAssessmentAge))
+      ? clamp(service.nextAssessmentAge, 0, 90)
+      : null,
+  };
   copy.decisions = copy.decisions && typeof copy.decisions === 'object' ? { ...copy.decisions } : {};
   copy.history = Array.isArray(copy.history)
     ? copy.history.filter((item) => item && typeof item === 'object' && typeof item.text === 'string')
@@ -367,6 +382,7 @@ export function simulateAutomatically(profile, seed = profile?.id) {
   let life = createLife(profile, seed);
   let iterations = 0;
   while (life.status === 'living' && iterations < 120) {
+    life = normalizeLife(ensureServiceAssessment(life));
     const decision = getDecision(life);
     if (decision) life = chooseAutomatically(life, decision.id);
 

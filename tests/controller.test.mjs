@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { DECISIONS } from '../dist/data/decisions.js';
 import { createSimulationController } from '../dist/ui/controls.js';
 import { createRng } from '../dist/engine/random.js';
-import { makeLifeAtAge, makeLifeAtYear, fakeClock } from './support/life-fixtures.mjs';
+import { makeLifeAtAge, makeLifeAtYear, makeMaleLifeAtAge, fakeClock } from './support/life-fixtures.mjs';
 
 const completedDecisions = Object.fromEntries(DECISIONS.map((decision) => [decision.id, 'fixture-choice']));
 
@@ -314,6 +314,53 @@ test('현금이 없는 자동 진행도 투자 결정에서 멈추지 않는다'
   assert.equal(controller.play(), true);
   clock.advance(8000);
   assert.equal(controller.getState().age, 25);
+});
+
+test('현역 판정자에게만 복무 시기 선택이 열린다', () => {
+  const decisions = { ...completedDecisions };
+  delete decisions['service-path'];
+  const controller = createSimulationController({
+    initialLife: makeMaleLifeAtAge(19, {
+      decisions,
+      service: { status: 'active', grade: 2, assessedAge: 19, completed: false },
+    }),
+  });
+  assert.equal(controller.getState().pendingDecisionId, 'service-path');
+  assert.throws(() => controller.answerDecision('not-applicable'), /알 수 없는|선택할 수/);
+});
+
+test('면제와 비대상 판정에는 복무 선택창이 열리지 않는다', () => {
+  const exempt = createSimulationController({
+    initialLife: makeMaleLifeAtAge(19, {
+      decisions: completedDecisions,
+      service: { status: 'exempt', grade: 6, assessedAge: 19, completed: true },
+    }),
+  });
+  const nonTarget = createSimulationController({
+    initialLife: makeLifeAtAge(19, {
+      decisions: completedDecisions,
+      profile: { sex: { id: 'female', label: '여성' } },
+      service: { status: 'not-target', grade: null, assessedAge: 19, completed: true },
+    }),
+  });
+  assert.notEqual(exempt.getState().pendingDecisionId, 'service-path');
+  assert.notEqual(nonTarget.getState().pendingDecisionId, 'service-path');
+});
+
+test('재검사는 다음 해에 자동으로 다시 판정된다', () => {
+  const clock = fakeClock();
+  const controller = createSimulationController({
+    clock,
+    initialLife: makeMaleLifeAtAge(19, {
+      stats: { health: 80 },
+      decisions: completedDecisions,
+      service: { status: 'recheck', grade: 7, assessedAge: 19, completed: false, nextAssessmentAge: 20 },
+    }),
+  });
+  controller.play();
+  clock.advance(8000);
+  assert.equal(controller.getState().service.assessedAge, 20);
+  assert.notEqual(controller.getState().service.status, 'unassessed');
 });
 
 test('누적된 밤샘 습관은 실제 컨트롤러에서 도움 장면을 연다', () => {

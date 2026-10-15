@@ -7,7 +7,7 @@ import {
   getVisibleLifeLog,
   renderTextFields,
 } from '../dist/ui/render.js';
-import { makeLifeAtAge } from './support/life-fixtures.mjs';
+import { makeLifeAtAge, makeMaleLifeAtAge } from './support/life-fixtures.mjs';
 import { createLifeSummary } from '../dist/engine/summary.js';
 
 const v4Life = makeLifeAtAge(38, {
@@ -114,6 +114,13 @@ test('삶 화면 모델은 학업 스트레스·수면·카페인·지원과 마
   }));
   assert.equal(view.mentalHealth.label, '지침');
   assert.deepEqual(view.wellbeing.map((item) => item.value), [70, 62, 45, 20]);
+});
+
+test('병역 자동 판정 결과를 사용자 선택과 구분해 표시한다', () => {
+  const view = createLifeViewModel(makeMaleLifeAtAge(20, {
+    service: { status: 'supplementary', grade: 4, assessedAge: 19, completed: false },
+  }));
+  assert.equal(view.service, '보충역 판정');
 });
 
 test('요약은 출생 조건과 주요 경제 전환점을 설명한다', () => {

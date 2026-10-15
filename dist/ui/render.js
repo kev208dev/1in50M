@@ -19,6 +19,17 @@ const MENTAL_HEALTH_LABELS = {
   crisis: { label: '위기 · 도움이 필요함', tone: 'crisis' },
 };
 
+const SERVICE_LABELS = {
+  unassessed: '미판정',
+  active: '현역 판정',
+  supplementary: '보충역 판정',
+  'wartime-labor': '전시근로역 판정',
+  exempt: '병역면제 판정',
+  recheck: '재검사 예정',
+  'not-target': '비대상',
+  completed: '복무 완료',
+};
+
 export function formatAge(age) {
   return `${Math.max(0, Math.round(Number(age) || 0))}세`;
 }
@@ -92,6 +103,7 @@ export function createLifeViewModel(life) {
     statHistory: current.statHistory,
     survival: survivalCurve(current),
     mentalHealth: MENTAL_HEALTH_LABELS[current.mentalHealthState] ?? MENTAL_HEALTH_LABELS.stable,
+    service: SERVICE_LABELS[current.service.status] ?? SERVICE_LABELS.unassessed,
     wellbeing: [
       { id: 'academicStress', label: '학업 압박', value: current.riskFactors.academicStress },
       { id: 'sleepDebt', label: '수면 부족', value: current.riskFactors.sleepDebt },
@@ -142,6 +154,7 @@ export function renderLife(root, life) {
   renderTextFields(root, '[data-life="business"]', model.business);
   renderTextFields(root, '[data-life="identity"]', model.identity);
   renderTextFields(root, '[data-life="mental-health"]', model.mentalHealth.label);
+  renderTextFields(root, '[data-life="service"]', model.service);
   const identityProfile = root.querySelector('[data-identity-profile]');
   if (identityProfile) identityProfile.hidden = !model.identity;
 

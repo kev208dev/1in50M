@@ -9,6 +9,9 @@ import { startBusiness } from './business.js';
 import { applyRiskEffects } from './wellbeing.js';
 
 function availability(life, choice) {
+  if (choice.serviceStatuses && !choice.serviceStatuses.includes(life.service?.status)) {
+    return { enabled: false, reason: '현재 병역 판정에서 선택할 수 없는 경로입니다.' };
+  }
   if (choice.requiresPartner && !life.relationships.partner) {
     return { enabled: false, reason: '함께 돌봄을 나눌 동반자 관계가 필요합니다.' };
   }
@@ -215,6 +218,14 @@ export function applyDecision(life, decisionId, choiceId) {
     }],
     milestones: [...current.milestones, { age: current.age, type: 'decision', label: selected.label }],
   };
+  if (decisionId === 'service-path') {
+    if (selected.serviceAction === 'complete') {
+      next.service = { ...current.service, status: 'completed', completed: true, nextAssessmentAge: null };
+    } else if (selected.serviceAction === 'defer') {
+      next.service = { ...current.service, completed: false, nextAssessmentAge: current.age + 1 };
+      delete next.decisions['service-path'];
+    }
+  }
   if (selected.financialAction) next = applyFinancialAction(next, selected.financialAction);
   if (selected.businessPlan) next = startBusiness(next, selected.businessPlan);
   if (selected.riskEffects) next = applyRiskEffects(next, selected.riskEffects);

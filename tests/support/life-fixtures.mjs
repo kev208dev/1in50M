@@ -33,6 +33,14 @@ export function makeLifeAtYear(year, overrides = {}) {
   }));
 }
 
+export function makeMaleLifeAtAge(age, overrides = {}) {
+  const base = makeLifeAtAge(age);
+  return normalizeLife(deepMerge(base, {
+    profile: { sex: { id: 'male', label: '남성' } },
+    ...overrides,
+  }));
+}
+
 export function memoryStorage(initial = {}) {
   const values = new Map(Object.entries(initial));
   return {
