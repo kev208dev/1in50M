@@ -1,5 +1,9 @@
-import { COMMUNITY_SAMPLES } from './data/community-samples.js';
 import { getSafeStorage, listLocalPublicLives, saveLocalPublicLife, hideLocalPublicLife } from './storage.js';
+
+export function filterPublicLives(lives, { memorial = false } = {}) {
+  const safe = Array.isArray(lives) ? lives : [];
+  return memorial ? safe.filter((life) => life.age < 90) : safe;
+}
 
 function regionOnly(value) {
   return String(value ?? '대한민국').trim().split(/\s+/)[0] || '대한민국';
@@ -76,7 +80,7 @@ function toDatabase(life, ownerId) {
   };
 }
 
-export function createCommunityClient(config = {}, { storage = getSafeStorage(), samples = COMMUNITY_SAMPLES } = {}) {
+export function createCommunityClient(config = {}, { storage = getSafeStorage() } = {}) {
   const listeners = new Set();
   let destroyed = false;
   let clientPromise = null;
@@ -156,7 +160,7 @@ export function createCommunityClient(config = {}, { storage = getSafeStorage(),
           // The complete local experience remains available when the backend is unreachable.
         }
       }
-      return [...local, ...samples].sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)));
+      return [...local].sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)));
     },
     async publishLife(summary) {
       const safeLife = toPublicLife(summary);

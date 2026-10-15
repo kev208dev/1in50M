@@ -5,6 +5,7 @@ import { IDENTITY_NOTICE } from '../data/identity.js';
 import { getResearchSource } from '../data/research.js';
 import { normalizeLife } from '../engine/life.js';
 import { survivalCurve } from '../engine/mortality.js';
+import { filterPublicLives } from '../community.js';
 
 const STAT_LABELS = {
   health: '건강',
@@ -352,7 +353,16 @@ export function renderReflection(dialog, reflection) {
 
 export function renderPublicLives(root, lives = [], { memorial = false } = {}) {
   if (!root) return [];
-  const visible = (Array.isArray(lives) ? lives : []).slice(0, memorial ? 20 : 12);
+  const visible = filterPublicLives(lives, { memorial }).slice(0, memorial ? 20 : 12);
+  if (visible.length === 0) {
+    root.replaceChildren(makeNode(
+      root,
+      'p',
+      'public-life-empty',
+      memorial ? '아직 이곳에 남겨진 기록이 없습니다.' : '아직 공개된 삶이 없습니다.',
+    ));
+    return visible;
+  }
   root.replaceChildren(...visible.map((life) => {
     const article = makeNode(root, 'article', 'public-life-card');
     const heading = makeNode(root, 'div', 'public-life-heading');

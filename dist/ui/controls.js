@@ -7,7 +7,6 @@ import { acknowledgeIdentityDiscovery } from '../engine/identity.js';
 import { updateRelationships } from '../engine/relationships.js';
 import { advancePortfolio } from '../engine/finance.js';
 import { advanceBusiness } from '../engine/business.js';
-import { advanceCompanionLives } from '../engine/companions.js';
 import { tickInterval } from '../data/runtime-settings.js';
 import { evaluateSurvival } from '../engine/mortality.js';
 import { getReflection, applyReflection } from '../data/reflections.js';
@@ -122,9 +121,6 @@ export function createSimulationController({
     life = updateRelationships(life);
     life = normalizeLife(advanceWellbeing(life));
     life = normalizeLife(ensureServiceAssessment(life));
-    if (Array.isArray(life.companions)) {
-      life = normalizeLife({ ...life, companions: advanceCompanionLives(life.companions, life.age) });
-    }
     if (life.status === 'living') {
       const survival = evaluateSurvival(life);
       if (!survival.survived) {

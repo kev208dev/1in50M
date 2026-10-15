@@ -39,7 +39,6 @@ export function slotRows(result) {
     { id: 'name', label: '이름', value: result.name.full, detail: '대한민국 이름 조합' },
   ];
 }
-
 function makeNode(documentRef, tag, className, text) {
   const node = documentRef.createElement(tag);
   node.className = className;
@@ -107,25 +106,5 @@ export function renderBirthCertificate(root, result) {
     const item = makeNode(documentRef, 'div', 'birth-fact');
     item.append(makeNode(documentRef, 'span', 'birth-fact-label', label), makeNode(documentRef, 'strong', 'birth-fact-value', value));
     return item;
-  }));
-}
-
-export function renderCompanionLives(root, companions) {
-  if (!root) return;
-  const documentRef = root.ownerDocument;
-  root.replaceChildren(...(companions ?? []).map((companion, index) => {
-    const card = makeNode(documentRef, 'article', 'companion-card');
-    const top = makeNode(documentRef, 'div', 'companion-card-top');
-    top.append(
-      makeNode(documentRef, 'span', 'companion-index', String(index + 1).padStart(2, '0')),
-      makeNode(documentRef, 'b', `companion-status is-${companion.status}`, companion.status === 'living' ? `${companion.age}세` : `${companion.age}세에 기억됨`),
-    );
-    card.append(
-      top,
-      makeNode(documentRef, 'strong', 'companion-name', companion.name),
-      makeNode(documentRef, 'p', 'companion-summary', `${companion.currentRegion} · ${companion.career ?? companion.familyType}`),
-      makeNode(documentRef, 'small', 'companion-notice', companion.simulationNotice),
-    );
-    return card;
   }));
 }

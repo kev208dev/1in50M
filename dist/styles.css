@@ -296,14 +296,6 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
 .birth-fact span, .birth-fact strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .birth-fact-label { color: var(--ink-muted); font-family: var(--font-mono); font-size: 7px; }
 .birth-fact-value { margin-top: 2px; font-size: 9px; font-weight: 400; }
-.companion-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; min-height: 0; overflow-y: auto; }
-.companion-card { min-width: 0; padding: 7px 8px; border: 1px solid var(--line); background: var(--bg); }
-.companion-card-top { display: flex; justify-content: space-between; gap: 6px; color: var(--ink-muted); font-family: var(--font-mono); font-size: 7px; }
-.companion-status.is-living { color: var(--accent); }
-.companion-name { display: block; margin-top: 5px; font-size: 10px; }
-.companion-summary { margin: 2px 0 0; overflow: hidden; color: var(--ink-muted); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
-.companion-notice { display: none; }
-.companion-grid-life { grid-template-columns: 1fr; max-height: 220px; }
 .survival-curve { display: flex; height: 76px; align-items: end; gap: 2px; }
 .survival-curve i { flex: 1; height: var(--survival); min-height: 2px; background: rgba(238, 243, 236, .2); }
 .survival-curve i.is-past { background: var(--accent); box-shadow: 0 0 8px rgba(61, 240, 138, .22); }
@@ -766,7 +758,6 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
   .birth-context-panel { grid-template-columns: 90px minmax(0, 1fr); padding: 7px; }
   .birth-context-panel:first-child { display: none; }
   .birth-context-heading h2 { font-size: 13px; }
-  .companion-grid { grid-template-columns: repeat(4, minmax(105px, 1fr)); overflow-x: auto; overflow-y: hidden; }
   .slot-notice { display: none; }
   .slot-actions { position: sticky; display: grid; grid-template-columns: .9fr 1.1fr; width: 100%; bottom: env(safe-area-inset-bottom); }
   .slot-actions button { min-height: 48px; padding: 0 10px; justify-content: center; font-size: 11px; }

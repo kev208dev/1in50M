@@ -1,14 +1,46 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createCommunityClient, toPublicLife } from '../dist/community.js';
+import { createCommunityClient, filterPublicLives, toPublicLife } from '../dist/community.js';
+import { renderPublicLives } from '../dist/ui/render.js';
 import { createLifeSummary } from '../dist/engine/summary.js';
 import { makeLifeAtAge, memoryStorage } from './support/life-fixtures.mjs';
 
-test('설정이 없으면 샘플 기록이 있는 오프라인 모드로 동작한다', async () => {
+test('설정과 로컬 기록이 없으면 공개 삶은 빈 배열이다', async () => {
   const client = createCommunityClient({}, { storage: memoryStorage() });
-  assert.equal((await client.listPublicLives()).length > 0, true);
+  assert.deepEqual(await client.listPublicLives(), []);
   assert.deepEqual(await client.connectPresence(), { mode: 'offline', count: 1 });
   client.destroy();
+});
+
+test('추모관은 90세 이전에 종료된 공개 기록만 보여준다', () => {
+  const lives = [{ id: 'early', age: 54 }, { id: 'complete', age: 90 }];
+  assert.deepEqual(filterPublicLives(lives, { memorial: true }).map((life) => life.id), ['early']);
+});
+
+test('공개 기록이 없으면 빈 상태가 렌더링된다', () => {
+  const documentRef = {
+    createElement(tagName) {
+      return {
+        tagName,
+        className: '',
+        children: [],
+        textContent: '',
+        dataset: {},
+        append(...children) {
+          this.children.push(...children);
+          this.textContent += children.map((child) => child.textContent ?? '').join('');
+        },
+        replaceChildren(...children) {
+          this.children = children;
+          this.textContent = children.map((child) => child.textContent ?? '').join('');
+        },
+      };
+    },
+  };
+  const root = documentRef.createElement('div');
+  root.ownerDocument = documentRef;
+  renderPublicLives(root, []);
+  assert.match(root.textContent, /아직 공개된 삶이 없습니다/);
 });
 
 test('공개 삶은 전체 프로필·seed·상세 기록을 포함하지 않는다', () => {

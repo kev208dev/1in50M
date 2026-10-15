@@ -21,7 +21,7 @@ test('출생 화면에 재추첨과 확정 버튼이 있다', async () => {
   assert.match(html, /id="birth-slot"/);
   assert.match(html, /id="birth-settings"/);
   assert.match(html, /id="birth-certificate-details"/);
-  assert.match(html, /id="companion-preview"/);
+  assert.doesNotMatch(html, /id="companion-preview"/);
 });
 
 test('출생 전 시대·시간·비교·음악·자동 선택을 설정할 수 있다', async () => {
@@ -31,10 +31,10 @@ test('출생 전 시대·시간·비교·음악·자동 선택을 설정할 수 
   }
 });
 
-test('출생 상세와 네 비교 인생을 렌더링하는 함수를 제공한다', async () => {
+test('출생 상세만 렌더링하고 하드코딩 비교 인생은 제공하지 않는다', async () => {
   const source = await readFile(new URL('../dist/ui/birth-slot.js', import.meta.url), 'utf8');
   assert.match(source, /export function renderBirthCertificate/);
-  assert.match(source, /export function renderCompanionLives/);
+  assert.doesNotMatch(source, /export function renderCompanionLives/);
 });
 
 test('모바일과 모션 감소 화면에서 슬롯 동작을 보존한다', async () => {
