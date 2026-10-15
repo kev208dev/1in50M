@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { DECISIONS } from '../dist/data/decisions.js';
 import { createSimulationController } from '../dist/ui/controls.js';
 import { createRng } from '../dist/engine/random.js';
-import { makeLifeAtAge, fakeClock } from './support/life-fixtures.mjs';
+import { makeLifeAtAge, makeLifeAtYear, fakeClock } from './support/life-fixtures.mjs';
 
 const completedDecisions = Object.fromEntries(DECISIONS.map((decision) => [decision.id, 'fixture-choice']));
 
@@ -202,6 +202,23 @@ test('컨트롤러는 한 해의 경력과 경제를 정확히 한 번만 반영
   const next = controller.getState();
   assert.equal(next.career.years, 1);
   assert.ok(next.economy.cash > 15000000 && next.economy.cash < 22000000);
+});
+
+test('컨트롤러는 경제 계산 뒤 같은 역사 사건을 한 번만 반영한다', () => {
+  const clock = fakeClock();
+  const controller = createSimulationController({
+    clock,
+    initialLife: makeLifeAtYear(1996, {
+      age: 29,
+      decisions: completedDecisions,
+      reflections: { 'reflection-5': 'play', 'reflection-15': 'people' },
+    }),
+  });
+  controller.play();
+  clock.advance(8000);
+  assert.equal(controller.getState().history.filter((entry) => entry.eraEventId === 'imf-crisis').length, 1);
+  clock.advance(8000);
+  assert.equal(controller.getState().history.filter((entry) => entry.eraEventId === 'imf-crisis').length, 1);
 });
 
 test('컨트롤러는 포트폴리오와 사업을 한 해에 정확히 한 번 진행한다', () => {

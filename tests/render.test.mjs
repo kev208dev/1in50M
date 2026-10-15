@@ -42,6 +42,17 @@ test('최신 인생 기록을 시간순으로 제한한다', () => {
   assert.deepEqual(getVisibleLifeLog(history, 3).map((entry) => entry.age), [11, 10, 9]);
 });
 
+test('시대 사건의 출처와 전망 여부가 화면 모델에 보존된다', () => {
+  const view = createLifeViewModel(makeLifeAtAge(40, {
+    history: [{
+      id: 'future-ai', age: 40, year: 2035, type: 'era-event', text: 'AI 동료와 일했습니다.',
+      sourceLabel: '과학기술정보통신부', sourceUrl: 'https://example.test/ai', projection: true,
+    }],
+  }));
+  assert.equal(view.log[0].sourceLabel, '과학기술정보통신부');
+  assert.equal(view.log[0].projection, true);
+});
+
 test('같은 나이의 기록도 가장 나중에 쌓인 항목부터 보여준다', () => {
   const history = [{ age: 5, text: '한 해' }, { age: 5, text: '첫 사건' }, { age: 5, text: '둘째 사건' }];
   assert.deepEqual(getVisibleLifeLog(history, 3).map((entry) => entry.text), ['둘째 사건', '첫 사건', '한 해']);

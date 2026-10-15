@@ -12,6 +12,7 @@ import { tickInterval } from '../data/runtime-settings.js';
 import { evaluateSurvival } from '../engine/mortality.js';
 import { getReflection, applyReflection } from '../data/reflections.js';
 import { advanceWellbeing } from '../engine/wellbeing.js';
+import { selectEraEvent, applyEraEvent } from '../engine/era-events.js';
 
 const INTERVALS = { 1: 8000, 2: 4000, 4: 2000, 8: 1000, 12: 667, 16: 500 };
 
@@ -114,6 +115,7 @@ export function createSimulationController({
     life = advancePortfolio(life);
     life = advanceBusiness(life);
     life = calculateAnnualEconomy(life);
+    life = normalizeLife(applyEraEvent(life, selectEraEvent(life)));
     for (const event of selectAnnualEvents(life)) life = applyEvent(life, event.id);
     life = updateRelationships(life);
     life = normalizeLife(advanceWellbeing(life));

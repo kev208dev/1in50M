@@ -22,6 +22,17 @@ export function makeLifeAtAge(age, overrides = {}) {
   }));
 }
 
+export function makeLifeAtYear(year, overrides = {}) {
+  const age = Number.isInteger(overrides.age) ? overrides.age : 30;
+  const base = makeLifeAtAge(age);
+  return normalizeLife(deepMerge(base, {
+    age,
+    year,
+    profile: { birthYear: year - age },
+    ...overrides,
+  }));
+}
+
 export function memoryStorage(initial = {}) {
   const values = new Map(Object.entries(initial));
   return {

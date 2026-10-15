@@ -195,6 +195,16 @@ export function renderLife(root, life) {
     log.replaceChildren(...model.log.map((entry) => {
       const item = makeNode(root, 'article', 'log-entry');
       item.append(makeNode(root, 'span', 'log-age', formatAge(entry.age)), makeNode(root, 'p', '', entry.text));
+      if (entry.sourceLabel) {
+        const source = makeNode(root, entry.sourceUrl ? 'a' : 'span', 'log-source');
+        source.textContent = `${entry.projection ? '전망 시나리오 · ' : ''}${entry.sourceLabel}`;
+        if (entry.sourceUrl) {
+          source.href = entry.sourceUrl;
+          source.target = '_blank';
+          source.rel = 'noreferrer';
+        }
+        item.append(source);
+      }
       return item;
     }));
   }

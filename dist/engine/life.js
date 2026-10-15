@@ -15,6 +15,7 @@ import { createProfileInfluence } from './profile-influence.js';
 import { advanceAppearance } from './appearance.js';
 import { advancePortfolio } from './finance.js';
 import { advanceBusiness } from './business.js';
+import { selectEraEvent, applyEraEvent } from './era-events.js';
 import { normalizeRiskFactors, normalizeWellbeingHabits } from './wellbeing.js';
 
 const STAT_KEYS = ['health', 'happiness', 'knowledge', 'relationships'];
@@ -120,6 +121,7 @@ export function createLife(profile, seed = profile?.id) {
     milestones: [{ age: 0, type: 'birth', label: '출생' }],
     statHistory: [],
     recentEventIds: [],
+    eraEventIds: [],
     processedTickIds: [],
   });
 }
@@ -283,6 +285,9 @@ export function normalizeLife(life) {
     ? copy.statHistory.filter((item) => item && typeof item === 'object' && Number.isFinite(Number(item.age)))
     : [];
   copy.recentEventIds = Array.isArray(copy.recentEventIds) ? [...copy.recentEventIds].slice(-10) : [];
+  copy.eraEventIds = Array.isArray(copy.eraEventIds)
+    ? [...new Set(copy.eraEventIds.filter((id) => id !== null && id !== undefined).map(String))]
+    : [];
   copy.processedTickIds = Array.isArray(copy.processedTickIds)
     ? [...new Set(copy.processedTickIds.map(String))].slice(-8)
     : [];
@@ -376,6 +381,7 @@ export function simulateAutomatically(profile, seed = profile?.id) {
     life = advancePortfolio(life);
     life = advanceBusiness(life);
     life = calculateAnnualEconomy(life);
+    life = applyEraEvent(life, selectEraEvent(life));
     for (const event of selectAnnualEvents(life)) life = applyEvent(life, event.id);
     life = updateRelationships(life);
     iterations += 1;

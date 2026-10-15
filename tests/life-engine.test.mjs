@@ -44,6 +44,14 @@ test('v3 저장은 새 필드가 없어도 v4로 정규화된다', () => {
   ));
 });
 
+test('시대 사건 id는 문자열 중복 없이 정규화된다', () => {
+  const migrated = normalizeLife({
+    ...createLife(profile, 'era-id-normalize'),
+    eraEventIds: ['imf-crisis', 'imf-crisis', null, 1997],
+  });
+  assert.deepEqual(migrated.eraEventIds, ['imf-crisis', '1997']);
+});
+
 test('기존 저장본의 단일 부채는 주택 보유 여부에 따라 안전하게 분류된다', () => {
   const withHome = createLife(profile, 'legacy-home-debt');
   withHome.economy.debt = 100000000;
