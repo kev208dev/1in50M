@@ -1,3 +1,5 @@
+import { orderTimeline } from '../engine/timeline.js';
+
 const TYPE_META = {
   decision: { kind: 'choice', label: '선택 결과' },
   finance: { kind: 'finance', label: '금융' },
@@ -13,7 +15,7 @@ const TYPE_META = {
 export function systemFeedItems(life, limit = 5) {
   const seen = new Set();
   const items = [];
-  for (const entry of life?.history ?? []) {
+  for (const entry of orderTimeline(life?.history ?? [])) {
     const id = String(entry.id ?? `${entry.year}-${entry.age}-${entry.text}`);
     if (seen.has(id)) continue;
     seen.add(id);

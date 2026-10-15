@@ -57,18 +57,34 @@ export const HISTORY_EVENTS = [
   }),
   event('seoul-olympics', 1988, 1988, '서울올림픽의 해', 'archives-film', {
     text: '서울올림픽 열기가 텔레비전과 거리, 학교와 직장을 가득 채웠습니다.',
+    scenes: {
+      child: '온 가족이 텔레비전 앞에 모였고 학교와 동네에서도 올림픽 이야기가 이어졌습니다.',
+      adult: '서울올림픽 열기가 텔레비전과 거리, 학교와 직장을 가득 채웠습니다.',
+    },
     effects: { happiness: 4, relationships: 2 },
   }),
   event('pc-communication', 1990, 1996, 'PC통신과 대중문화', 'social-trends', {
     ageRange: [6, 45],
     text: 'PC통신과 새로운 대중문화가 또래 관계와 정보를 얻는 방식을 바꾸기 시작했습니다.',
+    scenes: {
+      child: '집이나 학교에 들어온 컴퓨터를 구경하고, 또래 사이에서 새로운 놀이와 이야기가 오갔습니다.',
+      adult: 'PC통신과 새로운 대중문화가 사람을 만나고 정보를 얻는 방식을 바꾸기 시작했습니다.',
+    },
     effects: { knowledge: 3, relationships: 1 },
   }),
   event('imf-crisis', 1997, 2001, '외환위기와 가계 재편', 'social-trends', {
-    ageRange: [18, 90],
+    ageRange: [0, 90],
     text: '외환위기의 여파로 일자리와 가계 지출이 흔들렸습니다. 계획을 다시 세워야 했습니다.',
     effects: { happiness: -7, relationships: -2 },
     economyEffects: { cash: -2500000 },
+    scenes: {
+      child: {
+        text: '보호자의 퇴근이 빨라지고 집에서는 외식과 새 물건을 줄이는 이야기가 자주 들렸습니다.',
+        economyEffects: { cash: -800000 },
+      },
+      adult: '외환위기의 여파로 가계 지출이 흔들려 생활 계획을 다시 세워야 했습니다.',
+      worker: '직장에서 구조조정과 희망퇴직 이야기가 돌며 일자리와 가계 계획을 다시 세웠습니다.',
+    },
     weightFor: (life) => ['employed', 'part-time', 'self-employed'].includes(life.career?.status) ? 2 : 1,
   }),
   event('world-cup-internet', 2002, 2007, '월드컵과 초고속 인터넷', 'social-trends', {

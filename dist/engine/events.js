@@ -2,6 +2,7 @@ import { LIFE_EVENTS, LIFE_EVENT_BY_ID } from '../data/life-events.js';
 import { createRng } from './random.js';
 import { normalizeLife } from './life.js';
 import { attractivenessLabel, describeAppearance } from './appearance.js';
+import { appendTimeline } from './timeline.js';
 
 const clamp = (value, min = 0, max = 100) => (
   Math.min(max, Math.max(min, Math.round(Number(value) || 0)))
@@ -56,22 +57,23 @@ export function applyEvent(life, eventId) {
     if (appearance.faceShape) appearance.description = describeAppearance(appearance);
     profile = { ...current.profile, appearance };
   }
-  return normalizeLife({
+  const next = {
     ...current,
     profile,
     stats,
     economy,
     recentEventIds: [...current.recentEventIds, event.id].slice(-10),
-    history: [...current.history, {
-      id: `event-${current.age}-${event.id}`,
-      age: current.age,
-      year: current.year,
-      type: 'event',
-      eventId: event.id,
-      text: event.text,
-    }],
     milestones: event.milestone
       ? [...current.milestones, { age: current.age, type: 'event', label: event.text }]
       : current.milestones,
-  });
+  };
+  return normalizeLife(appendTimeline(next, [{
+      id: `event-${current.age}-${event.id}`,
+      age: current.age,
+      year: current.year,
+      priority: 40,
+      type: 'event',
+      eventId: event.id,
+      text: event.text,
+  }]));
 }

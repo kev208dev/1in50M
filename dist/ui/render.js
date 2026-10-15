@@ -9,6 +9,7 @@ import { describeEffectDirections } from '../engine/stat-effects.js';
 import { filterPublicLives } from '../community.js';
 import { characterViewModel } from '../engine/life-character.js';
 import { characterSvg, STAGE_LABELS } from './character-art.js';
+import { orderTimeline } from '../engine/timeline.js';
 
 const STAT_LABELS = {
   health: '건강',
@@ -51,9 +52,8 @@ export function formatWon(value) {
 }
 
 export function getVisibleLifeLog(history, limit = 8) {
-  return [...(Array.isArray(history) ? history : [])]
+  return orderTimeline(history)
     .reverse()
-    .sort((a, b) => (b.age ?? 0) - (a.age ?? 0))
     .slice(0, Math.max(0, limit));
 }
 

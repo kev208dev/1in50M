@@ -4,8 +4,10 @@ import {
   applyEraEvent,
   eligibleEraEvents,
   selectEraEvent,
+  resolveEraNarrative,
 } from '../dist/engine/era-events.js';
 import { makeLifeAtYear } from './support/life-fixtures.mjs';
+import { HISTORY_EVENTS } from '../dist/data/history-events.js';
 
 test('한국전쟁 사건은 1950~1953년에만 후보가 된다', () => {
   assert.ok(eligibleEraEvents(makeLifeAtYear(1951), 2026).some((event) => event.id === 'korean-war-displacement'));
@@ -31,11 +33,12 @@ test('시대 사건은 상태를 제한하고 출처 메타데이터를 기록�
   const life = makeLifeAtYear(1951, { stats: { health: 2, happiness: 3 } });
   const event = eligibleEraEvents(life, 2026).find((item) => item.id === 'korean-war-displacement');
   const next = applyEraEvent(life, event);
+  const recorded = next.history.find((item) => item.eraEventId === 'korean-war-displacement');
   assert.ok(next.stats.health >= 0 && next.stats.happiness >= 0);
   assert.deepEqual(next.eraEventIds, ['korean-war-displacement']);
-  assert.equal(next.history.at(-1).sourceLabel, '국가기록원 문화영화로 보는 대한민국');
-  assert.match(next.history.at(-1).sourceUrl, /^https:/);
-  assert.equal(next.history.at(-1).projection, false);
+  assert.equal(recorded.sourceLabel, '국가기록원 문화영화로 보는 대한민국');
+  assert.match(recorded.sourceUrl, /^https:/);
+  assert.equal(recorded.projection, false);
 });
 
 test('미성년의 시대 사건 경제 영향은 개인 현금 대신 가정 지원에 반영된다', () => {
@@ -44,4 +47,16 @@ test('미성년의 시대 사건 경제 영향은 개인 현금 대신 가정 �
   const next = applyEraEvent(life, event);
   assert.equal(next.economy.cash, 0);
   assert.equal(next.economy.householdSupport, 7_200_000);
+});
+
+test('외환위기는 아이와 노동 중인 성인에게 다른 장면으로 닿는다', () => {
+  const event = HISTORY_EVENTS.find((item) => item.id === 'imf-crisis');
+  const child = resolveEraNarrative(event, makeLifeAtYear(1997, { age: 6 }));
+  const worker = resolveEraNarrative(event, makeLifeAtYear(1997, {
+    age: 40,
+    career: { status: 'employed', title: '사무원' },
+  }));
+  assert.match(child.text, /보호자|집/);
+  assert.match(worker.text, /일자리|퇴직|직장/);
+  assert.notEqual(child.text, worker.text);
 });

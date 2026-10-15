@@ -24,3 +24,10 @@ test('같은 id의 시스템 메시지는 한 번만 나오고 최신 개수만 
   ] };
   assert.deepEqual(systemFeedItems(life, 2).map((item) => item.text), ['첫 메시지', '새 메시지']);
 });
+
+test('변화 없는 해의 필러 문장은 시스템 기록에서 제외한다', () => {
+  const life = { history: [
+    { id: 'filler', age: 6, year: 1991, type: 'event', text: '한 해가 흘렀습니다.', filler: true },
+  ] };
+  assert.equal(systemFeedItems(life).length, 0);
+});

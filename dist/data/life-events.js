@@ -3,7 +3,7 @@ const STAGE_CONFIG = {
     ['family-picnic', '가족과 가까운 공원에서 오래 걸었습니다.', { happiness: 2, relationships: 2 }],
     ['picture-book', '마음에 드는 그림책을 몇 번이고 다시 보았습니다.', { knowledge: 2, happiness: 1 }],
     ['new-neighbor', '동네에서 자주 마주치는 새로운 친구가 생겼습니다.', { relationships: 2 }],
-    ['seasonal-cold', '계절이 바뀌며 며칠 푹 쉬었습니다.', { health: -1, happiness: 1 }],
+    ['seasonal-cold', '열이 올라 이불 속에서 약을 먹고 하루를 쉬었습니다.', { health: -1, happiness: 1 }],
     ['care-day', '보호자와 느긋한 하루를 보냈습니다.', { relationships: 3 }],
     ['first-drawing', '종이 가득 좋아하는 장면을 그렸습니다.', { knowledge: 1, happiness: 2 }],
     ['playground', '놀이터에서 새로운 놀이를 배웠습니다.', { health: 2, relationships: 1 }],

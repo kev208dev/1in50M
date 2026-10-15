@@ -21,6 +21,7 @@ import { defaultServiceState, ensureServiceAssessment } from './service.js';
 import { PUBLIC_DATA_VERSION } from '../data/public-statistics.js';
 import { applyDiminishingEffects } from './stat-effects.js';
 import { educationStateForAge } from '../data/education.js';
+import { appendTimeline, orderTimeline } from './timeline.js';
 
 const STAT_KEYS = ['health', 'happiness', 'knowledge', 'relationships'];
 
@@ -312,9 +313,9 @@ export function normalizeLife(life) {
       : null,
   };
   copy.decisions = copy.decisions && typeof copy.decisions === 'object' ? { ...copy.decisions } : {};
-  copy.history = Array.isArray(copy.history)
+  copy.history = orderTimeline(Array.isArray(copy.history)
     ? copy.history.filter((item) => item && typeof item === 'object' && typeof item.text === 'string')
-    : [];
+    : []);
   copy.milestones = Array.isArray(copy.milestones)
     ? copy.milestones.filter((item) => item && typeof item === 'object' && typeof item.label === 'string')
     : [];
@@ -369,7 +370,7 @@ export function advanceYear(life, tickId = `age-${Number(life?.age ?? 0) + 1}`) 
       }
     : current.profile;
 
-  const advanced = normalizeLife({
+  const next = {
     ...current,
     profile,
     age: nextAge,
@@ -380,16 +381,19 @@ export function advanceYear(life, tickId = `age-${Number(life?.age ?? 0) + 1}`) 
     education,
     economy: current.economy,
     career: current.career,
-    history: [...current.history, {
-      id: `year-${nextAge}`,
-      age: nextAge,
-      year: current.year + 1,
-      type: reviewing ? 'review' : 'year',
-      text: reviewing ? '지나온 삶을 천천히 돌아봅니다.' : `${nextAge}세의 한 해가 흘렀습니다.`,
-    }],
     statHistory: [...current.statHistory, { age: nextAge, ...stats }],
     processedTickIds: [...current.processedTickIds, normalizedTickId].slice(-8),
-  });
+  };
+  const advanced = normalizeLife(reviewing
+    ? appendTimeline(next, [{
+        id: `review-${nextAge}`,
+        age: nextAge,
+        year: current.year + 1,
+        priority: 90,
+        type: 'review',
+        text: '지나온 삶을 천천히 돌아봅니다.',
+      }])
+    : next);
   return normalizeLife(revealIdentityIfDue(advanced));
 }
 

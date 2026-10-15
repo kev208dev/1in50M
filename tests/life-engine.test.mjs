@@ -101,7 +101,7 @@ test('한 번의 진행은 나이를 정확히 1년 올린다', () => {
   const next = advanceYear(life);
   assert.equal(next.age, 1);
   assert.equal(next.year, 2027);
-  assert.equal(next.history.filter((entry) => entry.age === 1).length, 1);
+  assert.equal(next.history.some((entry) => entry.text === '1세의 한 해가 흘렀습니다.'), false);
 });
 
 test('같은 상태에 중복 tick id를 적용해도 한 번만 진행한다', () => {
