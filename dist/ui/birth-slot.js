@@ -6,6 +6,21 @@ export const reelStopSchedule = (reduceMotion) => reduceMotion
 
 export const slotDuration = (reduceMotion) => Math.max(...reelStopSchedule(reduceMotion));
 
+export function fitFigmaStage(viewportWidth, viewportHeight, frameWidth = 1440, frameHeight = 1024) {
+  const width = Math.max(0, Number(viewportWidth) || 0);
+  const height = Math.max(0, Number(viewportHeight) || 0);
+  if (!width || !height) return 0;
+  return Math.min(width / frameWidth, height / frameHeight);
+}
+
+export function nextBirthMapMode(mode, action) {
+  if (action === 'back') return 'region';
+  if (action === 'leave') return 'marker';
+  if (action === 'open') return 'detail';
+  if (action === 'preview') return 'region';
+  return mode;
+}
+
 export function slotMachineModel(result) {
   const guardians = result.household.guardians
     .map((guardian) => `${guardian.label} ${guardian.occupation}`)
@@ -58,7 +73,15 @@ export function slotMachineModel(result) {
     { id: 'given-1', group: 'name', label: '이름 1', value: given[0], detail: result.name.full, tone: 'white' },
     { id: 'given-2', group: 'name', label: '이름 2', value: given[1], detail: result.name.full, tone: 'white' },
   ];
-  return { reels };
+  return {
+    screen: 'desktop-2-1',
+    map: {
+      regionCode: result.region.code,
+      regionName: result.region.name,
+      district: result.region.district,
+    },
+    reels,
+  };
 }
 
 export function slotRows(result) {

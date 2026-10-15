@@ -9,7 +9,7 @@
   <link rel="icon" href="data:,">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+KR:wght@400;500;600;700&family=Nuosu+SIL&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+KR:wght@400;500;600;700;900&family=Nuosu+SIL&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./theme.css">
 </head>
@@ -108,32 +108,49 @@
     </section>
 
     <section id="profile-view" class="view slot-view" aria-labelledby="slot-title" hidden>
-      <div class="slot-side">
-        <header class="slot-heading">
-          <h1 id="slot-title">당신의 <em>시작</em> 조건</h1>
-        </header>
-        <div id="slot-korea-map" class="kmap-host slot-map"></div>
-      </div>
+      <div class="figma-stage profile-stage" data-figma-frame="Desktop 2-1" data-map-mode="marker">
+        <img class="slot-spotlight" src="./assets/figma/slot-spotlight.svg" alt="" aria-hidden="true">
+        <div class="figma-logo profile-logo" aria-label="1 over 50M">
+          <span class="figma-logo-one">1</span><span class="figma-logo-over">over</span><span class="figma-logo-total">50M</span>
+          <img src="./assets/figma/logo-underline.svg" alt="" aria-hidden="true">
+        </div>
+        <h1 id="slot-title" class="slot-title">다시 태어난다면,<br><em>어디에서</em> 시작할까요?</h1>
 
-      <div class="slot-main">
+        <section class="birth-map" aria-label="출생 지역 지도">
+          <button id="birth-map-button" class="birth-map-canvas" type="button" aria-label="출생 지역 자세히 보기">
+            <img class="birth-map-overview" src="./assets/figma/korea-map-overview.png" alt="대한민국 17개 시도 지도">
+            <img class="birth-map-region" src="./assets/figma/korea-map-region.svg" alt="선택 지역이 강조된 대한민국 지도">
+            <img class="birth-map-detail" src="./assets/figma/korea-map-detail.svg" alt="선택 지역 확대 지도">
+            <span class="birth-map-marker" aria-hidden="true"></span>
+            <span class="birth-map-label" data-birth-map="label">출생 지역</span>
+            <span class="birth-map-tooltip"><strong data-birth-map="region">선택 지역</strong><small>출생 지역 확인</small></span>
+          </button>
+          <button id="birth-map-back" class="birth-map-back" type="button"><img src="./assets/figma/chevron-left.svg" alt=""> 전국 지도</button>
+          <div class="birth-map-title"><strong data-birth-map="region">선택 지역</strong><span>출생 지역 <b data-birth-map="district">—</b></span></div>
+        </section>
+
         <div class="slot-machine-shell">
           <div id="birth-slot" class="birth-slot" aria-live="polite"></div>
           <div class="slot-actions" aria-label="출생 슬롯 동작">
-            <button id="slot-spin-button" class="secondary-button slot-spin-button" type="button"><span class="reroll-icon" aria-hidden="true">↻</span> 다시 돌리기</button>
-            <button id="slot-accept-button" class="primary-button" type="button">이 삶으로 시작하기 <span aria-hidden="true">→</span></button>
+            <button id="slot-spin-button" class="slot-reroll" type="button"><span class="reroll-icon" aria-hidden="true">↻</span> 다시 돌리기</button>
+            <button id="slot-accept-button" class="figma-birth-button" type="button">
+              <img class="spin-pulse spin-pulse-outer" src="./assets/figma/spin-pulse-outer.svg" alt="">
+              <img class="spin-pulse spin-pulse-inner" src="./assets/figma/spin-pulse-inner.svg" alt="">
+              <img class="spin-ring" src="./assets/figma/spin-ring.svg" alt="">
+              <img class="spin-cap" src="./assets/figma/spin-cap.svg" alt="">
+              <span>태어나기</span>
+            </button>
           </div>
         </div>
 
-        <div class="birth-context-grid">
+        <details class="profile-details-drawer">
+          <summary>출생 상세</summary>
           <section class="birth-context-panel" aria-labelledby="certificate-details-title">
-            <div class="birth-context-heading"><h2 id="certificate-details-title">출생증명서</h2></div>
+            <div class="birth-context-heading"><span>BIRTH CERTIFICATE</span><h2 id="certificate-details-title">출생증명서</h2></div>
             <div id="birth-certificate-details" class="birth-facts"></div>
           </section>
-        </div>
-
-        <footer class="slot-footer">
-          <p class="slot-notice">현재 결과는 실제 인구통계가 아닌 체험용 가상 시뮬레이션입니다. 일부 검증 자료와 <strong>창작용 가중치</strong>를 함께 사용하며, 마음에 들지 않으면 계속 다시 돌릴 수 있습니다.</p>
-        </footer>
+        </details>
+        <p class="slot-notice">실제 인구통계가 아닌 체험용 가상 시뮬레이션이며 일부 창작용 가중치를 사용합니다.</p>
       </div>
     </section>
 
@@ -342,7 +359,7 @@
             <section class="result-influence-panel"><h2>출생 조건의 영향</h2><ul id="result-influences" class="result-influences" data-result="influences"></ul></section>
           </div>
 
-          <p class="simulation-notice result-notice">이 결과는 미래 예측이나 평가가 아닌 <strong>체험용 가상 데이터</strong>입니다. 금융 결과 역시 실제 투자·도박 조언이 아닙니다.</p>
+          <p class="simulation-notice result-notice">실제 인구통계가 아닌 체험용 가상 시뮬레이션입니다. 이 결과는 미래 예측이나 평가가 아닌 <strong>체험용 가상 데이터</strong>이며, 금융 결과 역시 실제 투자·도박 조언이 아닙니다.</p>
           <div class="result-actions">
             <button id="publish-life-button" class="primary-button" type="button">이 삶을 익명 공개</button>
             <button id="new-life-button" class="secondary-button result-primary-white" type="button">다시 태어나기</button>

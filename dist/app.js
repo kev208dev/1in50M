@@ -2,6 +2,7 @@ import { validateProfile } from './simulator.js';
 import { CAREER_GROUPS } from './data/careers.js';
 import { createBirthSlotResult, profileFromSlotResult } from './engine/birth-slot.js';
 import { normalizeRuntimeSettings, resolveBirthYear } from './data/runtime-settings.js';
+import { mapRegionState } from './data/korea-map.js';
 import { createKoreaMap } from './ui/korea-map.js';
 import { detectBigEvents, renderBigEvent } from './ui/big-event.js';
 import { createLife } from './engine/life.js';
@@ -34,6 +35,8 @@ import {
 import {
   renderBirthSlot,
   renderBirthCertificate,
+  fitFigmaStage,
+  nextBirthMapMode,
   slotDuration,
 } from './ui/birth-slot.js';
 
@@ -77,6 +80,19 @@ let lastFocused = null;
 let spinCounter = 0;
 let pendingAgencyResolution = null;
 let lastCompletedSummary = null;
+
+function syncFigmaStageScale() {
+  document.documentElement.style.setProperty('--figma-stage-scale', String(fitFigmaStage(window.innerWidth, window.innerHeight)));
+}
+
+function setBirthMapMode(mode) {
+  const stage = document.querySelector('.profile-stage');
+  const mapButton = document.querySelector('#birth-map-button');
+  if (!stage || !mapButton) return;
+  stage.dataset.mapMode = mode;
+  stage.dataset.figmaFrame = mode === 'detail' ? 'Desktop 2-3' : mode === 'region' ? 'Desktop 2-2' : 'Desktop 2-1';
+  mapButton.setAttribute('aria-expanded', String(mode === 'detail'));
+}
 
 let publicLivesById = new Map();
 
@@ -130,6 +146,17 @@ function renderProfileContext(profile) {
   if (!validateProfile(profile)) return;
   setText('future-location', `${profile.region.name} ${profile.district}`);
   setText('future-birth-summary', `${profile.birthYear}년 ${profile.region.short}, ${profile.familyType}`);
+  document.querySelectorAll('[data-birth-map="region"]').forEach((node) => { node.textContent = profile.region.name; });
+  document.querySelectorAll('[data-birth-map="district"]').forEach((node) => { node.textContent = profile.district; });
+  const selected = mapRegionState(profile.region.code).find((point) => point.selected);
+  const stage = document.querySelector('.profile-stage');
+  if (stage && selected) {
+    stage.style.setProperty('--birth-map-left', `${40 + (selected.x / 100) * 440}px`);
+    stage.style.setProperty('--birth-map-top', `${30 + (selected.y / 120) * 550}px`);
+  }
+  const label = document.querySelector('[data-birth-map="label"]');
+  if (label) label.textContent = `${profile.region.name} ${profile.district}`;
+  setBirthMapMode('marker');
   renderKoreaMap(profile.region.code, `${profile.region.name} ${profile.district}`);
 }
 
@@ -466,6 +493,27 @@ function showPastLives() {
 controls.birth.addEventListener('click', spinBirthSlot);
 controls.reroll.addEventListener('click', spinBirthSlot);
 controls.accept.addEventListener('click', beginCandidateLife);
+const birthMapButton = document.querySelector('#birth-map-button');
+const birthMapBack = document.querySelector('#birth-map-back');
+birthMapButton.addEventListener('pointerenter', () => {
+  if (document.querySelector('.profile-stage')?.dataset.mapMode !== 'detail') setBirthMapMode(nextBirthMapMode('marker', 'preview'));
+});
+birthMapButton.addEventListener('focus', () => {
+  if (document.querySelector('.profile-stage')?.dataset.mapMode !== 'detail') setBirthMapMode(nextBirthMapMode('marker', 'preview'));
+});
+birthMapButton.addEventListener('pointerleave', () => {
+  const mode = document.querySelector('.profile-stage')?.dataset.mapMode;
+  if (mode !== 'detail') setBirthMapMode(nextBirthMapMode(mode, 'leave'));
+});
+birthMapButton.addEventListener('blur', () => {
+  const mode = document.querySelector('.profile-stage')?.dataset.mapMode;
+  if (mode !== 'detail') setBirthMapMode(nextBirthMapMode(mode, 'leave'));
+});
+birthMapButton.addEventListener('click', () => {
+  const mode = document.querySelector('.profile-stage')?.dataset.mapMode ?? 'marker';
+  setBirthMapMode(nextBirthMapMode(mode, 'open'));
+});
+birthMapBack.addEventListener('click', () => setBirthMapMode(nextBirthMapMode('detail', 'back')));
 controls.continue.addEventListener('click', () => {
   const saved = loadCurrentLife(storage);
   if (saved) startLife(saved);
@@ -716,6 +764,7 @@ document.querySelector('.brand').addEventListener('click', (event) => {
 });
 
 document.addEventListener('visibilitychange', () => controller?.setVisible(!document.hidden));
+window.addEventListener('resize', syncFigmaStageScale);
 window.addEventListener('beforeunload', () => {
   if (controller) saveCurrentLife(storage, controller.getState());
   community.destroy();
@@ -739,4 +788,5 @@ document.addEventListener('keydown', (event) => {
   leaveTitle();
 });
 views.title?.addEventListener('click', leaveTitle);
+syncFigmaStageScale();
 showView('title');

@@ -7,6 +7,7 @@ import {
   slotMachineModel,
   slotRows,
 } from '../dist/ui/birth-slot.js';
+import * as birthSlotUi from '../dist/ui/birth-slot.js';
 import { createBirthSlotResult } from '../dist/engine/birth-slot.js';
 
 test('모션 감소 환경은 슬롯 대기 시간이 없다', () => {
@@ -42,6 +43,30 @@ test('렌더링은 출생 결과를 다시 추첨하지 않는다', () => {
   const model = slotMachineModel(result);
   assert.equal(model.reels[0].value, result.sex.label);
   assert.equal(model.reels[8].value, result.name.surname);
+});
+
+test('Figma 1440×1024 무대를 뷰포트 안에 비율대로 맞춘다', () => {
+  assert.equal(typeof birthSlotUi.fitFigmaStage, 'function');
+  assert.equal(birthSlotUi.fitFigmaStage(1440, 1024), 1);
+  assert.equal(birthSlotUi.fitFigmaStage(1920, 1080), 1.0546875);
+  assert.equal(birthSlotUi.fitFigmaStage(1024, 768), 0.7111111111111111);
+});
+
+test('출생 결과는 Desktop 2 지도 표시와 연결된다', () => {
+  const result = createBirthSlotResult('figma-map', 2026);
+  const model = slotMachineModel(result);
+  assert.equal(model.screen, 'desktop-2-1');
+  assert.equal(model.map.regionCode, result.region.code);
+  assert.equal(model.map.regionName, result.region.name);
+  assert.equal(model.map.district, result.region.district);
+});
+
+test('지도 상호작용은 Desktop 2-1, 2-2, 2-3 상태로 전환된다', () => {
+  assert.equal(typeof birthSlotUi.nextBirthMapMode, 'function');
+  assert.equal(birthSlotUi.nextBirthMapMode('marker', 'preview'), 'region');
+  assert.equal(birthSlotUi.nextBirthMapMode('region', 'open'), 'detail');
+  assert.equal(birthSlotUi.nextBirthMapMode('detail', 'back'), 'region');
+  assert.equal(birthSlotUi.nextBirthMapMode('region', 'leave'), 'marker');
 });
 
 test('출생 화면에 재추첨과 확정 버튼이 있다', async () => {
