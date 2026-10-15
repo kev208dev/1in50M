@@ -1,4 +1,5 @@
 import { createRng } from './random.js';
+import { getStatistic } from './historical-context.js';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -15,12 +16,56 @@ function baselineRisk(age) {
 }
 
 export function annualMortalityRisk(life, ageOverride) {
-  const age = Math.max(0, Math.trunc(Number(ageOverride ?? life?.age) || 0));
+  return mortalityProfile(life, ageOverride ?? life?.age).annualRisk;
+}
+
+export function mortalityProfile(life, age = life?.age) {
+  const normalizedAge = Math.max(0, Math.trunc(Number(age) || 0));
+  const lifeTable = getStatistic('lifeExpectancy', {
+    year: life?.year,
+    sex: life?.profile?.sex?.id,
+  });
   const health = clamp(Number(life?.stats?.health ?? 60), 0, 100);
-  const healthModifier = health < 50 ? 1 + ((50 - health) / 40) : 1 - ((health - 50) / 180);
-  const causeRisks = causeSpecificRisks(life, age);
-  const risk = baselineRisk(age) * healthModifier + causeRisks.selfHarm + causeRisks.caffeineCardiac;
-  return clamp(Number(risk.toFixed(6)), 0.00001, 1);
+  const conditionCount = (life?.conditions?.chronic ?? []).length;
+  const healthScale = Math.max(0.35, 1 + ((50 - health) / 55) + conditionCount * 0.18);
+  const specific = causeSpecificRisks(life, normalizedAge);
+  const annualRisk = clamp(
+    baselineRisk(normalizedAge) * healthScale + specific.selfHarm + specific.caffeineCardiac,
+    0.00001,
+    1,
+  );
+  return {
+    annualRisk: Number(annualRisk.toFixed(6)),
+    sourceYear: lifeTable.year,
+    sourceKey: lifeTable.sourceKey,
+    kind: lifeTable.kind,
+  };
+}
+
+const CAUSES = [
+  { id: 'cardiovascular-disease', weight: 4, requiresCondition: 'cardiovascular' },
+  { id: 'cancer', weight: 4, requiresCondition: 'cancer' },
+  { id: 'respiratory-disease', weight: 3, requiresCondition: 'respiratory' },
+  { id: 'age-related-disease', weight: 3, minimumAge: 75, maximumHealth: 65 },
+  { id: 'other', weight: 2 },
+];
+
+export function selectDeathCause(life, roll = 0.5) {
+  const chronic = new Set(life?.conditions?.chronic ?? []);
+  const age = Number(life?.age) || 0;
+  const health = Number(life?.stats?.health ?? 60);
+  const eligible = CAUSES.filter((cause) => (
+    (!cause.requiresCondition || chronic.has(cause.requiresCondition))
+    && (!cause.minimumAge || age >= cause.minimumAge)
+    && (!cause.maximumHealth || health <= cause.maximumHealth)
+  ));
+  const total = eligible.reduce((sum, cause) => sum + cause.weight, 0);
+  let cursor = clamp(Number(roll) || 0, 0, 1 - Number.EPSILON) * total;
+  for (const cause of eligible) {
+    cursor -= cause.weight;
+    if (cursor < 0) return cause.id;
+  }
+  return eligible.at(-1)?.id ?? 'other';
 }
 
 export function causeSpecificRisks(life, ageOverride) {
@@ -54,7 +99,7 @@ export function causeSpecificRisks(life, ageOverride) {
 
 export function evaluateSurvival(life) {
   const age = Math.max(0, Math.trunc(Number(life?.age) || 0));
-  const risk = annualMortalityRisk(life);
+  const risk = mortalityProfile(life, age).annualRisk;
   const roll = createRng(`${life?.seed ?? 'life'}:mortality:${age}`).next();
   const survived = age < 90 && roll >= risk;
   const causes = causeSpecificRisks(life);
@@ -63,7 +108,9 @@ export function evaluateSurvival(life) {
   if (!survived) {
     if (roll < causes.selfHarm) cause = 'self-harm';
     else if (roll < causes.selfHarm + causes.caffeineCardiac) cause = 'caffeine-cardiac';
-    else if (roll < causes.selfHarm + causes.caffeineCardiac + baseRisk || age >= 90) cause = 'other';
+    else if (roll < causes.selfHarm + causes.caffeineCardiac + baseRisk || age >= 90) {
+      cause = selectDeathCause(life, createRng(`${life?.seed ?? 'life'}:death-cause:${age}`).next());
+    }
   }
   return {
     survived,

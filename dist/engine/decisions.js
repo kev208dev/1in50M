@@ -200,6 +200,13 @@ export function applyDecision(life, decisionId, choiceId) {
     };
   }
 
+  const conditions = structuredClone(current.conditions);
+  for (const key of ['chronic', 'losses', 'care']) {
+    if (selected.conditionEffects?.[key]) {
+      conditions[key] = [...new Set([...conditions[key], ...selected.conditionEffects[key].map(String)])];
+    }
+  }
+
   let next = {
     ...current,
     stats,
@@ -208,6 +215,7 @@ export function applyDecision(life, decisionId, choiceId) {
     career,
     housing,
     relationships,
+    conditions,
     wellbeingHabits: { ...current.wellbeingHabits, ...(selected.habitEffects ?? {}) },
     focusId: selected.focusId ?? current.focusId,
     pendingDecisionId: null,

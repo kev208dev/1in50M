@@ -7,6 +7,17 @@ const isWorking = (life) => ['employed', 'part-time', 'self-employed'].includes(
 
 export const LATER_DECISIONS = [
   {
+    id: 'midlife-health-screening', ageRange: [50, 57], weight: 2,
+    title: '검진 결과를 받아 든 날',
+    prompt: '정기검진에서 혈압과 심혈관 위험을 꾸준히 살펴야 한다는 설명을 들었습니다.',
+    sourceKey: 'olderAdults2024',
+    choices: [
+      choice('treatment', '진료와 약 복용을 이어간다', '정기 진료를 생활 일정에 넣습니다.', { health: 3, happiness: -1 }, ['만성질환 관리'], { conditionEffects: { chronic: ['cardiovascular'], care: ['regular-treatment'] } }),
+      choice('lifestyle', '식사와 운동부터 바꾼다', '매일 지킬 수 있는 작은 습관부터 시작합니다.', { health: 2, happiness: 1 }, ['생활 습관'], { conditionEffects: { chronic: ['cardiovascular'] } }),
+      choice('second-opinion', '다른 병원에서 다시 확인한다', '진단과 관리 방법을 한 번 더 확인합니다.', { knowledge: 2 }, ['재확인']),
+    ],
+  },
+  {
     id: 'restructure', ageRange: [50, 59], weight: 2,
     title: '회사의 구조조정 소식',
     prompt: '조직이 줄어들며 희망퇴직과 잔류, 재교육 가운데 결정을 요구받습니다.',
@@ -91,6 +102,17 @@ export const LATER_DECISIONS = [
       choice('club', '취미 모임에 나간다', '좋아하는 일을 매개로 새로운 친구를 만듭니다.', { relationships: 4, happiness: 3 }, ['취미']),
       choice('volunteer', '경험을 나누는 봉사를 한다', '쌓아온 기술과 이야기를 다음 사람에게 건넵니다.', { relationships: 3, knowledge: 2 }, ['봉사']),
       choice('quiet-days', '조용한 일상을 지킨다', '무리하지 않고 산책과 휴식의 리듬을 만듭니다.', { health: 3, happiness: 2 }, ['회복']),
+    ],
+  },
+  {
+    id: 'smaller-home-later', ageRange: [80, 89],
+    title: '집의 크기와 돌봄 거리',
+    prompt: '계단과 관리비가 부담이 되면서 더 작은 집이나 돌봄이 가까운 곳을 생각합니다.',
+    sourceKey: 'olderAdults2024',
+    choices: [
+      choice('downsize', '작고 관리하기 쉬운 집으로 옮긴다', '생활 반경을 줄이고 안전을 높입니다.', { health: 2, happiness: 1 }, ['주거 축소'], { housingType: 'monthly-rent', conditionEffects: { care: ['accessible-housing'] } }),
+      choice('family-nearby', '가족 가까이로 옮긴다', '도움을 주고받을 거리를 줄입니다.', { relationships: 3 }, ['가족 돌봄'], { conditionEffects: { care: ['family-nearby'] } }),
+      choice('age-in-place', '현재 집을 고쳐 계속 산다', '손잡이와 조명을 보강해 익숙한 곳을 지킵니다.', { happiness: 2, knowledge: 1 }, ['살던 곳'], { conditionEffects: { care: ['home-adaptation'] } }),
     ],
   },
 ];

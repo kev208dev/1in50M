@@ -124,6 +124,15 @@ export function createSimulationController({
     if (life.status === 'living') {
       const survival = evaluateSurvival(life);
       if (!survival.survived) {
+        const deathCopy = {
+          'self-harm': '오랜 정신건강 위기 끝에 이 삶이 너무 일찍 멈췄습니다.',
+          'caffeine-cardiac': '수면 부족과 고카페인 부담이 겹친 건강 위기 뒤 이 삶이 멈췄습니다.',
+          'cardiovascular-disease': '오랫동안 관리해 온 심혈관 질환으로 이 삶의 시간이 멈췄습니다.',
+          cancer: '치료와 돌봄을 이어 온 암으로 이 삶의 시간이 멈췄습니다.',
+          'respiratory-disease': '오랫동안 이어진 호흡기 질환으로 이 삶의 시간이 멈췄습니다.',
+          'age-related-disease': '노년의 건강 저하가 겹치며 이 삶의 시간이 조용히 멈췄습니다.',
+          other: '이 삶의 시간이 여기에서 조용히 멈췄습니다.',
+        };
         life = normalizeLife({
           ...life,
           status: 'review',
@@ -133,11 +142,7 @@ export function createSimulationController({
             age: life.age,
             year: life.year,
             type: 'review',
-            text: survival.cause === 'self-harm'
-              ? '오랜 정신건강 위기 끝에 이 삶이 너무 일찍 멈췄습니다.'
-              : survival.cause === 'caffeine-cardiac'
-                ? '수면 부족과 고카페인 부담이 겹친 건강 위기 뒤 이 삶이 멈췄습니다.'
-                : '이 삶의 시간이 여기에서 조용히 멈췄습니다.',
+            text: deathCopy[survival.cause] ?? deathCopy.other,
           }],
           milestones: [...life.milestones, { age: life.age, type: 'review', label: '삶의 마지막 해' }],
         });

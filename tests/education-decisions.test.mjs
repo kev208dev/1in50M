@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { EDUCATION_PATHS, educationStateForAge } from '../dist/data/education.js';
 import { DECISIONS } from '../dist/data/decisions.js';
+import { FUTURE_EVENTS } from '../dist/data/future-events.js';
 import { getResearchSource } from '../dist/data/research.js';
 import { getDecision, getChoices, applyDecision } from '../dist/engine/decisions.js';
 import { makeLifeAtAge } from './support/life-fixtures.mjs';
@@ -47,6 +48,13 @@ test('18세에는 정체성 후속 장면보다 졸업 진로가 먼저 열린�
     },
   });
   assert.equal(getDecision(life).id, 'after-graduation');
+});
+
+test('50세 이후 각 10년 구간에 결정 또는 구체적 사건이 있다', () => {
+  for (const [from, to] of [[50, 59], [60, 69], [70, 79], [80, 89]]) {
+    assert.ok(DECISIONS.some((item) => item.ageRange[0] <= to && item.ageRange[1] >= from)
+      || FUTURE_EVENTS.some((item) => item.ageRange[0] <= to && item.ageRange[1] >= from));
+  }
 });
 
 test('생활 장면 34개 이상이 고유한 id와 두 개 이상의 선택지를 가진다', () => {

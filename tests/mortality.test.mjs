@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { annualMortalityRisk, causeSpecificRisks, evaluateSurvival, survivalCurve } from '../dist/engine/mortality.js';
+import { annualMortalityRisk, causeSpecificRisks, evaluateSurvival, mortalityProfile, selectDeathCause, survivalCurve } from '../dist/engine/mortality.js';
 import { makeLifeAtAge } from './support/life-fixtures.mjs';
 
 test('고령의 연간 사망 위험은 청년보다 높다', () => {
@@ -16,6 +16,25 @@ test('건강이 낮을수록 같은 나이의 위험이 높다', () => {
 test('생존 평가는 같은 삶과 나이에 재현 가능하다', () => {
   const life = makeLifeAtAge(73, { seed: 'mortality-deterministic' });
   assert.deepEqual(evaluateSurvival(life), evaluateSurvival(life));
+});
+
+test('사망 위험 프로필에는 생명표 출처와 건강 보정이 함께 들어간다', () => {
+  const profile = mortalityProfile(makeLifeAtAge(78));
+  assert.ok(profile.annualRisk > 0);
+  assert.ok(profile.sourceYear);
+  assert.ok(profile.sourceKey);
+});
+
+test('건강한 69세에게 선행 조건 없는 노환 사망을 붙이지 않는다', () => {
+  const life = makeLifeAtAge(69, { stats: { health: 94 }, conditions: { chronic: [], losses: [], care: [] } });
+  assert.notEqual(selectDeathCause(life, 0.5), 'age-related-disease');
+});
+
+test('만성질환은 해당 사망 원인의 후보가 되지만 조건 없는 삶에는 붙지 않는다', () => {
+  const healthy = makeLifeAtAge(80, { conditions: { chronic: [], losses: [], care: [] } });
+  const cardiac = makeLifeAtAge(80, { conditions: { chronic: ['cardiovascular'], losses: [], care: [] } });
+  assert.notEqual(selectDeathCause(healthy, 0), 'cardiovascular-disease');
+  assert.equal(selectDeathCause(cardiac, 0), 'cardiovascular-disease');
 });
 
 test('생존 곡선은 출생부터 90세까지 감소한다', () => {

@@ -46,6 +46,11 @@ export const FUTURE_EVENTS = [
     text: '돌봄 로봇과 원격 의료 지원이 혼자 사는 노년의 일상을 보조했습니다.',
     effects: { health: 3, happiness: 2 },
   }),
+  projection('community-clinic-aging', 2027, 2075, '동네에서 이어지는 만성질환 관리', 'future-households', {
+    ageRange: [65, 90],
+    text: '정기 검진과 방문 건강관리 일정이 이어지며 익숙한 동네에서 생활을 조정했습니다.',
+    effects: { health: 2, relationships: 1 },
+  }),
   projection('climate-extremes', 2027, 2070, '극한 기후에 적응하는 도시', 'future-climate', {
     text: '길어진 폭염과 집중호우에 맞춰 주거와 이동, 건강 관리 방식을 바꾸었습니다.',
     effects: { health: -3, happiness: -2 },
