@@ -366,13 +366,15 @@ body[data-view="profile"] main { height: calc(100dvh - 88px); }
 }
 
 @media (max-width: 959px) {
-  .intro-view { grid-template-columns: 1fr; }
-  .intro-map { width: min(86vw, 440px); }
+  .intro-view { grid-template-columns: 1fr; gap: 28px; }
+  .intro-map { order: 0; width: min(80vw, 380px); }
+  .intro-copy h1 { font-size: clamp(32px, 9vw, 48px); }
   body[data-view="profile"] { height: auto; overflow: auto; }
   body[data-view="profile"] main { height: auto; }
   .slot-view { grid-template-columns: 1fr; height: auto; overflow: visible; }
   .slot-side { grid-template-rows: auto auto; }
-  .slot-map .kmap { width: min(64vw, 300px); height: auto; }
+  .slot-map .kmap { width: min(56vw, 240px); height: auto; }
+  .slot-heading h1 { font-size: clamp(28px, 8vw, 40px); }
   .slot-main { grid-template-rows: auto auto auto; }
 }
 
@@ -385,8 +387,9 @@ body[data-view="profile"] main { height: calc(100dvh - 88px); }
   .slot-reel-heading { font-size: 9px; }
   .slot-ghost { font-size: clamp(12px, 3vw, 14px); }
   .slot-reel[data-group="name"] .slot-ghost { font-size: clamp(19px, 6vw, 28px); }
+  .slot-reel[data-slot="region"] .slot-value { font-size: clamp(11px, 3.2vw, 14px); }
   .slot-detail-mobile { color: var(--ink); background: #0a0a0a; border-color: var(--line-bright); }
-  .slot-actions { position: sticky; display: flex; bottom: env(safe-area-inset-bottom); }
+  .slot-actions { position: static; display: flex; bottom: auto; }
   .slot-spin-button { width: 84px; height: 84px; font-size: 12px; }
   .birth-context-grid { max-height: none; }
   .birth-context-panel:first-child { display: grid; }
