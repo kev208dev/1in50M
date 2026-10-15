@@ -495,7 +495,7 @@ controls.reroll.addEventListener('click', spinBirthSlot);
 controls.accept.addEventListener('click', beginCandidateLife);
 const birthMapButton = document.querySelector('#birth-map-button');
 const birthMapBack = document.querySelector('#birth-map-back');
-birthMapButton.addEventListener('pointerenter', () => {
+birthMapButton.addEventListener('pointermove', () => {
   if (document.querySelector('.profile-stage')?.dataset.mapMode !== 'detail') setBirthMapMode(nextBirthMapMode('marker', 'preview'));
 });
 birthMapButton.addEventListener('focus', () => {

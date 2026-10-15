@@ -1019,6 +1019,18 @@ body[data-view="title"] .press-any-key::after { content:none; }
 /* Figma Desktop 2 frames stay viewport-bound after the theme layer. */
 body[data-view="title"] main,
 body[data-view="profile"] main { height: 100dvh; }
+body[data-view="title"] .site-header { display: none; }
+body[data-view="title"] .title-view {
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+body[data-view="title"] .title-view::before,
+body[data-view="title"] .title-view::after { content: none; }
 body[data-view="profile"] { height: 100dvh; overflow: hidden; }
 body[data-view="profile"] .slot-view {
   display: block;
