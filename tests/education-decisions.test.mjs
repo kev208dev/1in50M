@@ -53,6 +53,13 @@ test('밤샘과 고카페인 선택은 누적 위험을 높이고 휴식은 낮�
   assert.ok(rested.riskFactors.sleepDebt <= life.riskFactors.sleepDebt);
 });
 
+test('미성년 사교육비는 가정 지원에서만 빠진다', () => {
+  const life = makeLifeAtAge(10, { economy: { cash: 0, householdSupport: 5_000_000 } });
+  const next = applyDecision(life, 'private-education', 'core-subjects');
+  assert.equal(next.economy.cash, 0);
+  assert.ok(next.economy.householdSupport < 5_000_000);
+});
+
 test('정신건강 위기에서는 도움 요청 장면이 최우선으로 열린다', () => {
   const life = makeLifeAtAge(17, {
     mentalHealthState: 'crisis',

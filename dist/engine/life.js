@@ -40,7 +40,7 @@ const financeBase = (finance) => {
 
 export function createLife(profile, seed = profile?.id) {
   const initialSeed = String(seed ?? profile?.id ?? 'one-in-50m');
-  const initialCash = financeBase(profile?.finance);
+  const initialHouseholdSupport = financeBase(profile?.finance);
   const family = (profile?.guardians ?? []).map((guardian, index) => ({
     id: `guardian-${index + 1}`,
     name: guardian.label,
@@ -64,7 +64,8 @@ export function createLife(profile, seed = profile?.id) {
       relationships: profile?.stats?.relationships ?? 62,
     },
     economy: {
-      cash: initialCash,
+      cash: 0,
+      householdSupport: initialHouseholdSupport,
       income: 0,
       fixedCosts: 0,
       debt: 0,
@@ -81,7 +82,7 @@ export function createLife(profile, seed = profile?.id) {
       },
       transactions: [],
       lastReturns: { deposits: 0, bonds: 0, stocks: 0, crypto: 0 },
-      netWorth: initialCash,
+      netWorth: 0,
     },
     business: null,
     education: { level: 'childhood', status: 'not-started', schoolType: null, skills: [] },
@@ -170,6 +171,7 @@ export function normalizeLife(life) {
   }
   copy.economy = {
     cash: finite(economy.cash),
+    householdSupport: Math.max(0, finite(economy.householdSupport)),
     income: finite(economy.income),
     fixedCosts: Math.max(0, finite(economy.fixedCosts)),
     debt: housingDebt + otherDebt,

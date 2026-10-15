@@ -4,6 +4,14 @@ import { CAREER_GROUPS } from '../dist/data/careers.js';
 import { getCareerOffers, acceptCareer, advanceCareer } from '../dist/engine/career.js';
 import { calculateAnnualEconomy } from '../dist/engine/economy.js';
 import { makeLifeAtAge } from './support/life-fixtures.mjs';
+import { createLife } from '../dist/engine/life.js';
+import { createBirthProfile } from '../dist/simulator.js';
+
+test('새 삶은 개인 현금 0원과 별도의 가정 지원으로 시작한다', () => {
+  const life = createLife(createBirthProfile(() => 0.42, 2026), 'newborn-money');
+  assert.equal(life.economy.cash, 0);
+  assert.ok(life.economy.householdSupport > 0);
+});
 
 test('12개 직업군과 각 4개 이상의 직업이 있다', () => {
   assert.equal(CAREER_GROUPS.length, 12);
@@ -40,6 +48,7 @@ test('미성년 시기에는 개인 현금에서 가족 주거비를 차감하�
   const next = calculateAnnualEconomy(life);
   assert.equal(next.economy.cash, life.economy.cash);
   assert.equal(next.economy.fixedCosts, 0);
+  assert.equal(next.economy.householdSupport, life.economy.householdSupport);
 });
 
 test('대학 재학 중에는 대학 수료가 필요한 직업을 바로 선택할 수 없다', () => {

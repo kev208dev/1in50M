@@ -36,9 +36,9 @@ export const YOUTH_DECISIONS = [
     prompt: '주변 친구들이 여러 학원을 다니기 시작했습니다. 우리 집의 시간과 비용은 한정되어 있습니다.',
     sourceKey: 'privateEducation2024',
     choices: [
-      choice('core-subjects', '주요 과목 학원을 다닌다', '성적에 집중하는 대신 저녁 시간이 짧아집니다.', { knowledge: 4, happiness: -2 }, ['학업', '비용'], { riskEffects: { academicStress: 12, sleepDebt: 6 }, habitEffects: { privateEducation: true } }),
-      choice('arts-sports', '예체능 하나를 오래 배운다', '좋아하는 분야에서 성취감과 친구를 얻습니다.', { happiness: 3, health: 1, relationships: 1 }, ['취미', '비용']),
-      choice('public-program', '방과후학교를 활용한다', '비용을 아끼며 학교 안에서 배움을 이어갑니다.', { knowledge: 2, relationships: 1 }, ['비용 절약']),
+      choice('core-subjects', '주요 과목 학원을 다닌다', '성적에 집중하는 대신 저녁 시간이 짧아집니다.', { knowledge: 4, happiness: -2 }, ['학업', '비용'], { cost: 2400000, payer: 'household', riskEffects: { academicStress: 12, sleepDebt: 6 }, habitEffects: { privateEducation: true } }),
+      choice('arts-sports', '예체능 하나를 오래 배운다', '좋아하는 분야에서 성취감과 친구를 얻습니다.', { happiness: 3, health: 1, relationships: 1 }, ['취미', '비용'], { cost: 1800000, payer: 'household' }),
+      choice('public-program', '방과후학교를 활용한다', '비용을 아끼며 학교 안에서 배움을 이어갑니다.', { knowledge: 2, relationships: 1 }, ['비용 절약'], { cost: 300000, payer: 'household' }),
       choice('rest', '학원 대신 쉬고 논다', '비교에서 잠시 벗어나 생활의 여유를 지킵니다.', { happiness: 4, health: 1 }, ['회복'], { riskEffects: { academicStress: -12, sleepDebt: -8, support: 3 } }),
     ],
   },

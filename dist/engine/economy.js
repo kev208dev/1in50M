@@ -27,6 +27,7 @@ export function calculateAnnualEconomy(life) {
   const homeValue = Math.max(0, finite(current.economy.homeValue));
   const economy = {
     cash,
+    householdSupport: current.economy.householdSupport,
     income: finite(grossIncome / 12),
     fixedCosts: finite(fixedCosts),
     debt,

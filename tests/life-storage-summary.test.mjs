@@ -3,6 +3,15 @@ import assert from 'node:assert/strict';
 import { saveCurrentLife, loadCurrentLife, archiveLife, listPastLives, deletePastLife, clearPastLives } from '../dist/storage.js';
 import { createLifeSummary } from '../dist/engine/summary.js';
 import { memoryStorage, makeLifeAtAge } from './support/life-fixtures.mjs';
+import { normalizeLife } from '../dist/engine/life.js';
+
+test('가정 지원 필드가 없는 기존 저장본도 개인 현금을 보존한다', () => {
+  const legacy = makeLifeAtAge(30, { version: 4, economy: { cash: 3_000_000 } });
+  delete legacy.economy.householdSupport;
+  const restored = normalizeLife(legacy);
+  assert.equal(restored.economy.cash, 3_000_000);
+  assert.equal(restored.economy.householdSupport, 0);
+});
 
 test('손상된 저장값은 예외 없이 빈 결과가 된다', () => {
   const storage = memoryStorage({ oneIn50mLifeV2: '{broken' });

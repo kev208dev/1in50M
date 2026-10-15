@@ -25,7 +25,10 @@ function availability(life, choice) {
     return { enabled: false, reason: `${financialModel.availableFromYear}년부터 선택할 수 있습니다.` };
   }
   const requiredCash = Math.max(choice.minimumCash ?? 0, choice.cost ?? 0);
-  if (requiredCash > 0 && requiredCash > life.economy.cash) {
+  const availableMoney = choice.payer === 'household' && life.age < 18
+    ? life.economy.householdSupport
+    : life.economy.cash;
+  if (requiredCash > 0 && requiredCash > availableMoney) {
     return { enabled: false, reason: `${requiredCash.toLocaleString('ko-KR')}원의 여유 자금이 필요합니다.` };
   }
   return { enabled: true, reason: '' };
@@ -93,7 +96,10 @@ export function applyDecision(life, decisionId, choiceId) {
     if (key in stats) stats[key] += Number(value) || 0;
   }
   const economy = { ...current.economy };
-  if (selected.cost && !selected.housingType) economy.cash -= selected.cost;
+  if (selected.cost && !selected.housingType) {
+    if (selected.payer === 'household' && current.age < 18) economy.householdSupport -= selected.cost;
+    else economy.cash -= selected.cost;
+  }
   for (const [key, value] of Object.entries(selected.economyEffects ?? {})) {
     if (key === 'debt') {
       economy.otherDebt = Math.max(0, economy.otherDebt + (Number(value) || 0));

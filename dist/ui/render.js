@@ -66,7 +66,8 @@ export function createLifeViewModel(life) {
     location: `${current.housing.region} ${current.housing.district}`.trim(),
     status: current.status,
     stats: Object.entries(STAT_LABELS).map(([id, label]) => ({ id, label, value: current.stats[id] })),
-    cash: formatWon(current.economy.cash),
+    cash: current.age < 18 ? '—' : formatWon(current.economy.cash),
+    householdSupport: current.age < 18 ? formatWon(current.economy.householdSupport) : null,
     monthlyIncome: formatWon(current.economy.income),
     fixedCosts: formatWon(current.economy.fixedCosts),
     debt: formatWon(current.economy.debt),
@@ -125,6 +126,9 @@ export function renderLife(root, life) {
   renderTextFields(root, '#year-display', model.year);
   renderTextFields(root, '[data-life="location"]', model.location);
   renderTextFields(root, '[data-life="cash"]', model.cash);
+  renderTextFields(root, '[data-life="household-support"]', model.householdSupport);
+  const householdSupportRow = root.querySelector('[data-household-support-row]');
+  if (householdSupportRow) householdSupportRow.hidden = model.householdSupport === null;
   renderTextFields(root, '[data-life="income"]', model.monthlyIncome);
   renderTextFields(root, '[data-life="costs"]', model.fixedCosts);
   renderTextFields(root, '[data-life="debt"]', model.debt);

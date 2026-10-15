@@ -37,6 +37,15 @@ test('나이와 원화 수치를 사람이 읽을 수 있게 표시한다', () =
   assert.equal(formatWon(-2500000), '-250만원');
 });
 
+test('미성년 화면은 개인 현금 대신 가정 지원을 구분해 표시한다', () => {
+  const minor = createLifeViewModel(makeLifeAtAge(0, { economy: { cash: 12000, householdSupport: 5000000 } }));
+  const adult = createLifeViewModel(makeLifeAtAge(18, { economy: { cash: 12000, householdSupport: 5000000 } }));
+  assert.equal(minor.cash, '—');
+  assert.equal(minor.householdSupport, '500만원');
+  assert.equal(adult.cash, '1만원');
+  assert.equal(adult.householdSupport, null);
+});
+
 test('최신 인생 기록을 시간순으로 제한한다', () => {
   const history = Array.from({ length: 12 }, (_, age) => ({ age, text: `${age}세 기록` }));
   assert.deepEqual(getVisibleLifeLog(history, 3).map((entry) => entry.age), [11, 10, 9]);
@@ -68,7 +77,7 @@ test('같은 데이터 필드를 쓰는 모든 화면 요소를 함께 갱신한
 test('생애 화면용 모델에 상태·경제·관계·기록이 모두 담긴다', () => {
   const life = makeLifeAtAge(30, {
     career: { title: '소프트웨어 개발자', status: 'employed', annualIncome: 48000000 },
-    economy: { netWorth: 72000000 },
+    economy: { cash: 72000000 },
   });
   const model = createLifeViewModel(life);
   assert.equal(model.age, '30세');

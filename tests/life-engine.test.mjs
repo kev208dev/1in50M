@@ -19,7 +19,7 @@ test('유복한 수도권 가정은 교육 접근성과 초기 안전망을 높�
     region: { name: '전라남도', short: '전남', code: 'JNM' },
   }, 'tight');
   assert.ok(getInfluenceModifier(rich, 'education-access') > getInfluenceModifier(tight, 'education-access'));
-  assert.ok(rich.economy.cash > tight.economy.cash);
+  assert.ok(rich.economy.householdSupport > tight.economy.householdSupport);
 });
 
 test('v3 저장은 새 필드가 없어도 v4로 정규화된다', () => {
