@@ -2,6 +2,7 @@ import { validateProfile } from './simulator.js';
 import { CAREER_GROUPS } from './data/careers.js';
 import { createBirthSlotResult, profileFromSlotResult } from './engine/birth-slot.js';
 import { normalizeRuntimeSettings, resolveBirthYear } from './data/runtime-settings.js';
+import { mapRegionState } from './data/korea-map.js';
 import { createLife } from './engine/life.js';
 import { getDecision, getChoices } from './engine/decisions.js';
 import { REFLECTION_BY_ID } from './data/reflections.js';
@@ -84,10 +85,35 @@ function setText(field, value) {
   });
 }
 
+function renderKoreaMap(regionCode = null) {
+  const root = document.querySelector('#intro-region-points');
+  if (!root) return;
+  const namespace = 'http://www.w3.org/2000/svg';
+  const points = mapRegionState(regionCode).map((point, index) => {
+    const group = document.createElementNS(namespace, 'g');
+    group.classList.add('korea-region-point');
+    if (point.selected) group.classList.add('is-selected');
+    group.dataset.regionCode = point.code;
+    group.style.setProperty('--point-index', String(index));
+    group.setAttribute('aria-label', `${point.label}${point.selected ? ', 선택된 출생지' : ''}`);
+    const title = document.createElementNS(namespace, 'title');
+    title.textContent = point.label;
+    const circle = document.createElementNS(namespace, 'circle');
+    circle.setAttribute('cx', String(point.x));
+    circle.setAttribute('cy', String(point.y));
+    circle.setAttribute('r', point.selected ? '2.3' : '1.35');
+    group.append(title, circle);
+    return group;
+  });
+  root.replaceChildren(...points);
+  root.closest('svg')?.classList.toggle('has-selection', Boolean(regionCode));
+}
+
 function renderProfileContext(profile) {
   if (!validateProfile(profile)) return;
   setText('future-location', `${profile.region.name} ${profile.district}`);
   setText('future-birth-summary', `${profile.birthYear}년 ${profile.region.short}, ${profile.familyType}`);
+  renderKoreaMap(profile.region.code);
 }
 
 function showView(name) {
@@ -464,6 +490,7 @@ document.querySelector('#same-life-button').addEventListener('click', () => {
 document.querySelector('#new-life-button').addEventListener('click', () => {
   candidateProfile = null;
   candidateResult = null;
+  renderKoreaMap();
   showView('intro');
 });
 document.querySelector('#past-lives-button').addEventListener('click', showPastLives);
@@ -553,4 +580,5 @@ community.subscribe((lives) => {
   renderPublicLives(document.querySelector('[data-memorial-list]'), lives, { memorial: true });
 });
 void refreshCommunity();
+renderKoreaMap();
 showView('intro');

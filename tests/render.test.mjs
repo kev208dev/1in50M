@@ -86,6 +86,8 @@ test('생애 화면용 모델에 상태·경제·관계·기록이 모두 담긴
   assert.match(model.netWorth, /만원|억/);
   assert.ok(model.lifeMap.length >= 91);
   assert.ok(model.log.length > 0);
+  assert.equal(model.character.stage, 'young-adult');
+  assert.equal(model.character.progress, 33);
 });
 
 test('발견한 가상 정체성만 생애 화면 모델에 표시한다', () => {

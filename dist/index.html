@@ -54,7 +54,7 @@
         <p class="disclaimer">현재 결과는 실제 인구통계가 아닌 체험용 가상 시뮬레이션입니다.</p>
       </div>
 
-      <div class="intro-visual" aria-hidden="true">
+      <figure class="intro-visual" aria-labelledby="korea-map-title">
         <div class="orbit orbit-one"></div>
         <div class="orbit orbit-two"></div>
         <div class="coordinate-label coordinate-label-top">37.5665° N<br>126.9780° E</div>
@@ -63,18 +63,15 @@
           <span class="core-index">01</span>
           <span class="core-title">BIRTH<br>UNKNOWN</span>
         </div>
-        <div class="region-points">
-          <i style="--x: 50%; --y: 9%"></i><i style="--x: 38%; --y: 17%"></i>
-          <i style="--x: 56%; --y: 22%"></i><i style="--x: 31%; --y: 28%"></i>
-          <i style="--x: 48%; --y: 33%"></i><i style="--x: 64%; --y: 36%"></i>
-          <i style="--x: 35%; --y: 43%"></i><i style="--x: 54%; --y: 47%"></i>
-          <i style="--x: 27%; --y: 52%"></i><i style="--x: 46%; --y: 58%"></i>
-          <i style="--x: 67%; --y: 57%"></i><i style="--x: 32%; --y: 65%"></i>
-          <i style="--x: 56%; --y: 70%"></i><i style="--x: 72%; --y: 73%"></i>
-          <i style="--x: 41%; --y: 79%"></i><i style="--x: 61%; --y: 84%"></i>
-          <i style="--x: 35%; --y: 94%"></i>
-        </div>
-      </div>
+        <svg id="intro-korea-map" class="korea-map" viewBox="0 0 100 120" role="img" aria-labelledby="korea-map-title korea-map-description">
+          <title id="korea-map-title">대한민국 17개 시도 지도</title>
+          <desc id="korea-map-description">무작위 출생 전에는 모든 지역이 차례로 빛나고, 추첨 뒤에는 출생 지역이 표시됩니다.</desc>
+          <path class="korea-mainland" d="M42 5 58 12 66 25 61 35 71 47 68 61 80 72 72 86 59 96 48 91 39 101 30 90 20 82 25 68 17 55 26 43 22 30 32 22Z"/>
+          <path class="korea-boundary" d="M31 23 61 35M25 45l43 15M24 68l47 4M38 31l3 62M56 14l-8 78"/>
+          <path class="korea-jeju" d="M22 110q10-5 20 0-10 6-20 0Z"/>
+          <g id="intro-region-points"></g>
+        </svg>
+      </figure>
 
       <div id="live-counters" class="intro-facts" aria-label="가상 세계의 현재 흐름">
         <div><strong data-live="online">1</strong><span>지금 접속</span></div>

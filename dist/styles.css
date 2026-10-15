@@ -184,6 +184,7 @@ main { position: relative; z-index: 1; }
   border: 1px solid var(--line);
   border-radius: 50%;
   background: radial-gradient(circle, rgba(61, 240, 138, .09), transparent 58%);
+  margin: 0;
 }
 
 .intro-visual::before, .intro-visual::after {
@@ -219,9 +220,12 @@ main { position: relative; z-index: 1; }
 .coordinate-label-top { top: 17%; right: 4%; }
 .coordinate-label-bottom { bottom: 12%; left: 7%; }
 
-.region-points { position: absolute; inset: 14% 26%; }
-.region-points::before { content: ''; position: absolute; inset: 0; background: rgba(61, 240, 138, .035); clip-path: polygon(53% 0, 78% 22%, 68% 41%, 92% 66%, 72% 89%, 44% 80%, 32% 100%, 19% 73%, 4% 51%, 24% 28%); }
-.region-points i { position: absolute; left: var(--x); top: var(--y); width: 5px; height: 5px; border: 1px solid var(--accent); border-radius: 50%; box-shadow: 0 0 8px rgba(61, 240, 138, .5); }
+.korea-map { position: absolute; inset: 9% 25% 8%; width: 50%; height: 83%; overflow: visible; }
+.korea-mainland, .korea-jeju { fill: rgba(61, 240, 138, .045); stroke: rgba(238, 243, 236, .52); stroke-width: .75; vector-effect: non-scaling-stroke; }
+.korea-boundary { fill: none; stroke: rgba(200, 208, 194, .18); stroke-width: .45; stroke-dasharray: 2 2; vector-effect: non-scaling-stroke; }
+.korea-region-point circle { fill: var(--bg); stroke: var(--accent); stroke-width: .7; transform-box: fill-box; transform-origin: center; animation: region-pulse 2.8s ease-in-out calc(var(--point-index) * 90ms) infinite; }
+.korea-map.has-selection .korea-region-point circle { opacity: .26; animation: none; }
+.korea-map.has-selection .korea-region-point.is-selected circle { opacity: 1; fill: var(--accent); stroke: var(--paper); filter: drop-shadow(0 0 4px var(--accent)); }
 
 .intro-facts {
   grid-column: 1 / -1;
@@ -535,7 +539,22 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
 .life-section-heading .eyebrow { margin-bottom: 7px; }
 .life-section-heading h1, .life-section-heading h2 { margin: 0; font-family: var(--font-display); font-size: clamp(27px, 3vw, 42px); font-weight: 500; letter-spacing: -.04em; }
 .life-section-heading > span { color: var(--ink-muted); font-family: var(--font-mono); font-size: 9px; }
-.life-map { display: grid; grid-template-columns: repeat(13, minmax(22px, 1fr)); gap: 5px; }
+.life-map { display: grid; gap: 8px; }
+.life-character-track { position: relative; height: 50px; margin: 0 10px; border-bottom: 1px solid var(--line); }
+.life-character-line { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: linear-gradient(90deg, var(--accent) var(--life-progress, 0%), var(--line) var(--life-progress, 0%)); }
+.life-character { --character-scale: .78; position: absolute; z-index: 2; bottom: 2px; left: var(--life-progress); width: 34px; height: 48px; color: var(--character-tone); transform: translateX(-50%) scale(var(--character-scale)); transform-origin: 50% 100%; transition: left .55s ease, color .35s ease, transform .35s ease; }
+.life-character svg { width: 100%; height: 100%; overflow: visible; }
+.character-head, .character-body { fill: currentColor; stroke: var(--bg); stroke-width: 2; }
+.character-limbs { fill: none; stroke: currentColor; stroke-width: 5; stroke-linecap: round; }
+.life-character-infant { --character-scale: .45; }
+.life-character-child { --character-scale: .6; }
+.life-character-teen { --character-scale: .72; }
+.life-character-young-adult { --character-scale: .84; }
+.life-character-adult { --character-scale: .9; }
+.life-character-senior { --character-scale: .82; }
+.life-character[data-pose="tired"] { transform: translateX(-50%) scale(var(--character-scale)) rotate(5deg); }
+.life-character[data-pose="bright"] .character-limbs { animation: character-wave 1.4s ease-in-out infinite alternate; }
+.life-years-grid { display: grid; grid-template-columns: repeat(13, minmax(22px, 1fr)); gap: 5px; }
 .life-year { position: relative; aspect-ratio: 1; min-width: 0; padding: 0; border: 1px solid var(--line); color: var(--ink-muted); background: transparent; font-family: var(--font-mono); font-size: 7px; cursor: pointer; }
 .life-year-past { background: var(--surface-raised); }
 .life-year-current { color: var(--bg); border-color: var(--accent); background: var(--accent); box-shadow: 0 0 18px rgba(61, 240, 138, .35); }
@@ -640,6 +659,8 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes flicker { 50% { opacity: .3; } }
 @keyframes certificate-pulse { to { filter: brightness(.82); transform: translateY(2px); } }
+@keyframes region-pulse { 0%, 100% { opacity: .4; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.45); } }
+@keyframes character-wave { to { transform: rotate(-7deg); transform-origin: 32px 46px; } }
 
 @media (min-width: 960px) {
   body[data-view="life"] { height: 100svh; overflow: hidden; }
@@ -673,7 +694,9 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
   .life-section-heading { margin-bottom: 12px; }
   .life-section-heading .eyebrow { display: none; }
   .life-section-heading h2 { font-size: clamp(22px, 2.6vh, 30px); }
-  .life-map { grid-template-columns: repeat(19, minmax(16px, 1fr)); gap: 3px; }
+  .life-map { gap: 4px; }
+  .life-character-track { height: 40px; }
+  .life-years-grid { grid-template-columns: repeat(19, minmax(16px, 1fr)); gap: 3px; }
   .life-year { height: clamp(14px, 2vh, 20px); aspect-ratio: auto; }
   .life-log { max-height: calc(100% - 42px); overflow-y: auto; overscroll-behavior: contain; }
   .log-entry { grid-template-columns: 52px 1fr; gap: 12px; padding: 8px 0; }
@@ -817,7 +840,8 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
   .current-moment { min-height: 330px; padding: 40px 20px; }
   .current-moment h1 { font-size: clamp(40px, 13vw, 62px); }
   .map-section, .log-section { padding: 30px 20px; }
-  .life-map { grid-template-columns: repeat(10, 1fr); gap: 4px; }
+  .life-map { gap: 8px; }
+  .life-years-grid { grid-template-columns: repeat(10, 1fr); gap: 4px; }
   .life-sidebar { grid-template-columns: 1fr; }
   .life-panel { border-right: 0; }
   .life-panel:not([open]) .panel-body { display: none; }

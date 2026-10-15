@@ -6,6 +6,7 @@ import { getResearchSource } from '../data/research.js';
 import { normalizeLife } from '../engine/life.js';
 import { survivalCurve } from '../engine/mortality.js';
 import { filterPublicLives } from '../community.js';
+import { characterViewModel } from '../engine/life-character.js';
 
 const STAT_LABELS = {
   health: '건강',
@@ -117,6 +118,7 @@ export function createLifeViewModel(life) {
       state: age < current.age ? 'past' : age === current.age ? 'current' : 'future',
       milestone: milestones.get(age) ?? null,
     })),
+    character: characterViewModel(current),
   };
 }
 
@@ -229,7 +231,19 @@ export function renderLife(root, life) {
 
   const map = root.querySelector('#life-map');
   if (map) {
-    map.replaceChildren(...model.lifeMap.map((year) => {
+    const character = makeNode(root, 'div', `life-character life-character-${model.character.stage}`);
+    character.dataset.pose = model.character.pose;
+    character.style.setProperty('--life-progress', `${model.character.progress}%`);
+    character.style.setProperty('--character-tone', model.character.tone);
+    character.setAttribute('role', 'img');
+    character.setAttribute('aria-label', `${model.age} 생애 진행 ${model.character.progress}%`);
+    character.innerHTML = '<svg viewBox="0 0 64 96" aria-hidden="true"><circle class="character-head" cx="32" cy="19" r="12"/><path class="character-body" d="M20 40 Q32 31 44 40 L48 72 Q40 80 32 80 Q24 80 16 72Z"/><path class="character-limbs" d="M19 45 8 62M45 45l11 17M24 77l-5 15M40 77l5 15"/></svg>';
+    const track = makeNode(root, 'div', 'life-character-track');
+    track.style.setProperty('--life-progress', `${model.character.progress}%`);
+    const line = makeNode(root, 'span', 'life-character-line');
+    track.append(line, character);
+    const years = makeNode(root, 'div', 'life-years-grid');
+    years.append(...model.lifeMap.map((year) => {
       const cell = makeNode(root, 'button', `life-year life-year-${year.state}`);
       cell.type = 'button';
       cell.dataset.age = year.age;
@@ -239,6 +253,7 @@ export function renderLife(root, life) {
       if (year.milestone) cell.classList.add('has-milestone');
       return cell;
     }));
+    map.replaceChildren(track, years);
   }
 
   const family = root.querySelector('[data-life-list="family"]');
