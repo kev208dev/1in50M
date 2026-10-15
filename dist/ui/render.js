@@ -428,31 +428,66 @@ export function renderReflection(dialog, reflection) {
   }
 }
 
+function stageForAge(age) {
+  return characterViewModel({ age, stats: { health: 60, happiness: 60 } }).stage;
+}
+
+function publicYear(life) {
+  const year = String(life.completedAt ?? '').slice(0, 4);
+  return /^\d{4}$/.test(year) ? year : '';
+}
+
+export function renderNetworkState(root, state, { memorial = false } = {}) {
+  if (!root) return;
+  const copy = {
+    loading: ['삶을 불러오고 있습니다', '공개된 기록을 정리하는 중입니다.', null],
+    error: ['기록을 불러오지 못했습니다', '연결이 끊겼습니다. 이 브라우저에 저장된 기록만 표시합니다.', '다시 시도'],
+    empty: memorial
+      ? ['아직 이곳에 남겨진 기록이 없습니다', '90세 이전에 끝난 삶이 공개되면 이곳에서 기억합니다.', '삶을 시작하기']
+      : ['아직 공개된 삶이 없습니다', '당신의 삶을 가장 먼저 공개해 보세요.', '삶을 시작하기'],
+  }[state];
+  const box = makeNode(root, 'div', `network-state network-state-${state}`);
+  box.append(makeNode(root, 'span', 'network-state-icon'));
+  box.append(makeNode(root, 'strong', '', copy[0]), makeNode(root, 'p', state === 'empty' ? 'public-life-empty' : '', copy[1]));
+  if (copy[2]) {
+    const action = makeNode(root, 'button', 'secondary-button network-state-action', copy[2]);
+    action.type = 'button';
+    action.dataset.networkAction = state === 'error' ? 'retry' : 'start';
+    box.append(action);
+  }
+  root.replaceChildren(box);
+}
+
 export function renderPublicLives(root, lives = [], { memorial = false } = {}) {
   if (!root) return [];
   const visible = filterPublicLives(lives, { memorial }).slice(0, memorial ? 20 : 12);
   if (visible.length === 0) {
-    root.replaceChildren(makeNode(
-      root,
-      'p',
-      'public-life-empty',
-      memorial ? '아직 이곳에 남겨진 기록이 없습니다.' : '아직 공개된 삶이 없습니다.',
-    ));
+    renderNetworkState(root, 'empty', { memorial });
     return visible;
   }
   root.replaceChildren(...visible.map((life) => {
     const article = makeNode(root, 'article', 'public-life-card');
+    article.dataset.publicLife = life.id;
+    const open = makeNode(root, 'button', 'public-life-open');
+    open.type = 'button';
+    open.dataset.publicLifeOpen = life.id;
+    open.setAttribute('aria-label', `${life.alias} 인생 자세히 보기`);
     const heading = makeNode(root, 'div', 'public-life-heading');
     heading.append(
-      makeNode(root, 'span', 'eyebrow', memorial ? `${life.age}세의 기록` : `${life.birthRegion}에서 시작`),
-      makeNode(root, 'time', '', String(life.completedAt ?? '').slice(0, 10)),
+      makeNode(root, 'span', 'public-life-years', `${publicYear(life) ? `${publicYear(life)} · ` : ''}${life.age}세${memorial ? '의 기록' : ''}`),
+      makeNode(root, 'span', 'public-life-anon', '익명'),
     );
-    article.append(
-      heading,
-      makeNode(root, 'h2', '', life.alias),
-      makeNode(root, 'p', '', life.reflection),
-      makeNode(root, 'small', '', `${life.finalRegion} · ${life.career} · ${life.netWorthBand}`),
-    );
+    const identity = makeNode(root, 'div', 'public-life-identity');
+    const avatar = makeNode(root, 'span', 'public-life-avatar');
+    avatar.innerHTML = characterSvg(stageForAge(life.age), { ground: false });
+    const names = makeNode(root, 'div', 'public-life-names');
+    names.append(makeNode(root, 'h2', '', life.alias), makeNode(root, 'small', '', life.career));
+    identity.append(avatar, names);
+    const worth = makeNode(root, 'div', 'public-life-worth');
+    worth.append(makeNode(root, 'span', '', '최종 자산'), makeNode(root, 'strong', '', life.netWorthBand));
+    const moment = makeNode(root, 'p', 'public-life-moment');
+    moment.append(makeNode(root, 'i'), makeNode(root, 'span', '', life.reflection));
+    article.append(open, heading, identity, worth, moment, makeNode(root, 'small', 'public-life-route', `${life.birthRegion} → ${life.finalRegion}`));
     if (life.localOwner) {
       const hideButton = makeNode(root, 'button', 'text-button public-life-hide', '이 기록 숨기기');
       hideButton.type = 'button';
@@ -464,7 +499,122 @@ export function renderPublicLives(root, lives = [], { memorial = false } = {}) {
   return visible;
 }
 
-export function renderResult(root, summary) {
+export function renderPublicLifeDetail(root, life, { memorial = false } = {}) {
+  if (!root) return;
+  if (!life) {
+    root.hidden = true;
+    root.replaceChildren();
+    return;
+  }
+  root.hidden = false;
+  const top = makeNode(root, 'div', 'network-detail-top');
+  const close = makeNode(root, 'button', 'icon-button network-detail-close');
+  close.type = 'button';
+  close.dataset.networkClose = '';
+  close.setAttribute('aria-label', '상세 닫기');
+  close.innerHTML = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"/></svg>';
+  top.append(makeNode(root, 'span', 'network-detail-kicker', memorial ? '먼저 끝난 삶' : '다른 사람의 인생'), close);
+  const hero = makeNode(root, 'div', 'network-detail-hero');
+  const avatar = makeNode(root, 'span', 'network-detail-avatar');
+  avatar.innerHTML = characterSvg(stageForAge(life.age));
+  const names = makeNode(root, 'div', '');
+  names.append(
+    makeNode(root, 'h2', '', life.alias),
+    makeNode(root, 'p', 'network-detail-years', `${publicYear(life) ? `${publicYear(life)}년 기록 · ` : ''}${life.age}세`),
+    makeNode(root, 'p', 'network-detail-route', `${life.birthRegion}에서 시작 · ${life.finalRegion}에서 마무리`),
+  );
+  hero.append(avatar, names);
+  const stats = makeNode(root, 'div', 'network-detail-stats');
+  for (const [label, value] of [['직업', life.career], ['자산', life.netWorthBand], ['나이', `${life.age}세`]]) {
+    const tile = makeNode(root, 'div', '');
+    tile.append(makeNode(root, 'span', '', label), makeNode(root, 'strong', '', value));
+    stats.append(tile);
+  }
+  const moment = makeNode(root, 'article', 'network-detail-moment');
+  moment.append(makeNode(root, 'span', '', '대표 사건'), makeNode(root, 'p', '', life.reflection));
+  root.replaceChildren(top, hero, stats, moment);
+}
+
+const ENDING_LABELS = {
+  'caffeine-cardiac': '건강 문제로 영면',
+  'self-harm': '삶을 마쳤습니다',
+};
+
+export function resultEnding(summary, life = null) {
+  if (summary.age >= 90) return '90세 완주';
+  return ENDING_LABELS[life?.endedReason] ?? '노환과 질병으로 영면';
+}
+
+/** 가상 비교 — 실제 통계 분포가 아닌, 게임 안에서 쓰는 대략적인 상위 % 추정치입니다. */
+export function koreaPosition(summary) {
+  const worth = Number(summary.netWorth) || 0;
+  const wealthTable = [[10000000000, 1], [3000000000, 3], [1000000000, 10], [500000000, 20], [300000000, 30], [100000000, 45], [50000000, 55], [10000000, 70], [0, 80]];
+  const wealth = (wealthTable.find(([threshold]) => worth >= threshold) ?? [0, 95])[1];
+  const age = Number(summary.age) || 0;
+  const lifespan = Math.round(Math.min(98, Math.max(2, 100 - (age - 55) * 2.4)));
+  const happiness = Math.round(Math.min(98, Math.max(2, 100 - (Number(summary.finalStats?.happiness) || 0))));
+  return [
+    { label: '자산', top: wealth },
+    { label: '수명', top: lifespan },
+    { label: '행복', top: happiness },
+  ];
+}
+
+function highlightPoint(summary) {
+  const points = summary.turningPoints ?? [];
+  const generic = new Set(['삶의 시작', '배움의 시작', '첫 진로의 갈림길', '삶의 기반을 만든 시간', '지나온 삶을 돌아본 날', '출생']);
+  const meaningful = points.filter((point) => !generic.has(point.label));
+  return meaningful.find((point) => point.type === 'era-event' || point.type === 'finance')
+    ?? meaningful[Math.floor(meaningful.length / 2)]
+    ?? points[Math.floor(points.length / 2)]
+    ?? null;
+}
+
+function curveSvg(history, finalAge) {
+  const points = (Array.isArray(history) ? history : []).filter((point) => Number.isFinite(point?.age));
+  if (points.length < 2) return '';
+  const maxAge = Math.max(finalAge, ...points.map((point) => point.age), 1);
+  const toX = (age) => (age / maxAge) * 1000;
+  const toY = (value) => 150 - (Math.max(0, Math.min(100, value)) / 100) * 140;
+  const path = points.map((point, index) => `${index ? 'L' : 'M'}${toX(point.age).toFixed(1)} ${toY(point.happiness ?? 50).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 1000 160" preserveAspectRatio="none" aria-hidden="true"><path class="curve-base" d="M0 150H1000"/><path class="curve-line" d="${path}"/></svg>`;
+}
+
+export function renderResult(root, summary, life = null) {
+  const current = life ? normalizeLife(life) : null;
+  const birthYear = current ? current.year - current.age : null;
+  const ending = resultEnding(summary, current);
+  renderTextFields(root, '[data-result="ending"]', ending);
+  root.querySelector('.result-badge')?.classList.toggle('is-complete', summary.age >= 90);
+  renderTextFields(root, '[data-result="name"]', current?.profile?.name?.full ?? '한 사람');
+  renderTextFields(root, '[data-result="years"]', birthYear ? `${birthYear} — ${current.year}` : '—');
+  renderTextFields(root, '[data-result="health"]', String(summary.finalStats?.health ?? '—'));
+  renderTextFields(root, '[data-result="family-short"]', summary.family.hasPartner
+    ? `동반자${summary.family.children ? ` · 자녀 ${summary.family.children}` : ''}`
+    : summary.family.children ? `자녀 ${summary.family.children}명` : '가족과 친구들');
+  const portrait = root.querySelector('#result-portrait');
+  if (portrait) portrait.innerHTML = characterSvg(characterViewModel(current ?? { age: summary.age, stats: summary.finalStats }).stage);
+  const highlight = highlightPoint(summary);
+  renderTextFields(root, '[data-result="highlight-title"]', highlight?.label ?? '평범하고도 특별했던 하루들');
+  renderTextFields(root, '[data-result="highlight-age"]', highlight ? `${birthYear ? `${birthYear + highlight.age}년 · ` : ''}${formatAge(highlight.age)}` : '—');
+  renderTextFields(root, '[data-result="highlight-badge"]', highlight?.type === 'era-event' ? '시대의 사건' : highlight?.type === 'finance' ? '돈과 선택' : '인생의 순간');
+  const positionPanel = root.querySelector('[data-result="position-panel"]');
+  if (positionPanel) positionPanel.hidden = current?.runtimeSettings?.comparison === 'none';
+  const position = root.querySelector('[data-result="position"]');
+  if (position) {
+    position.replaceChildren(...koreaPosition(summary).map((item) => {
+      const row = makeNode(root, 'div', 'position-row');
+      const heading = makeNode(root, 'div', 'position-heading');
+      heading.append(makeNode(root, 'span', '', item.label), makeNode(root, 'strong', '', `상위 ${item.top}%`));
+      const track = makeNode(root, 'div', 'position-track');
+      track.style.setProperty('--position', `${100 - item.top}%`);
+      track.append(makeNode(root, 'i', 'position-fill'), makeNode(root, 'b', 'position-knob'));
+      row.append(heading, track);
+      return row;
+    }));
+  }
+  const curve = root.querySelector('[data-result="curve"]');
+  if (curve) curve.innerHTML = curveSvg(current?.statHistory, summary.age);
   renderTextFields(root, '[data-result="age"]', formatAge(summary.age));
   renderTextFields(root, '[data-result="birth"]', summary.birth);
   renderTextFields(root, '[data-result="residence"]', summary.finalResidence);

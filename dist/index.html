@@ -75,18 +75,36 @@
       </div>
     </section>
 
-    <section id="community-view" class="view network-view" aria-labelledby="community-title" hidden>
-      <p class="eyebrow"><span>PUBLIC LIVES</span> 익명 공개 기록</p>
-      <h1 id="community-title">같은 나라에서<br>살아간 다른 삶</h1>
-      <div data-community-list></div>
-      <button class="secondary-button network-back" data-network-back type="button">← 처음으로</button>
+    <section id="community-view" class="view network-view" data-network="community" aria-labelledby="community-title" hidden>
+      <header class="network-header">
+        <h1 id="community-title" class="sr-only">공개된 삶</h1>
+        <nav class="network-tabs" aria-label="공개된 삶과 추모관">
+          <button type="button" data-network-tab="community" aria-pressed="true">공개된 삶 <b data-network-count="community">0</b></button>
+          <button type="button" data-network-tab="memorial" aria-pressed="false">추모관 <b data-network-count="memorial">0</b></button>
+        </nav>
+        <button class="secondary-button network-back" data-network-back type="button">← 처음으로</button>
+      </header>
+      <p class="network-lead">같은 나라에서 살아간 다른 삶. 익명으로 공개된 기록만 보여 줍니다.</p>
+      <div class="network-body">
+        <div data-community-list class="network-list"></div>
+        <aside class="network-detail" data-network-detail aria-live="polite" hidden></aside>
+      </div>
     </section>
 
-    <section id="memorial-view" class="view network-view" aria-labelledby="memorial-title" hidden>
-      <p class="eyebrow"><span>MEMORIAL</span> 삶의 기록</p>
-      <h1 id="memorial-title">먼저 끝난 삶을<br>기억하는 곳</h1>
-      <div data-memorial-list></div>
-      <button class="secondary-button network-back" data-network-back type="button">← 처음으로</button>
+    <section id="memorial-view" class="view network-view" data-network="memorial" aria-labelledby="memorial-title" hidden>
+      <header class="network-header">
+        <h1 id="memorial-title" class="sr-only">추모관</h1>
+        <nav class="network-tabs" aria-label="공개된 삶과 추모관">
+          <button type="button" data-network-tab="community" aria-pressed="false">공개된 삶 <b data-network-count="community">0</b></button>
+          <button type="button" data-network-tab="memorial" aria-pressed="true">추모관 <b data-network-count="memorial">0</b></button>
+        </nav>
+        <button class="secondary-button network-back" data-network-back type="button">← 처음으로</button>
+      </header>
+      <p class="network-lead">먼저 끝난 삶을 기억하는 곳. 90세 이전에 끝난 공개 기록입니다.</p>
+      <div class="network-body">
+        <div data-memorial-list class="network-list"></div>
+        <aside class="network-detail" data-network-detail aria-live="polite" hidden></aside>
+      </div>
     </section>
 
     <section id="profile-view" class="view slot-view" aria-labelledby="slot-title" hidden>
@@ -280,29 +298,59 @@
     </section>
 
     <section id="result-view" class="view result-view" aria-labelledby="result-title" hidden>
-      <p class="eyebrow"><span>LIFE REVIEW</span> ONE OF 50,000,000</p>
-      <h1 id="result-title">한 사람의 시간이<br><em data-result="age">90세</em>에 닿았습니다.</h1>
-      <p class="result-narrative" data-result="narrative">한 사람의 삶을 천천히 정리하고 있습니다.</p>
-      <div class="result-grid">
-        <dl class="result-facts">
-          <div><dt>출생</dt><dd data-result="birth">대한민국</dd></div>
-          <div><dt>마지막 거주지</dt><dd data-result="residence">대한민국</dd></div>
-          <div><dt>가장 오래 한 일</dt><dd data-result="career">—</dd></div>
-          <div><dt>최종 순자산</dt><dd data-result="net-worth">0원</dd></div>
-        </dl>
-        <div class="turning-points"><p class="eyebrow">FIVE TURNING POINTS</p><ol data-result="turning-points"></ol></div>
-      </div>
-      <div class="result-review-grid">
-        <section><p class="eyebrow">FINAL STATE</p><h2>상태 변화</h2><div id="result-stats" class="result-stat-chart" data-result="stats"></div></section>
-        <section><p class="eyebrow">FAMILY & RELATIONSHIPS</p><h2>함께한 사람들</h2><p id="result-family" data-result="family">관계 기록을 정리하고 있습니다.</p></section>
-        <section class="result-influence-panel"><p class="eyebrow">STARTING CONDITIONS</p><h2>출생 조건의 영향</h2><ul id="result-influences" class="result-influences" data-result="influences"></ul></section>
-      </div>
-      <p class="simulation-notice result-notice">이 결과는 미래 예측이나 평가가 아닌 <strong>체험용 가상 데이터</strong>입니다. 금융 결과 역시 실제 투자·도박 조언이 아닙니다.</p>
-      <div class="result-actions">
-        <button id="same-life-button" class="secondary-button" type="button">같은 조건으로 다시</button>
-        <button id="new-life-button" class="primary-button" type="button">완전히 다른 삶</button>
-        <button id="past-lives-button" class="text-button" type="button">전생 기록 보기</button>
-        <button id="publish-life-button" class="text-button" type="button">이 삶을 익명 공개</button>
+      <div class="result-layout">
+        <aside class="result-hero">
+          <div id="result-portrait" class="result-portrait" role="img" aria-label="마지막 성장 단계 캐릭터"></div>
+          <p class="result-badge"><i aria-hidden="true"></i><span data-result="ending">삶을 마쳤습니다</span></p>
+          <h1 id="result-title"><span data-result="name">이름</span><small><span data-result="years">—</span> · <em data-result="age">90세</em></small></h1>
+          <p class="result-narrative" data-result="narrative">한 사람의 삶을 천천히 정리하고 있습니다.</p>
+          <a class="secondary-button result-timeline-link" href="#result-curve">전체 타임라인 보기 <span aria-hidden="true">→</span></a>
+        </aside>
+
+        <div class="result-main">
+          <dl class="result-facts result-summary">
+            <div><dt>최종 순자산</dt><dd class="is-accent" data-result="net-worth">0원</dd><small>마지막 해 기준</small></div>
+            <div><dt>가장 오래 한 일</dt><dd data-result="career">—</dd><small data-result="residence">대한민국</small></div>
+            <div><dt>함께한 사람들</dt><dd data-result="family-short">—</dd><small id="result-family" data-result="family">관계 기록을 정리하고 있습니다.</small></div>
+            <div><dt>마지막 건강</dt><dd data-result="health">—</dd><small data-result="birth">대한민국</small></div>
+          </dl>
+
+          <div class="result-row">
+            <section class="result-highlight" aria-labelledby="result-highlight-title">
+              <h2 id="result-highlight-title">이 삶을 대표하는 사건</h2>
+              <article class="result-highlight-card">
+                <p class="result-highlight-badge" data-result="highlight-badge">인생의 순간</p>
+                <p class="result-highlight-age" data-result="highlight-age">—</p>
+                <strong data-result="highlight-title">—</strong>
+              </article>
+            </section>
+            <section class="result-position" data-result="position-panel" aria-labelledby="result-position-title">
+              <h2 id="result-position-title">대한민국에서의 위치</h2>
+              <p>5,000만 명 가운데 이 삶은 어디쯤이었을까요? <small>(가상 비교)</small></p>
+              <div class="result-position-rows" data-result="position"></div>
+            </section>
+          </div>
+
+          <section id="result-curve" class="result-curve" aria-labelledby="result-curve-title">
+            <div class="result-curve-heading"><h2 id="result-curve-title">인생 곡선</h2><span>행복</span></div>
+            <div class="result-curve-chart" data-result="curve"></div>
+            <ol class="result-turning-points" data-result="turning-points"></ol>
+          </section>
+
+          <div class="result-review-grid">
+            <section><h2>마지막 상태</h2><div id="result-stats" class="result-stat-chart" data-result="stats"></div></section>
+            <section class="result-influence-panel"><h2>출생 조건의 영향</h2><ul id="result-influences" class="result-influences" data-result="influences"></ul></section>
+          </div>
+
+          <p class="simulation-notice result-notice">이 결과는 미래 예측이나 평가가 아닌 <strong>체험용 가상 데이터</strong>입니다. 금융 결과 역시 실제 투자·도박 조언이 아닙니다.</p>
+          <div class="result-actions">
+            <button id="publish-life-button" class="primary-button" type="button">이 삶을 익명 공개</button>
+            <button id="new-life-button" class="secondary-button result-primary-white" type="button">다시 태어나기</button>
+            <button id="same-life-button" class="secondary-button" type="button">같은 조건으로 다시</button>
+            <button id="share-life-button" class="secondary-button" type="button">공유하기</button>
+            <button id="past-lives-button" class="text-button" type="button">전생 기록 보기</button>
+          </div>
+        </div>
       </div>
     </section>
 

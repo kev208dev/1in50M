@@ -27,6 +27,8 @@ import {
   renderReflection,
   renderResult,
   renderPublicLives,
+  renderPublicLifeDetail,
+  renderNetworkState,
   formatWon,
 } from './ui/render.js';
 import {
@@ -76,10 +78,31 @@ let spinCounter = 0;
 let pendingAgencyResolution = null;
 let lastCompletedSummary = null;
 
-async function refreshCommunity() {
-  const lives = await community.listPublicLives();
+let publicLivesById = new Map();
+
+function renderNetworkLists(lives) {
+  publicLivesById = new Map(lives.map((life) => [life.id, life]));
   renderPublicLives(document.querySelector('[data-community-list]'), lives);
   renderPublicLives(document.querySelector('[data-memorial-list]'), lives, { memorial: true });
+  document.querySelectorAll('[data-network-count="community"]').forEach((node) => { node.textContent = String(lives.length); });
+  document.querySelectorAll('[data-network-count="memorial"]').forEach((node) => { node.textContent = String(lives.filter((life) => life.age < 90).length); });
+  document.querySelectorAll('[data-network-detail]').forEach((panel) => renderPublicLifeDetail(panel, null));
+}
+
+async function refreshCommunity() {
+  const communityList = document.querySelector('[data-community-list]');
+  const memorialList = document.querySelector('[data-memorial-list]');
+  if (!communityList.children.length) renderNetworkState(communityList, 'loading');
+  if (!memorialList.children.length) renderNetworkState(memorialList, 'loading', { memorial: true });
+  let lives;
+  try {
+    lives = await community.listPublicLives();
+  } catch {
+    renderNetworkState(communityList, 'error');
+    renderNetworkState(memorialList, 'error', { memorial: true });
+    return;
+  }
+  renderNetworkLists(lives);
   const presence = await community.connectPresence();
   document.querySelector('[data-live="online"]').textContent = presence.mode === 'online' ? String(presence.count) : '오프라인';
   document.querySelector('[data-live="births"]').textContent = String(lives.length);
@@ -314,7 +337,7 @@ function finishLife(life) {
   const publishButton = document.querySelector('#publish-life-button');
   publishButton.disabled = false;
   publishButton.textContent = '이 삶을 익명 공개';
-  renderResult(views.result, lastCompletedSummary);
+  renderResult(views.result, lastCompletedSummary, life);
   showView('result');
   liveRegion.textContent = `${life.age}세의 생애가 회고 단계에 도착했습니다.`;
 }
@@ -579,6 +602,19 @@ document.querySelector('#new-life-button').addEventListener('click', () => {
   showView('intro');
 });
 document.querySelector('#past-lives-button').addEventListener('click', showPastLives);
+document.querySelector('#share-life-button').addEventListener('click', async () => {
+  if (!lastCompletedSummary) return;
+  const text = `5000만 분의 1 — ${lastCompletedSummary.birth}에서 태어나 ${lastCompletedSummary.age}세까지, ${lastCompletedSummary.longestCareer}의 삶을 살았습니다.`;
+  try {
+    if (navigator.share) await navigator.share({ title: '5000만 분의 1', text, url: location.href });
+    else {
+      await navigator.clipboard.writeText(`${text} ${location.href}`);
+      liveRegion.textContent = '공유 문구를 복사했습니다.';
+    }
+  } catch {
+    liveRegion.textContent = '공유하지 못했습니다.';
+  }
+});
 document.querySelector('#intro-past-lives-button').addEventListener('click', showPastLives);
 document.querySelector('#community-button').addEventListener('click', async () => {
   await refreshCommunity();
@@ -587,6 +623,33 @@ document.querySelector('#community-button').addEventListener('click', async () =
 document.querySelector('#memorial-button').addEventListener('click', async () => {
   await refreshCommunity();
   showView('memorial');
+});
+document.querySelectorAll('[data-network-tab]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const target = button.dataset.networkTab;
+    document.querySelectorAll('[data-network-tab]').forEach((item) => item.setAttribute('aria-pressed', String(item.dataset.networkTab === target)));
+    showView(target);
+  });
+});
+document.querySelectorAll('.network-view').forEach((view) => {
+  view.addEventListener('click', async (event) => {
+    const memorial = view.dataset.network === 'memorial';
+    const panel = view.querySelector('[data-network-detail]');
+    const open = event.target.closest('[data-public-life-open]');
+    if (open) {
+      view.querySelectorAll('.public-life-card').forEach((card) => card.classList.toggle('is-selected', card.dataset.publicLife === open.dataset.publicLifeOpen));
+      renderPublicLifeDetail(panel, publicLivesById.get(open.dataset.publicLifeOpen), { memorial });
+      return;
+    }
+    if (event.target.closest('[data-network-close]')) {
+      view.querySelectorAll('.public-life-card').forEach((card) => card.classList.remove('is-selected'));
+      renderPublicLifeDetail(panel, null);
+      return;
+    }
+    const action = event.target.closest('[data-network-action]');
+    if (action?.dataset.networkAction === 'retry') await refreshCommunity();
+    if (action?.dataset.networkAction === 'start') showView('intro');
+  });
 });
 document.querySelectorAll('[data-network-back]').forEach((button) => {
   button.addEventListener('click', () => showView('intro'));
@@ -660,10 +723,7 @@ window.addEventListener('beforeunload', () => {
 
 const savedLife = loadCurrentLife(storage);
 controls.continue.hidden = !savedLife;
-community.subscribe((lives) => {
-  renderPublicLives(document.querySelector('[data-community-list]'), lives);
-  renderPublicLives(document.querySelector('[data-memorial-list]'), lives, { memorial: true });
-});
+community.subscribe((lives) => renderNetworkLists(lives));
 void refreshCommunity();
 renderKoreaMap();
 
