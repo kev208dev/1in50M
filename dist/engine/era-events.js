@@ -35,7 +35,9 @@ export function applyEraEvent(life, event) {
   }
   const economy = { ...current.economy };
   for (const [key, amount] of Object.entries(event.economyEffects ?? {})) {
-    if (key in economy) economy[key] = finite(economy[key] + Number(amount));
+    if (key === 'cash' && current.age < 18) {
+      economy.householdSupport = finite(economy.householdSupport + Number(amount));
+    } else if (key in economy) economy[key] = finite(economy[key] + Number(amount));
   }
   economy.netWorth = finite(
     economy.cash

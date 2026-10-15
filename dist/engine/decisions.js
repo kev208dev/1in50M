@@ -9,6 +9,9 @@ import { startBusiness } from './business.js';
 import { applyRiskEffects } from './wellbeing.js';
 
 function availability(life, choice) {
+  if (Number.isFinite(choice.maximumAge) && life.age > choice.maximumAge) {
+    return { enabled: false, reason: '더 이상 복무 시기를 유예할 수 없습니다.' };
+  }
   if (choice.serviceStatuses && !choice.serviceStatuses.includes(life.service?.status)) {
     return { enabled: false, reason: '현재 병역 판정에서 선택할 수 없는 경로입니다.' };
   }

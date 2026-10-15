@@ -4,6 +4,7 @@ import { assessService, serviceDecisionFor } from '../dist/engine/service.js';
 import { DECISION_BY_ID } from '../dist/data/decisions.js';
 import { normalizeLife } from '../dist/engine/life.js';
 import { makeLifeAtAge, makeMaleLifeAtAge } from './support/life-fixtures.mjs';
+import { getChoices, getDecision } from '../dist/engine/decisions.js';
 
 test('같은 삶은 같은 병역판정을 받는다', () => {
   const life = makeMaleLifeAtAge(19, { seed: 'service-fixed' });
@@ -34,4 +35,17 @@ test('지원 필요도와 건강은 판정 가능한 등급 범위를 제한한�
     stats: { health: 20 },
   });
   assert.ok(assessService(highSupport).grade >= 5);
+});
+
+test('24세 이후 미해결 복무는 다시 열리지만 더 이상 유예할 수 없다', () => {
+  for (const age of [24, 25]) {
+    const life = makeMaleLifeAtAge(age, {
+      service: { status: 'active', grade: 2, assessedAge: 19, completed: false, nextAssessmentAge: age },
+    });
+    assert.equal(getDecision(life)?.id, 'service-path');
+    const choices = getChoices(life, 'service-path');
+    assert.equal(choices.find((choice) => choice.id === 'serve-now').enabled, true);
+    assert.equal(choices.find((choice) => choice.id === 'defer-study').enabled, false);
+    assert.equal(choices.find((choice) => choice.id === 'defer-work').enabled, false);
+  }
 });

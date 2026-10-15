@@ -37,3 +37,11 @@ test('시대 사건은 상태를 제한하고 출처 메타데이터를 기록�
   assert.match(next.history.at(-1).sourceUrl, /^https:/);
   assert.equal(next.history.at(-1).projection, false);
 });
+
+test('미성년의 시대 사건 경제 영향은 개인 현금 대신 가정 지원에 반영된다', () => {
+  const life = makeLifeAtYear(1951, { age: 1, economy: { cash: 0, householdSupport: 8_000_000 } });
+  const event = eligibleEraEvents(life, 2026).find((item) => item.id === 'korean-war-displacement');
+  const next = applyEraEvent(life, event);
+  assert.equal(next.economy.cash, 0);
+  assert.equal(next.economy.householdSupport, 7_200_000);
+});

@@ -72,6 +72,7 @@ test('모바일과 모션 감소 화면에서 슬롯 동작을 보존한다', as
   assert.match(css, /@media \(max-width: 720px\)[\s\S]*\.birth-slot/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.slot-strip/);
   assert.match(css, /\.slot-actions[\s\S]*bottom:/);
+  assert.match(css, /@media \(max-width: 720px\)[\s\S]*?\.slot-value[^}]*font-size: clamp\(12px,/);
 });
 
 test('모바일에서도 출생 조건 상세를 키보드로 펼쳐 볼 수 있다', async () => {
@@ -82,4 +83,16 @@ test('모바일에서도 출생 조건 상세를 키보드로 펼쳐 볼 수 있
   assert.doesNotMatch(css, /@media \(max-width: 720px\)[\s\S]*?\.slot-detail \{ display: none; \}/);
   assert.match(css, /@media \(max-width: 720px\)[\s\S]*?\.slot-detail-disclosure/);
   assert.match(css, /\.slot-reel:has\(\.slot-detail-disclosure\[open\]\)[\s\S]*?overflow: visible/);
+});
+
+test('모바일 상세 팝업은 좌·중·우 릴에서 화면 밖으로 나가지 않게 정렬한다', async () => {
+  const css = await readFile(new URL('../dist/styles.css', import.meta.url), 'utf8');
+  assert.match(css, /\.slot-detail-mobile \{[^}]*left: 50%[^}]*transform: translateX\(-50%\)/);
+  assert.match(css, /data-slot="region"[^}]*\.slot-detail-mobile[\s\S]*?left: -4px/);
+  assert.match(css, /data-slot="appearance"[^}]*\.slot-detail-mobile[\s\S]*?right: -4px/);
+});
+
+test('각 릴은 자신의 정지 애니메이션이 끝나면 블러가 풀린다', async () => {
+  const css = await readFile(new URL('../dist/styles.css', import.meta.url), 'utf8');
+  assert.doesNotMatch(css, /\.birth-slot\.is-spinning \.slot-value\s*\{[^}]*filter:\s*blur/);
 });
