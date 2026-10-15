@@ -52,7 +52,6 @@ const community = createCommunityClient(globalThis.ONE_IN_50M_CONFIG ?? {}, { st
 const controls = {
   birth: document.querySelector('#birth-button'),
   continue: document.querySelector('#continue-button'),
-  reroll: document.querySelector('#slot-spin-button'),
   accept: document.querySelector('#slot-accept-button'),
   back: document.querySelector('#back-button'),
   play: document.querySelector('#play-button'),
@@ -188,7 +187,6 @@ function wait(milliseconds) {
 function setDrawDisabled(disabled) {
   isDrawing = disabled;
   controls.birth.disabled = disabled;
-  controls.reroll.disabled = disabled;
   controls.accept.disabled = disabled;
   document.body.classList.toggle('is-drawing', disabled);
 }
@@ -560,7 +558,6 @@ function showPastLives() {
 }
 
 controls.birth.addEventListener('click', spinBirthSlot);
-controls.reroll.addEventListener('click', spinBirthSlot);
 controls.accept.addEventListener('click', beginCandidateLife);
 const birthMapButton = document.querySelector('#birth-map-button');
 const birthMapBack = document.querySelector('#birth-map-back');
@@ -719,11 +716,6 @@ document.querySelector('#career-groups').addEventListener('click', (event) => {
   liveRegion.textContent = `${button.querySelector('strong').textContent} 일을 시작했습니다.`;
 });
 
-document.querySelector('#same-life-button').addEventListener('click', () => {
-  if (!controller) return;
-  const previous = controller.getState();
-  startLife(createLife(previous.profile, `${previous.profile.id}-again-${Date.now()}`));
-});
 document.querySelector('#new-life-button').addEventListener('click', () => {
   candidateProfile = null;
   candidateResult = null;

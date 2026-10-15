@@ -20,7 +20,7 @@ export function getSafeStorage(scope = globalThis) {
 
 function repairLife(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
-  if (![2, 3, 4].includes(value.version) || !value.profile || !Number.isFinite(Number(value.age))) return null;
+  if (![2, 3, 4, 5].includes(value.version) || !value.profile || !Number.isFinite(Number(value.age))) return null;
   const life = normalizeLife(value);
   if (life.education.schoolType && !EDUCATION_BY_ID[life.education.schoolType]) life.education.schoolType = 'general';
   if (!EDUCATION_LEVELS.has(life.education.level) && !POST_SECONDARY_BY_ID[life.education.level]) life.education.level = 'high-school';

@@ -17,6 +17,7 @@ import {
 } from '../data/birth-slot.js';
 import { createRng, hashSeed } from './random.js';
 import { createAppearance } from './appearance.js';
+import { getStatistic, historicalDistrictName } from './historical-context.js';
 
 const clamp = (value, min = 0, max = 100) => Math.min(max, Math.max(min, Math.round(value)));
 function createPersonality(rng) {
@@ -92,7 +93,7 @@ export function createBirthSlotResult(seed, year = 2026) {
     { value: '기타 종교', weight: 1 },
   ]).value;
   const urbanicity = /구$/.test(region.district) ? '대도시 생활권' : /시$/.test(region.district) ? '도시 생활권' : '군·읍면 생활권';
-  const lifeExpectancy = Number((sex.id === 'female' ? rng.int(83, 89) : rng.int(77, 84)).toFixed(1));
+  const lifeExpectancy = getStatistic('lifeExpectancy', { year, sex: sex.id });
 
   return {
     seed: normalizedSeed,
@@ -114,7 +115,9 @@ export function createBirthSlotResult(seed, year = 2026) {
     name,
     religion,
     urbanicity,
-    lifeExpectancy,
+    lifeExpectancy: lifeExpectancy.value,
+    lifeExpectancySourceYear: lifeExpectancy.year,
+    lifeExpectancyKind: lifeExpectancy.kind,
     childhoodSurvival: Number((99.4 + rng.next() * 0.5).toFixed(2)),
     simulationNotice: BIRTH_WEIGHT_NOTICE,
   };
@@ -141,7 +144,7 @@ export function profileFromSlotResult(result) {
     birthYear: result.year,
     sex: structuredClone(result.sex),
     region: { name: result.region.name, short: result.region.short, code: result.region.code },
-    district: result.region.district,
+    district: historicalDistrictName(result.region.code, result.region.district, result.year),
     familyType: result.household.familyType,
     guardians: structuredClone(result.household.guardians),
     finance: finance.value,
@@ -157,6 +160,6 @@ export function profileFromSlotResult(result) {
     childhoodSurvival: result.childhoodSurvival,
     stats,
     simulationNotice: result.simulationNotice,
-    summary: `${result.year}년, ${result.region.name} ${result.region.district}에서 ${result.name.full}의 삶이 시작됩니다.`,
+    summary: `${result.year}년, ${result.region.name} ${historicalDistrictName(result.region.code, result.region.district, result.year)}에서 ${result.name.full}의 삶이 시작됩니다.`,
   };
 }

@@ -36,7 +36,7 @@ test('버전 4 저장 상태를 그대로 복원한다', () => {
   });
   assert.equal(saveCurrentLife(storage, life), true);
   const restored = loadCurrentLife(storage);
-  assert.equal(restored.version, 4);
+  assert.equal(restored.version, 5);
   assert.equal(restored.economy.assets.stocks, 5000000);
 });
 

@@ -69,9 +69,9 @@ test('지도 상호작용은 Desktop 2-1, 2-2, 2-3 상태로 전환된다', () =
   assert.equal(birthSlotUi.nextBirthMapMode('region', 'leave'), 'marker');
 });
 
-test('출생 화면에 재추첨과 확정 버튼이 있다', async () => {
+test('출생 화면은 한 번 정한 출생을 확정하고 다시 뽑지 않는다', async () => {
   const html = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
-  assert.match(html, /id="slot-spin-button"/);
+  assert.doesNotMatch(html, /id="slot-spin-button"/);
   assert.match(html, /id="slot-accept-button"/);
   assert.match(html, /id="birth-slot"/);
   assert.match(html, /id="birth-settings"/);

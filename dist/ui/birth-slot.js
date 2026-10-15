@@ -1,3 +1,5 @@
+import { getStatistic, historicalDistrictName } from '../engine/historical-context.js';
+
 const STOP_SCHEDULE = [400, 520, 640, 760, 880, 1080, 1200, 1320, 1520, 1640, 1760];
 
 export const reelStopSchedule = (reduceMotion) => reduceMotion
@@ -150,24 +152,31 @@ export function renderBirthSlot(root, result, { spinning = false } = {}) {
   root.setAttribute('aria-busy', String(spinning));
 }
 
+export function birthCertificateModel(result) {
+  const district = historicalDistrictName(result.region.code, result.region.district, result.year);
+  const expectancy = getStatistic('lifeExpectancy', { year: result.year, sex: result.sex.id });
+  return {
+    narrative: `${result.year}년, ${result.region.name} ${district}의 ${result.household.familyType}에서 ${result.name.full}의 삶이 시작됩니다.`,
+    facts: [
+      { label: '이름', value: result.name.full, kind: 'narrative' },
+      { label: '출생', value: `${result.year}년 · ${result.region.name} ${district}`, kind: 'narrative' },
+      { label: '가족', value: result.household.summary, kind: 'narrative' },
+      { label: '가정 형편', value: `${result.finance.value} · ${result.housing.value}`, kind: 'narrative' },
+      { label: '기대수명', value: `약 ${expectancy.value}세`, sourceYear: expectancy.year, sourceKey: expectancy.sourceKey, kind: expectancy.kind },
+    ],
+  };
+}
+
 export function renderBirthCertificate(root, result) {
   if (!root || !result) return;
   const documentRef = root.ownerDocument;
-  const facts = [
-    ['이름', result.name.full],
-    ['출생', `${result.year}년 · ${result.region.name} ${result.region.district}`],
-    ['생활권', result.urbanicity],
-    ['가족', result.household.summary],
-    ['보호자', result.household.guardians.map((item) => `${item.label} ${item.age}세 · ${item.occupation}`).join(' / ')],
-    ['가정 형편', `${result.finance.value} · ${result.housing.value}`],
-    ['종교 환경', result.religion],
-    ['외모', result.appearance.description],
-    ['성격', result.personality.label],
-    ['기대수명', `약 ${result.lifeExpectancy}세`],
-  ];
-  root.replaceChildren(...facts.map(([label, value]) => {
+  const model = birthCertificateModel(result);
+  const narrative = makeNode(documentRef, 'p', 'birth-record-narrative', model.narrative);
+  const facts = model.facts.map((fact) => {
     const item = makeNode(documentRef, 'div', 'birth-fact');
-    item.append(makeNode(documentRef, 'span', 'birth-fact-label', label), makeNode(documentRef, 'strong', 'birth-fact-value', value));
+    const value = fact.sourceYear ? `${fact.value} · ${fact.sourceYear}년 기준` : fact.value;
+    item.append(makeNode(documentRef, 'span', 'birth-fact-label', fact.label), makeNode(documentRef, 'strong', 'birth-fact-value', value));
     return item;
-  }));
+  });
+  root.replaceChildren(narrative, ...facts);
 }

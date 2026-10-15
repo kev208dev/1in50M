@@ -8,13 +8,15 @@ const renderSource = await readFile(new URL('../dist/ui/render.js', import.meta.
 const appSource = await readFile(new URL('../dist/app.js', import.meta.url), 'utf8');
 
 test('세 화면과 모든 주요 동작이 존재한다', () => {
-  for (const id of ['intro-view', 'profile-view', 'future-view', 'birth-button', 'slot-spin-button', 'slot-accept-button', 'back-button', 'live-region']) {
+  for (const id of ['intro-view', 'profile-view', 'future-view', 'birth-button', 'slot-accept-button', 'back-button', 'live-region']) {
     assert.match(html, new RegExp(`id=["']${id}["']`));
   }
+  assert.doesNotMatch(html, /id=["']slot-spin-button["']/);
+  assert.doesNotMatch(html, /id=["']same-life-button["']/);
 });
 
-test('가상 시뮬레이션 안내를 인트로와 결과에 모두 표시한다', () => {
-  const matches = html.match(/실제 인구통계가 아닌 체험용 가상 시뮬레이션입니다/g) ?? [];
+test('공개 통계 기반과 모델링 값의 구분을 인트로와 결과에 표시한다', () => {
+  const matches = html.match(/공개 통계 기반/g) ?? [];
   assert.ok(matches.length >= 2);
 });
 
@@ -38,9 +40,9 @@ test('인트로에서 전생 기록에 접근하고 결과 그래프와 가족 �
   }
 });
 
-test('가상 데이터 안내가 생애 화면과 결과 화면에 있다', () => {
-  const matches = html.match(/체험용 가상 데이터/g) ?? [];
-  assert.ok(matches.length >= 2);
+test('출생신고 기록과 모델링 값 안내가 있다', () => {
+  assert.match(html, /출생신고 기록/);
+  assert.match(html, /모델링 값/);
 });
 
 test('정체성 발견은 거절 선택 없는 가상 인물 사건으로 표시된다', () => {

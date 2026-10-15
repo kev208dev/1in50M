@@ -18,6 +18,7 @@ import { advanceBusiness } from './business.js';
 import { selectEraEvent, applyEraEvent } from './era-events.js';
 import { normalizeRiskFactors, normalizeWellbeingHabits } from './wellbeing.js';
 import { defaultServiceState, ensureServiceAssessment } from './service.js';
+import { PUBLIC_DATA_VERSION } from '../data/public-statistics.js';
 
 const STAT_KEYS = ['health', 'happiness', 'knowledge', 'relationships'];
 
@@ -50,7 +51,8 @@ export function createLife(profile, seed = profile?.id) {
   }));
 
   return normalizeLife({
-    version: 4,
+    version: 5,
+    dataVersion: PUBLIC_DATA_VERSION,
     seed: initialSeed,
     rngState: hashSeed(initialSeed),
     profile: structuredClone(profile),
@@ -110,6 +112,7 @@ export function createLife(profile, seed = profile?.id) {
     pendingReflectionId: null,
     reflections: {},
     endedReason: null,
+    conditions: { chronic: [], losses: [], care: [] },
     riskFactors: { academicStress: 0, sleepDebt: 0, caffeineLoad: 0, support: 45 },
     wellbeingHabits: { privateEducation: false, gradePressure: false, nighttimeStudy: null },
     mentalHealthState: 'stable',
@@ -134,7 +137,8 @@ export function createLife(profile, seed = profile?.id) {
 
 export function normalizeLife(life) {
   const copy = structuredClone(life ?? {});
-  copy.version = 4;
+  copy.version = 5;
+  copy.dataVersion = typeof copy.dataVersion === 'string' ? copy.dataVersion : PUBLIC_DATA_VERSION;
   copy.seed = String(copy.seed ?? copy.profile?.id ?? 'one-in-50m');
   copy.rngState = finite(copy.rngState, hashSeed(copy.seed)) >>> 0;
   copy.age = clamp(copy.age, 0, 90);
@@ -255,6 +259,11 @@ export function normalizeLife(life) {
     ? String(copy.pendingReflectionId)
     : null;
   copy.endedReason = typeof copy.endedReason === 'string' ? copy.endedReason : null;
+  copy.conditions = {
+    chronic: Array.isArray(copy.conditions?.chronic) ? [...new Set(copy.conditions.chronic.map(String))] : [],
+    losses: Array.isArray(copy.conditions?.losses) ? [...new Set(copy.conditions.losses.map(String))] : [],
+    care: Array.isArray(copy.conditions?.care) ? [...new Set(copy.conditions.care.map(String))] : [],
+  };
   copy.riskFactors = normalizeRiskFactors(copy.riskFactors ?? {
     academicStress: 0,
     sleepDebt: 0,

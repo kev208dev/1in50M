@@ -22,12 +22,17 @@ test('유복한 수도권 가정은 교육 접근성과 초기 안전망을 높�
   assert.ok(rich.economy.householdSupport > tight.economy.householdSupport);
 });
 
-test('v3 저장은 새 필드가 없어도 v4로 정규화된다', () => {
+test('v4 저장은 새 필드가 없어도 v5로 정규화된다', () => {
   const legacyV3Life = createLife(profile, 'legacy-v3');
+  legacyV3Life.version = 4;
+  delete legacyV3Life.dataVersion;
+  delete legacyV3Life.conditions;
   delete legacyV3Life.profileInfluence;
   delete legacyV3Life.economy.assets;
-  const migrated = normalizeLife({ ...legacyV3Life, version: 3 });
-  assert.equal(migrated.version, 4);
+  const migrated = normalizeLife({ ...legacyV3Life, version: 4 });
+  assert.equal(migrated.version, 5);
+  assert.ok(migrated.dataVersion);
+  assert.deepEqual(migrated.conditions, { chronic: [], losses: [], care: [] });
   assert.ok(migrated.profileInfluence);
   assert.deepEqual(Object.keys(migrated.economy.assets), [
     'deposits', 'bonds', 'stocks', 'crypto', 'businessEquity',

@@ -332,6 +332,7 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
   isolation: isolate;
 }
 .birth-certificate::before { content: ''; position: absolute; inset: 14px; border: 1px solid rgba(17, 22, 19, .2); pointer-events: none; }
+.birth-record-narrative { grid-column: 1 / -1; margin: 0 0 8px; color: var(--ink); line-height: 1.7; }
 .certificate-noise { position: absolute; inset: 0; z-index: -1; opacity: .18; background-image: radial-gradient(rgba(17, 22, 19, .5) .6px, transparent .6px); background-size: 7px 7px; }
 .certificate-topline { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; }
 .birth-place { margin-top: clamp(70px, 10vw, 138px); }

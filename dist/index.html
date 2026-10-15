@@ -36,11 +36,10 @@
           <span class="figma-logo-one">1</span><span class="figma-logo-over">over</span><span class="figma-logo-total">50M</span>
           <img src="./assets/figma/logo-underline.svg" alt="" aria-hidden="true">
         </div>
-        <blockquote class="intro-quote">
-          <p class="intro-quote-en" lang="en">“If you are born poor its not your mistake,<br>But if you die poor its your mistake.”</p>
-          <p class="intro-quote-ko">태어날 때 가난하게 태어난 것은<br>당신의 잘못이 아니지만,<br>죽을 때 가난하게 죽는 것은<br>당신의 잘못이다.</p>
-          <cite>-빌 게이츠-</cite>
-        </blockquote>
+        <div class="intro-quote">
+          <p class="intro-quote-en" lang="en">“You do not choose where you are born.<br>A life begins with what was given.”</p>
+          <p class="intro-quote-ko">태어날 곳은 고를 수 없습니다.<br>주어진 시작에서<br>한 사람의 삶이 이어집니다.</p>
+        </div>
         <button id="title-continue-button" class="intro-continue" type="button">PRESS ANY KEY TO CONTINUE</button>
       </div>
     </section>
@@ -67,7 +66,7 @@
           <button id="community-button" class="text-button" type="button">공개된 삶</button>
           <button id="memorial-button" class="text-button" type="button">추모관</button>
         </div>
-        <p class="disclaimer">현재 결과는 실제 인구통계가 아닌 체험용 가상 시뮬레이션입니다.</p>
+        <p class="disclaimer">공개 통계 기반 시뮬레이션이며 자료가 없는 구간은 모델링 값으로 표시합니다.</p>
       </div>
 
       <figure class="intro-visual intro-map">
@@ -121,7 +120,7 @@
           <span class="figma-logo-one">1</span><span class="figma-logo-over">over</span><span class="figma-logo-total">50M</span>
           <img src="./assets/figma/logo-underline.svg" alt="" aria-hidden="true">
         </div>
-        <h1 id="slot-title" class="slot-title">다시 태어난다면,<br><em>어디에서</em> 시작할까요?</h1>
+        <h1 id="slot-title" class="slot-title">이곳에서,<br><em>한 삶이</em> 시작됩니다.</h1>
 
         <section class="birth-map" aria-label="출생 지역 지도">
           <button id="birth-map-button" class="birth-map-canvas" type="button" aria-label="출생 지역 자세히 보기">
@@ -139,7 +138,6 @@
         <div class="slot-machine-shell">
           <div id="birth-slot" class="birth-slot" aria-live="polite"></div>
           <div class="slot-actions" aria-label="출생 슬롯 동작">
-            <button id="slot-spin-button" class="slot-reroll" type="button"><span class="reroll-icon" aria-hidden="true">↻</span> 다시 돌리기</button>
             <button id="slot-accept-button" class="figma-birth-button" type="button">
               <img class="spin-pulse spin-pulse-outer" src="./assets/figma/spin-pulse-outer.svg" alt="">
               <img class="spin-pulse spin-pulse-inner" src="./assets/figma/spin-pulse-inner.svg" alt="">
@@ -153,11 +151,11 @@
         <details class="profile-details-drawer">
           <summary>출생 상세</summary>
           <section class="birth-context-panel" aria-labelledby="certificate-details-title">
-            <div class="birth-context-heading"><span>BIRTH CERTIFICATE</span><h2 id="certificate-details-title">출생증명서</h2></div>
+            <div class="birth-context-heading"><span>BIRTH RECORD</span><h2 id="certificate-details-title">출생신고 기록</h2></div>
             <div id="birth-certificate-details" class="birth-facts"></div>
           </section>
         </details>
-        <p class="slot-notice">실제 인구통계가 아닌 체험용 가상 시뮬레이션이며 일부 창작용 가중치를 사용합니다.</p>
+        <p class="slot-notice">공개 통계 기반이며 자료가 없는 세부 조건은 모델링 값으로 구분합니다.</p>
       </div>
     </section>
 
@@ -182,7 +180,7 @@
         </div>
       </header>
 
-      <p class="simulation-notice"><span>SIMULATION 02</span> 모든 확률과 금액은 실제 통계가 아닌 <strong>체험용 가상 데이터</strong>입니다.</p>
+      <p class="simulation-notice"><span>SIMULATION 02</span> 공개 통계 기반이며 일부 사건과 금액은 <strong>모델링 값</strong>입니다.</p>
 
       <nav id="life-panel-tabs" class="life-panel-tabs" aria-label="생애 정보 패널">
         <button type="button" data-life-panel-target="story" aria-pressed="true">지금</button>
@@ -377,11 +375,10 @@
             <section class="result-influence-panel"><h2>출생 조건의 영향</h2><ul id="result-influences" class="result-influences" data-result="influences"></ul></section>
           </div>
 
-          <p class="simulation-notice result-notice">실제 인구통계가 아닌 체험용 가상 시뮬레이션입니다. 이 결과는 미래 예측이나 평가가 아닌 <strong>체험용 가상 데이터</strong>이며, 금융 결과 역시 실제 투자·도박 조언이 아닙니다.</p>
+          <p class="simulation-notice result-notice">공개 통계 기반 시뮬레이션입니다. 자료가 없는 구간은 <strong>모델링 값</strong>이며 금융 결과는 실제 투자·도박 조언이 아닙니다.</p>
           <div class="result-actions">
             <button id="publish-life-button" class="primary-button" type="button">이 삶을 익명 공개</button>
-            <button id="new-life-button" class="secondary-button result-primary-white" type="button">다시 태어나기</button>
-            <button id="same-life-button" class="secondary-button" type="button">같은 조건으로 다시</button>
+            <button id="new-life-button" class="secondary-button result-primary-white" type="button">새로운 삶 시작</button>
             <button id="share-life-button" class="secondary-button" type="button">공유하기</button>
             <button id="past-lives-button" class="text-button" type="button">전생 기록 보기</button>
           </div>
@@ -418,7 +415,7 @@
       </div>
 
       <div class="future-note"><span aria-hidden="true">＋</span><p><strong>이제 한 해씩 삶이 이어집니다.</strong><br>교육, 일, 주거, 관계와 노후의 선택을 직접 만나보세요.</p></div>
-      <button id="back-button" class="secondary-button future-back" type="button">← 다른 인생 뽑기</button>
+      <button id="back-button" class="secondary-button future-back" type="button">← 출생 기록으로 돌아가기</button>
     </section>
   </main>
 
