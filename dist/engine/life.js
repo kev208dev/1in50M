@@ -22,6 +22,7 @@ import { PUBLIC_DATA_VERSION } from '../data/public-statistics.js';
 import { applyDiminishingEffects } from './stat-effects.js';
 import { educationStateForAge } from '../data/education.js';
 import { appendTimeline, orderTimeline } from './timeline.js';
+import { createCohortPeers } from './cohort.js';
 
 const STAT_KEYS = ['health', 'happiness', 'knowledge', 'relationships'];
 
@@ -116,6 +117,7 @@ export function createLife(profile, seed = profile?.id) {
     reflections: {},
     endedReason: null,
     conditions: { chronic: [], losses: [], care: [] },
+    cohort: createCohortPeers(profile, initialSeed),
     riskFactors: { academicStress: 0, sleepDebt: 0, caffeineLoad: 0, support: 45 },
     wellbeingHabits: { privateEducation: false, gradePressure: false, nighttimeStudy: null },
     mentalHealthState: 'stable',
@@ -267,6 +269,9 @@ export function normalizeLife(life) {
     losses: Array.isArray(copy.conditions?.losses) ? [...new Set(copy.conditions.losses.map(String))] : [],
     care: Array.isArray(copy.conditions?.care) ? [...new Set(copy.conditions.care.map(String))] : [],
   };
+  copy.cohort = Array.isArray(copy.cohort)
+    ? copy.cohort.filter((item) => item && typeof item === 'object').slice(0, 4).map((item) => structuredClone(item))
+    : [];
   copy.riskFactors = normalizeRiskFactors(copy.riskFactors ?? {
     academicStress: 0,
     sleepDebt: 0,

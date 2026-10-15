@@ -6,6 +6,8 @@ import { mapRegionState } from './data/korea-map.js';
 import { createKoreaMap, regionLabel } from './ui/korea-map.js';
 import { detectBigEvents, renderBigEvent } from './ui/big-event.js';
 import { renderSystemFeed } from './ui/system-feed.js';
+import { createCohortPeers, advanceCohort } from './engine/cohort.js';
+import { renderCohort } from './ui/cohort.js';
 import { createLife } from './engine/life.js';
 import { getDecision, getChoices } from './engine/decisions.js';
 import { REFLECTION_BY_ID } from './data/reflections.js';
@@ -218,6 +220,7 @@ async function spinBirthSlot() {
   candidateProfile = profileFromSlotResult(candidateResult);
   renderBirthSlot(document.querySelector('#birth-slot'), candidateResult, { spinning: !reduceMotion.matches });
   renderBirthCertificate(document.querySelector('#birth-certificate-details'), candidateResult);
+  renderCohort(document.querySelector('#cohort-preview'), createCohortPeers(candidateProfile, candidateProfile.id), 0);
   renderProfileContext(candidateProfile);
   await wait(slotDuration(reduceMotion.matches));
   renderBirthSlot(document.querySelector('#birth-slot'), candidateResult);
@@ -317,6 +320,7 @@ function renderCurrentLife(life) {
   trackBigEvents(life);
   renderLife(views.life, life);
   renderSystemFeed(document.querySelector('#system-feed'), life);
+  renderCohort(document.querySelector('#cohort-life'), advanceCohort(life.cohort, life.age), life.age);
   updateFinanceDialog(life);
   updateMoment(life);
   updatePlayback();
@@ -432,6 +436,7 @@ function finishLife(life) {
   publishButton.disabled = false;
   publishButton.textContent = '이 삶을 익명 공개';
   renderResult(views.result, lastCompletedSummary, life);
+  renderCohort(document.querySelector('#cohort-result'), advanceCohort(life.cohort, life.age), life.age);
   showView('result');
   liveRegion.textContent = `${life.age}세의 생애가 회고 단계에 도착했습니다.`;
 }

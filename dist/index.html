@@ -156,6 +156,10 @@
           </section>
         </details>
         <p class="slot-notice">공개 통계 기반이며 자료가 없는 세부 조건은 모델링 값으로 구분합니다.</p>
+        <details class="cohort-panel cohort-preview-panel">
+          <summary>같은 해 태어난 네 사람</summary>
+          <div id="cohort-preview" class="cohort-grid"></div>
+        </details>
       </div>
     </section>
 
@@ -298,6 +302,10 @@
             <div id="survival-curve" class="survival-curve panel-body"></div>
             <p class="investment-notice">개인의 수명을 예측하지 않는 가상 곡선입니다.</p>
           </details>
+          <details class="life-panel cohort-life-panel">
+            <summary><span>10</span> 같은 해 태어난 네 사람</summary>
+            <div id="cohort-life" class="cohort-grid panel-body"></div>
+          </details>
         </aside>
       </div>
 
@@ -373,6 +381,10 @@
             <section><h2>마지막 상태</h2><div id="result-stats" class="result-stat-chart" data-result="stats"></div></section>
             <section class="result-influence-panel"><h2>출생 조건의 영향</h2><ul id="result-influences" class="result-influences" data-result="influences"></ul></section>
           </div>
+          <section class="result-cohort" aria-labelledby="result-cohort-title">
+            <h2 id="result-cohort-title">같은 해 태어난 네 사람</h2>
+            <div id="cohort-result" class="cohort-grid"></div>
+          </section>
 
           <p class="simulation-notice result-notice">공개 통계 기반 시뮬레이션입니다. 자료가 없는 구간은 <strong>모델링 값</strong>이며 금융 결과는 실제 투자·도박 조언이 아닙니다.</p>
           <div class="result-actions">

@@ -106,9 +106,10 @@ test('원작형 라이브·공개 삶·추모 영역과 모바일 패널 전환�
   assert.match(css, /@media \(max-width: 959px\)[\s\S]*data-mobile-panel/);
 });
 
-test('함께 태어난 네 사람과 가상 비교 인생 UI가 남지 않는다', () => {
-  assert.doesNotMatch(html, /companion-preview|companion-lives|함께 태어난 네 사람/);
-  assert.doesNotMatch(appSource, /createCompanionLives|advanceCompanionLives|candidateCompanions/);
+test('같은 해 태어난 네 사람을 출생·생애·엔딩에서 이어서 보여준다', () => {
+  assert.match(html, /cohort-preview|cohort-life|cohort-result/);
+  assert.match(html, /같은 해 태어난 네 사람/);
+  assert.match(appSource, /createCohortPeers|advanceCohort|renderCohort/);
 });
 
 test('생애 작업공간은 화면 높이에 맞춰지고 현재 장면은 모바일에서도 유지된다', () => {
