@@ -18,8 +18,9 @@ test('가상 시뮬레이션 안내를 인트로와 결과에 모두 표시한�
   assert.ok(matches.length >= 2);
 });
 
-test('720px 미만에서는 슬롯을 두 열로 재배치한다', () => {
-  assert.match(css, /@media \(max-width: 720px\)[\s\S]*?\.birth-slot \{ grid-template-columns: repeat\(2,/);
+test('720px 미만에서는 11개 릴을 세 단으로 재배치한다', () => {
+  assert.match(css, /@media \(max-width: 720px\)[\s\S]*?\.birth-slot \{ grid-template-columns: 1fr; grid-template-rows:/);
+  assert.match(css, /@media \(max-width: 720px\)[\s\S]*?\.slot-reel-group-birth \{[^}]*repeat\(5,/);
 });
 
 test('생애 화면과 원작형 컨트롤이 존재한다', () => {
