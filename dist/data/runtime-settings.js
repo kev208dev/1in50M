@@ -1,11 +1,7 @@
 import { createRng } from '../engine/random.js';
+import { ERA_BY_ID, ERA_OPTIONS } from './eras.js';
 
-export const ERA_OPTIONS = [
-  { id: 'random', label: '무작위 시대' },
-  { id: 'past', label: '과거 대한민국' },
-  { id: 'current', label: '현재 대한민국' },
-  { id: 'future', label: '미래 대한민국' },
-];
+export { ERA_OPTIONS } from './eras.js';
 
 export const DURATION_OPTIONS = [30, 60, 90];
 
@@ -40,12 +36,20 @@ export function tickInterval(settings, speed = 1) {
 export function resolveBirthYear(settings, seed, currentYear = new Date().getFullYear()) {
   const { era } = normalizeRuntimeSettings(settings);
   const rng = createRng(`era:${seed}:${currentYear}`);
-  if (era === 'past') return rng.int(1950, 1999);
-  if (era === 'current') return currentYear;
   if (era === 'future') return rng.int(currentYear + 5, currentYear + 35);
-  return rng.weighted([
-    { value: rng.int(1950, 1999), weight: 3 },
-    { value: currentYear, weight: 5 },
-    { value: rng.int(currentYear + 5, currentYear + 35), weight: 2 },
-  ]).value;
+  if (ERA_BY_ID[era]?.startYear !== null) {
+    const { startYear, endYear } = ERA_BY_ID[era];
+    return rng.int(startYear, Math.min(endYear, currentYear));
+  }
+
+  const weightedBuckets = ERA_OPTIONS
+    .filter((item) => item.id !== 'random')
+    .filter((item) => item.id === 'future' || item.startYear <= currentYear)
+    .map((item) => ({
+      value: item,
+      weight: item.id === 'future' ? 2 : Math.max(1, 6 - Math.floor((currentYear - item.startYear) / 20)),
+    }));
+  const picked = rng.weighted(weightedBuckets).value;
+  if (picked.id === 'future') return rng.int(currentYear + 5, currentYear + 35);
+  return rng.int(picked.startYear, Math.min(picked.endYear, currentYear));
 }
