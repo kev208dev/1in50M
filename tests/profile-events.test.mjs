@@ -42,6 +42,18 @@ test('장애 접근성 사건은 해당 조건이 있을 때만 가중치를 갖
   assert.ok(eventWeight(withDisability, event) > 0);
 });
 
+test('자동 진단 사건은 만성질환과 관리 기록을 남기고 다시 발생하지 않는다', () => {
+  const life = makeLifeAtAge(52, {
+    stats: { health: 55 },
+    conditions: { chronic: [], losses: [], care: [] },
+  });
+  const diagnosed = applyEvent(life, 'cardiovascular-diagnosis');
+  assert.deepEqual(diagnosed.conditions.chronic, ['cardiovascular']);
+  assert.deepEqual(diagnosed.conditions.care, ['regular-checkup']);
+  assert.match(diagnosed.history.at(-1).text, /진단/);
+  assert.equal(eventWeight(diagnosed, LIFE_EVENT_BY_ID['cardiovascular-diagnosis']), 0);
+});
+
 test('한 해 진행은 외모 나이를 정확히 한 번 갱신하며 중복 틱은 무시한다', () => {
   const life = makeLifeAtAge(24, {
     focusId: 'health',

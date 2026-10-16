@@ -21,16 +21,22 @@ export function annualMortalityRisk(life, ageOverride) {
 
 export function mortalityProfile(life, age = life?.age) {
   const normalizedAge = Math.max(0, Math.trunc(Number(age) || 0));
+  const birthYear = Number(life?.profile?.birthYear) || Number(life?.year) - Number(life?.age || 0);
+  const sex = life?.profile?.sex?.id;
   const lifeTable = getStatistic('lifeExpectancy', {
-    year: life?.year,
-    sex: life?.profile?.sex?.id,
+    year: birthYear,
+    sex,
   });
+  const referenceTable = getStatistic('lifeExpectancy', { year: 9999, sex });
+  const expectancyScale = lifeTable.value && referenceTable.value
+    ? clamp((referenceTable.value / lifeTable.value) ** 2, 0.7, 1.8)
+    : 1;
   const health = clamp(Number(life?.stats?.health ?? 60), 0, 100);
   const conditionCount = (life?.conditions?.chronic ?? []).length;
   const healthScale = Math.max(0.35, 1 + ((50 - health) / 55) + conditionCount * 0.18);
   const specific = causeSpecificRisks(life, normalizedAge);
   const annualRisk = clamp(
-    baselineRisk(normalizedAge) * healthScale + specific.selfHarm + specific.caffeineCardiac,
+    baselineRisk(normalizedAge) * healthScale * expectancyScale + specific.selfHarm + specific.caffeineCardiac,
     0.00001,
     1,
   );
@@ -39,6 +45,8 @@ export function mortalityProfile(life, age = life?.age) {
     sourceYear: lifeTable.year,
     sourceKey: lifeTable.sourceKey,
     kind: lifeTable.kind,
+    lifeExpectancy: lifeTable.value,
+    expectancyScale: Number(expectancyScale.toFixed(4)),
   };
 }
 

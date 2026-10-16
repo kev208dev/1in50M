@@ -34,7 +34,8 @@ function availability(life, choice) {
   if (financialModel?.availableFromYear && life.year < financialModel.availableFromYear) {
     return { enabled: false, reason: `${financialModel.availableFromYear}년부터 선택할 수 있습니다.` };
   }
-  const requiredCash = Math.max(choice.minimumCash ?? 0, choice.cost ?? 0);
+  const immediateSpend = Math.max(0, -(Number(choice.economyEffects?.cash) || 0));
+  const requiredCash = Math.max(choice.minimumCash ?? 0, choice.cost ?? 0, immediateSpend);
   const availableMoney = choice.payer === 'household' && life.age < 18
     ? life.economy.householdSupport
     : life.economy.cash;
@@ -113,6 +114,8 @@ export function applyDecision(life, decisionId, choiceId) {
     if (key === 'debt') {
       economy.otherDebt = Math.max(0, economy.otherDebt + (Number(value) || 0));
       economy.debt = economy.housingDebt + economy.otherDebt;
+    } else if (key === 'fixedCosts') {
+      economy.recurringCosts = Math.max(0, economy.recurringCosts + (Number(value) || 0));
     } else if (key in economy) economy[key] += Number(value) || 0;
   }
 

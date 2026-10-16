@@ -265,6 +265,27 @@ export const PROFILE_EVENTS = [
     text: '진료와 운동, 식사를 무리 없이 이어갈 건강 관리 리듬을 만들었습니다.',
   },
   {
+    id: 'cardiovascular-diagnosis', stage: 'midlife', conditionStage: 'midlife', ageRange: [40, 74], weight: 0.55,
+    cooldownYears: 40, tags: ['health', 'diagnosis'],
+    when: (life) => !(life?.conditions?.chronic ?? []).includes('cardiovascular')
+      && (life?.stats?.health ?? 100) <= 72,
+    weightFor: (life) => 1 + Math.max(0, 65 - (life?.stats?.health ?? 65)) / 30,
+    effects: { health: -2, happiness: -1 },
+    conditionEffects: { chronic: ['cardiovascular'], care: ['regular-checkup'] },
+    milestone: true,
+    text: '정기검진에서 심혈관 질환을 진단받아 약과 생활 관리를 시작했습니다.',
+  },
+  {
+    id: 'respiratory-diagnosis', stage: 'senior', conditionStage: 'senior', ageRange: [60, 86], weight: 0.4,
+    cooldownYears: 35, tags: ['health', 'diagnosis'],
+    when: (life) => !(life?.conditions?.chronic ?? []).includes('respiratory')
+      && (life?.stats?.health ?? 100) <= 60,
+    effects: { health: -3, happiness: -1 },
+    conditionEffects: { chronic: ['respiratory'], care: ['respiratory-treatment'] },
+    milestone: true,
+    text: '호흡기 질환 진단을 받고 정기 진료와 활동량 조절을 시작했습니다.',
+  },
+  {
     id: 'inheritance-conflict', stage: 'senior', conditionStage: 'senior', ageRange: [65, 90], weight: 0.5,
     cooldownYears: 9, tags: ['family', 'economy'],
     weightFor: (life) => (life?.relationships?.family?.length ?? 0) > 1 ? 1.3 : 0.5,

@@ -83,6 +83,11 @@ test('모바일 생애 화면도 페이지 자체는 고정하고 선택 패널�
   assert.match(css, /@media \(max-width: 959px\)[\s\S]*\.life-layout[^}]*overflow:\s*hidden/);
 });
 
+test('360px 모바일 생애 그리드는 탭을 위한 별도 행을 보존한다', () => {
+  assert.match(css, /@media \(max-width: 560px\)[\s\S]*?grid-template-rows: auto auto auto minmax\(0, 1fr\) auto/);
+  assert.match(css, /body\[data-view="life"\] \.life-panel-tabs \{ min-height: 42px; \}/);
+});
+
 test('돈 요약·투자 메뉴·복권 방송·하단 시스템 메시지 UI가 존재한다', () => {
   for (const id of ['money-hud', 'finance-menu-button', 'finance-dialog', 'lottery-broadcast-button', 'system-feed']) {
     assert.match(html, new RegExp(`id=["']${id}["']`));

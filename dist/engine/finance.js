@@ -118,7 +118,7 @@ export function applyFinancialAction(life, action = {}) {
     const addedVehicleValue = money(action.vehicleValue);
     current.economy.vehicleValue = money(current.economy.vehicleValue) + addedVehicleValue;
     otherDebt += money(action.debt);
-    current.economy.fixedCosts = money(current.economy.fixedCosts) + money(action.monthlyCost);
+    current.economy.recurringCosts = money(current.economy.recurringCosts) + money(action.monthlyCost);
     details = { vehicleValue: addedVehicleValue, borrowed: money(action.debt), monthlyCost: money(action.monthlyCost) };
   } else {
     throw new RangeError('알 수 없는 금융 행동입니다.');

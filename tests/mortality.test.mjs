@@ -23,6 +23,16 @@ test('사망 위험 프로필에는 생명표 출처와 건강 보정이 함께 
   assert.ok(profile.annualRisk > 0);
   assert.ok(profile.sourceYear);
   assert.ok(profile.sourceKey);
+  assert.ok(profile.lifeExpectancy);
+});
+
+test('같은 나이와 건강이라도 기대수명이 짧았던 출생 코호트는 위험이 더 높다', () => {
+  const olderCohort = makeLifeAtAge(60, { year: 2045, profile: { birthYear: 1985, sex: { id: 'male', label: '남성' } } });
+  const recentCohort = makeLifeAtAge(60, { year: 2084, profile: { birthYear: 2024, sex: { id: 'male', label: '남성' } } });
+  const olderProfile = mortalityProfile(olderCohort);
+  const recentProfile = mortalityProfile(recentCohort);
+  assert.ok(olderProfile.lifeExpectancy < recentProfile.lifeExpectancy);
+  assert.ok(olderProfile.annualRisk > recentProfile.annualRisk);
 });
 
 test('건강한 69세에게 선행 조건 없는 노환 사망을 붙이지 않는다', () => {

@@ -57,11 +57,18 @@ export function applyEvent(life, eventId) {
     if (appearance.faceShape) appearance.description = describeAppearance(appearance);
     profile = { ...current.profile, appearance };
   }
+  const conditions = structuredClone(current.conditions);
+  for (const key of ['chronic', 'losses', 'care']) {
+    if (event.conditionEffects?.[key]) {
+      conditions[key] = [...new Set([...conditions[key], ...event.conditionEffects[key].map(String)])];
+    }
+  }
   const next = {
     ...current,
     profile,
     stats,
     economy,
+    conditions,
     recentEventIds: [...current.recentEventIds, event.id].slice(-10),
     milestones: event.milestone
       ? [...current.milestones, { age: current.age, type: 'event', label: event.text }]

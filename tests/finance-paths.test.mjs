@@ -173,5 +173,17 @@ test('가상자산 거래는 도파민을 올리고 자동차는 자산과 유�
   const car = applyFinancialAction(crypto, { type: 'vehicle', amount: 10000000, vehicleValue: 18000000, debt: 8000000, monthlyCost: 350000 });
   assert.equal(car.economy.vehicleValue, 18000000);
   assert.ok(car.economy.otherDebt >= 8000000);
-  assert.ok(car.economy.fixedCosts >= 350000);
+  assert.equal(car.economy.recurringCosts, 350000);
+  const afterYear = calculateAnnualEconomy(car);
+  assert.equal(afterYear.economy.fixedCosts, 1850000);
+});
+
+test('현금 지출형 선택은 필요한 자금이 없으면 잠긴다', () => {
+  const life = makeLifeAtAge(55, {
+    economy: { cash: 1000000 },
+    relationships: { children: [{ id: 'child', name: '자녀', since: 30 }] },
+  });
+  const support = getChoices(life, 'family-support-vs-retirement').find((choice) => choice.id === 'large-support');
+  assert.equal(support.enabled, false);
+  assert.match(support.reason, /20,000,000원/);
 });

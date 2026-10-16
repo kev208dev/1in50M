@@ -1380,6 +1380,15 @@ body[data-view="life"] .life-view { max-height: 100%; overflow: auto; }
 
 @media (max-width: 560px) {
   body[data-view="life"] main { height: 100dvh; }
+  body[data-view="life"] .life-view {
+    display: grid;
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+    height: 100%;
+    max-height: 100%;
+    padding-bottom: 0;
+    overflow: hidden;
+  }
+  body[data-view="life"] .life-panel-tabs { min-height: 42px; }
   .intro-quote { top: 15%; font-size: clamp(19px, 5.65vw, 27px); }
   .intro-quote-ko { margin-top: 20px !important; }
   .intro-utility-panel .birth-settings { grid-template-columns: 1fr; }
