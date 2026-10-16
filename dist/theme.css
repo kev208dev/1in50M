@@ -1128,3 +1128,298 @@ body[data-view="profile"] .slot-view {
   box-shadow: none;
 }
 #slot-accept-button.figma-birth-button:hover:not(:disabled) { background: transparent; }
+
+/* Viewport contract: only the chronological system-message rail scrolls. */
+.view { overflow: hidden; }
+.view,
+body[data-view="life"] .life-view,
+.life-layout > .life-story,
+.life-layout > .life-sidebar,
+.life-log,
+.birth-facts,
+.intro-facts,
+.playback-controls,
+.life-toolbar,
+.decision-card,
+.decision-choices,
+.career-groups,
+.finance-card,
+.cohort-preview-panel,
+.intro-utility-panel,
+.profile-details-drawer .birth-context-panel,
+.network-detail {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+.log-section .life-log,
+.life-layout > .life-story,
+.life-layout > .life-sidebar,
+.life-timeline-bar .playback-controls,
+.slot-detail-mobile,
+.finance-card,
+.network-detail,
+.decision-card,
+.decision-choices,
+.career-groups { overflow: hidden !important; }
+
+.system-feed {
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.life-timeline-bar .playback-controls,
+.result-epitaph textarea { overflow: hidden; }
+
+/* Sources follow the report: secondary, but continuously readable at WCAG AA contrast. */
+.source-readable,
+.log-source.source-readable,
+.decision-source.source-readable,
+.identity-source.source-readable,
+.event-source.source-readable,
+.investment-notice.source-readable {
+  color: #8a8a8a;
+  font-size: 11px;
+  line-height: 1.45;
+  opacity: 1;
+}
+.source-readable:hover,
+.source-readable:focus-visible { color: #fff; opacity: 1; }
+
+/* Figma Desktop - 1: exact 1440 × 1024 source coordinates. */
+.intro-stage .intro-quote { top: 229px; left: 204px; width: 1087px; height: 565px; font-size: 48px; line-height: 1.45; }
+.intro-stage .intro-quote-ko { margin-top: 44px !important; }
+.intro-stage .intro-quote cite { top: 436px; left: 732px; width: 263px; font-size: 48px; }
+.intro-stage .intro-continue { top: 900px; left: 416px; width: 607px; height: 52px; font-size: 36px; }
+
+/* Long menus use explicit pages rather than hidden internal scrolling. */
+.career-groups { grid-template-rows: minmax(0, 1fr) auto; max-height: none; padding: 0; }
+.career-pager,
+.finance-page-tabs,
+.result-page-tabs,
+.decision-pager,
+.collection-pager,
+.money-page-tabs { display: grid; gap: 8px; }
+.career-pager { grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 12px; }
+.career-pager button,
+.finance-page-tabs button,
+.result-page-tabs button,
+.decision-pager button,
+.collection-pager button,
+.money-page-tabs button { min-height: 38px; padding: 0 12px; border: 1px solid var(--line); color: var(--ink-muted); background: transparent; cursor: pointer; }
+.career-pager button:last-child { justify-self: end; }
+.career-pager span { color: var(--ink-muted); font: 10px var(--font-mono); text-align: center; }
+.career-pager button:disabled { opacity: .3; }
+.finance-page-tabs { grid-template-columns: repeat(5, minmax(0, 1fr)); margin-bottom: 12px; }
+.finance-page-tabs button[aria-pressed="true"],
+.result-page-tabs button[aria-pressed="true"],
+.money-page-tabs button[aria-pressed="true"] { color: #000; border-color: var(--accent); background: var(--accent); }
+.decision-pager,
+.collection-pager { grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 8px; }
+.decision-pager button:last-child,
+.collection-pager button:last-child { justify-self: end; }
+.decision-pager span,
+.collection-pager span { color: var(--ink-muted); font: 10px var(--font-mono); }
+.decision-pager[hidden],
+.decision-choice[hidden],
+[data-money-section][hidden] { display: none !important; }
+[data-source-item][hidden] { display: none !important; }
+.collection-pager { grid-column: 1 / -1; width: 100%; }
+.money-page-tabs { grid-template-columns: 1fr 1fr; padding-top: 8px !important; padding-bottom: 4px !important; }
+.money-page-tabs button { min-height: 30px; padding: 0 6px; font-size: 10px; }
+.finance-grid { display: block; }
+.finance-experience { min-height: min(42vh, 380px); }
+.real-estate-experience { display: grid; }
+.finance-experience[hidden] { display: none; }
+
+.result-view { padding-block: clamp(14px, 2vh, 24px); }
+.result-layout { height: 100%; min-height: 0; align-items: stretch; }
+.result-hero { position: static; align-content: center; min-height: 0; }
+.result-main { grid-template-rows: auto minmax(0, 1fr) auto; align-content: start; min-height: 0; overflow: hidden; }
+.result-page-tabs { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.result-main > .result-death,
+.result-main > .result-summary,
+.result-main > .result-row,
+.result-main > .result-curve,
+.result-main > .result-review-grid,
+.result-main > .result-cohort,
+.result-main > .result-epitaph { display: none; }
+.result-view[data-result-page="summary"] .result-death { display: flex; }
+.result-view[data-result-page="summary"] .result-summary { display: grid; }
+.result-view[data-result-page="summary"] .result-row { display: grid; }
+.result-view[data-result-page="curve"] .result-curve { display: block; }
+.result-view[data-result-page="status"] .result-review-grid,
+.result-view[data-result-page="influence"] .result-review-grid { display: grid; grid-template-columns: 1fr; }
+.result-view[data-result-page="status"] .result-review-grid > :nth-child(2),
+.result-view[data-result-page="influence"] .result-review-grid > :nth-child(1) { display: none; }
+.result-view[data-result-page="records"] .result-cohort,
+.result-view[data-result-page="records"] .result-epitaph { display: block; }
+.result-view[data-result-page="curve"] .result-curve { align-self: center; }
+.result-view .result-notice,
+.result-view .result-actions { align-self: end; }
+
+.decision-dialog { overflow: hidden; }
+.decision-card { display: grid; align-content: center; max-height: calc(100dvh - 32px); }
+.decision-choices { max-height: none; }
+.decision-choice { min-height: 64px; padding-block: 10px; }
+
+@media (min-width: 960px) {
+  .life-profile-card { grid-template-columns: 86px minmax(0, 1fr); align-items: center; gap: 10px; margin-bottom: 8px; padding: 10px 12px; }
+  .life-profile-card .life-portrait { width: 86px; height: 112px; }
+  .life-panel summary { padding: 11px 14px; font-size: 13px; }
+  .life-panel .panel-body { padding-inline: 14px; }
+  .life-sidebar-left .life-panel[open] { max-height: calc(100% - 282px); overflow: hidden; }
+}
+
+@media (max-width: 959px) {
+  .intro-stage .intro-quote {
+    top: 15%;
+    left: 22px;
+    width: calc(100% - 44px);
+    height: auto;
+    font-size: clamp(18px, 5.2vw, 28px);
+    line-height: 1.48;
+  }
+  .intro-stage .intro-quote-en { white-space: normal; }
+  .intro-stage .intro-quote-ko { margin-top: clamp(18px, 3vh, 34px) !important; }
+  .intro-stage .intro-quote cite { position: static; display: block; width: auto; margin-top: 10px; font-size: .78em; text-align: right; }
+  .intro-stage .intro-continue { top: auto; bottom: calc(22px + env(safe-area-inset-bottom)); left: 22px; width: calc(100% - 44px); height: 44px; font-size: clamp(13px, 4vw, 21px); }
+
+  body:not([data-view="title"]):not([data-view="profile"]):not([data-view="life"]) main { height: calc(100dvh - 80px); }
+  body:not([data-view="title"]):not([data-view="profile"]):not([data-view="life"]) .view { height: 100%; min-height: 0; padding: 16px var(--page-pad); }
+  .intro-view { grid-template-columns: minmax(0, 1fr) minmax(150px, .7fr); grid-template-rows: minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+  .intro-copy h1 { font-size: clamp(28px, 7vw, 44px); }
+  .intro-lead { margin: 12px 0; font-size: 12px; line-height: 1.55; }
+  .birth-settings { grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 0 10px; }
+  .birth-settings .setting-toggle { min-height: 32px; }
+  .hero-button { min-height: 44px; }
+  .intro-map { width: min(100%, 260px); height: min(38vh, 300px); }
+  .intro-facts { grid-column: 1 / -1; }
+  .intro-facts div { min-width: 0; flex: 1; padding: 8px; margin: 0; }
+  .intro-facts strong { font-size: 16px; }
+
+  .decision-card { gap: 6px; padding: 18px; }
+  .decision-card h2 { font-size: clamp(26px, 7vw, 40px); }
+  .decision-prompt { margin: 8px 0 12px; font-size: 12px; line-height: 1.45; }
+  .decision-choice { min-height: 52px; padding: 7px 10px; }
+  .decision-pager button { min-height: 34px; }
+  .decision-copy small, .decision-tags { font-size: 9px; }
+  .career-dialog .decision-card { grid-template-rows: auto auto auto minmax(0, 1fr); }
+  .career-list { grid-template-columns: 1fr 1fr; }
+  .career-option { min-height: 52px; padding: 8px; font-size: 11px; }
+
+  .finance-card { display: grid; grid-template-rows: auto auto auto auto minmax(0, 1fr) auto; }
+  .finance-card h2 { font-size: clamp(24px, 6vw, 34px); }
+  .finance-feedback { margin-bottom: 8px; padding: 8px; font-size: 11px; }
+  .finance-page-tabs { gap: 3px; margin-bottom: 6px; }
+  .finance-page-tabs button { min-height: 34px; padding: 0 4px; font-size: 9px; }
+  .finance-experience { min-height: 0; height: 100%; padding: 12px; }
+  .finance-experience p { min-height: 0; margin-bottom: 8px; }
+  .real-estate-experience { grid-template-columns: minmax(0, 1fr) minmax(150px, .8fr); column-gap: 10px; }
+  .investment-korea-map { height: min(34vh, 260px); }
+
+  .result-layout { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); gap: 10px; }
+  .result-hero { grid-template-columns: auto 1fr; grid-template-rows: auto auto; gap: 4px 12px; }
+  .result-portrait, .result-timeline-link { display: none; }
+  .result-badge { align-self: end; font-size: 10px; }
+  .result-view h1 { align-self: end; font-size: clamp(28px, 8vw, 42px); }
+  .result-view h1 small { font-size: 11px; }
+  .result-narrative { grid-column: 1 / -1; display: -webkit-box; margin: 0; overflow: hidden; font-size: 11px; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .result-main { gap: 8px; }
+  .result-page-tabs { gap: 3px; }
+  .result-page-tabs button { min-height: 34px; padding: 0 3px; font-size: 9px; }
+  .result-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .result-summary > div { gap: 4px; padding: 9px; border-radius: 10px; }
+  .result-summary dd { font-size: 15px; }
+  .result-summary dt, .result-summary small { font-size: 9px; }
+  .result-row { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .result-highlight-card, .result-position, .result-curve { padding: 10px; border-radius: 10px; }
+  .result-row h2, .result-curve h2, .result-review-grid h2 { margin-bottom: 6px; font-size: 13px; }
+  .result-highlight-card { gap: 5px; }
+  .result-highlight-card strong { font-size: 15px; }
+  .result-position > p { display: none; }
+  .result-position-rows { gap: 5px; }
+  .result-curve-chart { height: min(25vh, 150px); }
+  .result-turning-points { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+  .result-point strong { font-size: 9px; }
+  .result-review-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .result-cohort { margin-top: 0; }
+  .result-cohort .cohort-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+  .result-cohort .cohort-card { padding: 7px; }
+  .result-cohort .cohort-card p { display: -webkit-box; margin: 3px 0; overflow: hidden; font-size: 9px; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
+  .result-epitaph { margin-top: 0; padding: 8px; }
+  .result-epitaph textarea { min-height: 44px; }
+  .result-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; overflow: hidden; }
+  .result-actions button { min-width: 0; min-height: 34px; padding: 0 4px; overflow: hidden; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+  .result-notice { display: none; }
+
+  .life-view[data-mobile-panel="status"] .life-story,
+  .life-view[data-mobile-panel="details"] .life-story { display: none; }
+  .life-sidebar { align-content: start; gap: 8px; }
+  .life-profile-card { grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 10px; min-height: 0; margin-bottom: 0; padding: 8px 12px; }
+  .life-profile-card .life-portrait { width: 72px; height: 86px; }
+  .life-profile-card .life-identity { min-width: 0; }
+  .life-panel summary { min-height: 40px; padding: 9px 12px; font-size: 12px; }
+  .life-sidebar .life-panel[open] { max-height: 230px; overflow: hidden; }
+  .life-sidebar #money-panel[open] { max-height: 270px; }
+  #money-panel .metric-list { grid-template-columns: 1fr 1fr; gap: 3px 8px; }
+  #money-panel .metric-list > div,
+  #money-panel .asset-row { min-height: 24px; padding-block: 2px; }
+  .life-sidebar .life-panel .panel-body { padding-inline: 12px; }
+
+  .life-timeline-bar { max-height: 150px; gap: 4px; padding: 6px 10px calc(6px + env(safe-area-inset-bottom)); }
+  .life-timeline-bar .map-section { height: 22px; }
+  .life-timeline-bar .life-character-track { height: 22px; }
+  .life-timeline-bar .life-character { bottom: 1px; width: 18px; height: 22px; }
+  .system-feed-shell { max-height: 38px; padding-bottom: 0; }
+  .system-feed { height: 32px; max-height: 32px; }
+  .system-feed-item { flex-basis: min(330px, 86vw); padding-block: 5px; }
+  .playback-controls { min-height: 44px; padding: 0; }
+  .play-button { width: 42px; height: 42px; }
+  .speed-controls button { min-width: 30px; min-height: 30px; font-size: 10px; }
+}
+
+@media (max-width: 560px) {
+  .intro-stage .intro-quote { top: 13%; font-size: clamp(17px, 5vw, 24px); }
+  .intro-stage .intro-quote-ko { margin-top: 14px !important; }
+  .intro-view { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
+  .intro-map { position: absolute; right: 8px; bottom: 52px; width: 120px; height: 150px; opacity: .38; pointer-events: none; }
+  .birth-settings { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .birth-settings label:nth-of-type(3) { grid-column: 1 / -1; }
+  .intro-copy { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; align-self: start; }
+  .intro-copy > h1,
+  .intro-copy > .intro-lead,
+  .intro-copy > .birth-settings,
+  .intro-copy > .hero-button,
+  .intro-copy > .continue-button { grid-column: 1 / -1; }
+  .intro-copy .hero-button,
+  .intro-copy .continue-button { width: 100%; min-width: 0; margin-top: 0; }
+  .intro-archive-button { display: inline-flex; min-height: 32px; margin: 0; align-items: center; justify-content: center; padding: 0 4px; font-size: 9px; }
+  .intro-network-actions { display: flex; grid-column: 2 / -1; width: 100%; gap: 3px; }
+  .intro-network-actions .text-button { min-height: 32px; padding: 0 4px; font-size: 9px; }
+  .intro-map figcaption, .disclaimer { display: none; }
+  .career-list { grid-template-columns: 1fr; }
+  .career-option { min-height: 44px; }
+  .career-pager button { padding: 0 5px; font-size: 9px; }
+  .real-estate-experience { grid-template-columns: 1fr; }
+  .real-estate-experience h3, .real-estate-experience > p, .property-choice { grid-column: 1; }
+  .investment-korea-map { grid-column: 1; grid-row: auto; height: min(28vh, 210px); }
+  .result-row { grid-template-columns: 1fr; }
+  .result-view[data-result-page="summary"] .result-position { display: none; }
+  .result-view[data-result-page="influence"] .result-row { display: grid; }
+  .result-view[data-result-page="influence"] .result-highlight { display: none; }
+  .result-view[data-result-page="influence"] .result-position { display: block; }
+  .result-review-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-height: 520px) {
+  .source-card { gap: 4px; padding: 10px 14px; }
+  .source-card h2 { font-size: 20px; }
+  .source-card .decision-prompt { margin: 2px 0 4px; font-size: 10px; line-height: 1.35; }
+  .source-list { margin-bottom: 0; }
+  .source-list li { gap: 8px; padding: 6px 0; }
+  .source-list strong { font-size: 12px; }
+  .source-list span { display: -webkit-box; overflow: hidden; font-size: 10px; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
+  .source-tag { flex: 0 0 auto; font-size: 9px; }
+  .source-pager { margin-top: 2px; }
+  .source-pager button, .source-ok { min-height: 30px; }
+}

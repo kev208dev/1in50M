@@ -252,7 +252,7 @@ export function renderLife(root, life) {
       const item = makeNode(root, 'article', 'log-entry');
       item.append(makeNode(root, 'span', 'log-age', formatAge(entry.age)), makeNode(root, 'p', '', entry.text));
       if (entry.sourceLabel) {
-        const source = makeNode(root, entry.sourceUrl ? 'a' : 'span', 'log-source');
+        const source = makeNode(root, entry.sourceUrl ? 'a' : 'span', 'log-source source-readable');
         source.textContent = `${entry.projection ? '전망 시나리오 · ' : ''}${entry.sourceLabel}`;
         if (entry.sourceUrl) {
           source.href = entry.sourceUrl;
@@ -362,6 +362,7 @@ export function renderDecision(
     const button = makeNode(dialog, 'button', 'decision-choice');
     button.type = 'button';
     button.dataset.choiceId = choice.id;
+    button.dataset.choiceIndex = String(index);
     button.disabled = !choice.enabled;
     if (!choice.enabled) button.dataset.state = 'locked';
     const top = makeNode(dialog, 'span', 'choice-top');
@@ -461,14 +462,17 @@ export function renderNetworkState(root, state, { memorial = false } = {}) {
   root.replaceChildren(box);
 }
 
-export function renderPublicLives(root, lives = [], { memorial = false } = {}) {
+export function renderPublicLives(root, lives = [], { memorial = false, page = 0, pageSize = 6 } = {}) {
   if (!root) return [];
-  const visible = filterPublicLives(lives, { memorial }).slice(0, memorial ? 20 : 12);
+  const all = filterPublicLives(lives, { memorial }).slice(0, memorial ? 20 : 12);
+  const pages = Math.max(1, Math.ceil(all.length / pageSize));
+  const currentPage = Math.max(0, Math.min(page, pages - 1));
+  const visible = all.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
   if (visible.length === 0) {
     renderNetworkState(root, 'empty', { memorial });
     return visible;
   }
-  root.replaceChildren(...visible.map((life) => {
+  const cards = visible.map((life) => {
     const article = makeNode(root, 'article', 'public-life-card');
     article.dataset.publicLife = life.id;
     const open = makeNode(root, 'button', 'public-life-open');
@@ -498,7 +502,23 @@ export function renderPublicLives(root, lives = [], { memorial = false } = {}) {
       article.append(hideButton);
     }
     return article;
-  }));
+  });
+  if (pages > 1) {
+    const pager = makeNode(root, 'nav', 'collection-pager');
+    pager.setAttribute('aria-label', memorial ? '추모 기록 페이지' : '공개된 삶 페이지');
+    const previous = makeNode(root, 'button', '', '← 이전');
+    previous.type = 'button';
+    previous.dataset.networkPage = 'previous';
+    previous.disabled = currentPage === 0;
+    const status = makeNode(root, 'span', '', `${currentPage + 1} / ${pages}`);
+    const next = makeNode(root, 'button', '', '다음 →');
+    next.type = 'button';
+    next.dataset.networkPage = 'next';
+    next.disabled = currentPage === pages - 1;
+    pager.append(previous, status, next);
+    cards.push(pager);
+  }
+  root.replaceChildren(...cards);
   return visible;
 }
 

@@ -87,6 +87,17 @@ let lastCompletedSummary = null;
 let selectedPropertyRegion = null;
 let resumeAfterFinance = false;
 let resumeAfterSource = false;
+let careerGroupPage = 0;
+let decisionChoicePage = 0;
+let pastLivesPage = 0;
+let sourcePage = 0;
+const networkPages = { community: 0, memorial: 0 };
+
+function collectionPageSize() {
+  if (window.innerHeight < 520) return 1;
+  if (window.innerHeight < 760 || window.innerWidth < 600) return 2;
+  return 6;
+}
 
 function syncFigmaStageScale() {
   document.documentElement.style.setProperty('--figma-stage-scale', String(fitFigmaStage(window.innerWidth, window.innerHeight)));
@@ -104,9 +115,12 @@ function setBirthMapMode(mode) {
 let publicLivesById = new Map();
 
 function renderNetworkLists(lives) {
+  const pageSize = collectionPageSize();
+  networkPages.community = Math.min(networkPages.community, Math.max(0, Math.ceil(Math.min(lives.length, 12) / pageSize) - 1));
+  networkPages.memorial = Math.min(networkPages.memorial, Math.max(0, Math.ceil(Math.min(lives.filter((life) => life.age < 90).length, 20) / pageSize) - 1));
   publicLivesById = new Map(lives.map((life) => [life.id, life]));
-  renderPublicLives(document.querySelector('[data-community-list]'), lives);
-  renderPublicLives(document.querySelector('[data-memorial-list]'), lives, { memorial: true });
+  renderPublicLives(document.querySelector('[data-community-list]'), lives, { page: networkPages.community, pageSize });
+  renderPublicLives(document.querySelector('[data-memorial-list]'), lives, { memorial: true, page: networkPages.memorial, pageSize });
   document.querySelectorAll('[data-network-count="community"]').forEach((node) => { node.textContent = String(lives.length); });
   document.querySelectorAll('[data-network-count="memorial"]').forEach((node) => { node.textContent = String(lives.filter((life) => life.age < 90).length); });
   document.querySelectorAll('[data-network-detail]').forEach((panel) => renderPublicLifeDetail(panel, null));
@@ -340,12 +354,62 @@ function updateFinanceDialog(life = controller?.getState()) {
   if (broadcast) broadcast.disabled = !pendingDraw;
 }
 
+function setFinancePage(page = 'stock') {
+  financeDialog.querySelectorAll('[data-finance-page]').forEach((button) => {
+    button.setAttribute('aria-pressed', String(button.dataset.financePage === page));
+  });
+  financeDialog.querySelectorAll('[data-finance-section]').forEach((section) => {
+    section.hidden = section.dataset.financeSection !== page;
+  });
+}
+
+function setResultPage(page = 'summary') {
+  views.result.dataset.resultPage = page;
+  views.result.querySelectorAll('[data-result-page-target]').forEach((button) => {
+    button.setAttribute('aria-pressed', String(button.dataset.resultPageTarget === page));
+  });
+}
+
+function setMoneyPage(page = 'flow') {
+  const panel = document.querySelector('#money-panel');
+  panel.querySelectorAll('[data-money-page]').forEach((button) => {
+    button.setAttribute('aria-pressed', String(button.dataset.moneyPage === page));
+  });
+  panel.querySelectorAll('[data-money-section]').forEach((section) => {
+    section.hidden = section.dataset.moneySection !== page;
+  });
+}
+
+function setDecisionChoicePage(page = 0) {
+  const choices = [...decisionDialog.querySelectorAll('[data-choice-index]')];
+  const pageSize = 2;
+  const pageCount = Math.max(1, Math.ceil(choices.length / pageSize));
+  decisionChoicePage = Math.max(0, Math.min(page, pageCount - 1));
+  choices.forEach((choice, index) => { choice.hidden = Math.floor(index / pageSize) !== decisionChoicePage; });
+  const pager = decisionDialog.querySelector('[data-decision="pager"]');
+  pager.hidden = pageCount <= 1;
+  pager.querySelector('[data-decision="page-status"]').textContent = `${decisionChoicePage + 1} / ${pageCount}`;
+  pager.querySelector('[data-decision-page="previous"]').disabled = decisionChoicePage === 0;
+  pager.querySelector('[data-decision-page="next"]').disabled = decisionChoicePage === pageCount - 1;
+}
+
+function setSourcePage(page = 0) {
+  const items = [...sourceDialog.querySelectorAll('[data-source-item]')];
+  const pageCount = Math.ceil(items.length / 2);
+  sourcePage = Math.max(0, Math.min(page, pageCount - 1));
+  items.forEach((item, index) => { item.hidden = Math.floor(index / 2) !== sourcePage; });
+  sourceDialog.querySelector('[data-source-page-status]').textContent = `${sourcePage + 1} / ${pageCount}`;
+  sourceDialog.querySelector('[data-source-page="previous"]').disabled = sourcePage === 0;
+  sourceDialog.querySelector('[data-source-page="next"]').disabled = sourcePage === pageCount - 1;
+}
+
 function openFinanceMenu() {
   if (!controller || financeDialog.open) return;
   resumeAfterFinance = controller.isPlaying();
   controller.pause();
   updatePlayback();
   updateFinanceDialog();
+  setFinancePage('stock');
   lastFocused = document.activeElement;
   main.inert = true;
   financeDialog.showModal();
@@ -395,6 +459,7 @@ function openDecision(decision, life) {
   if (!decision || decisionDialog.open) return;
   lastFocused = document.activeElement;
   renderDecision(decisionDialog, decision, getChoices(life, decision.id), life.age);
+  setDecisionChoicePage(0);
   main.inert = true;
   decisionDialog.showModal();
   document.querySelector('#decision-title').focus();
@@ -438,6 +503,7 @@ function finishLife(life) {
   publishButton.disabled = false;
   publishButton.textContent = '이 삶을 익명 공개';
   renderResult(views.result, lastCompletedSummary, life);
+  setResultPage('summary');
   renderCohort(document.querySelector('#cohort-result'), advanceCohort(life.cohort, life.age), life.age);
   showView('result');
   liveRegion.textContent = `${life.age}세의 생애가 회고 단계에 도착했습니다.`;
@@ -493,7 +559,10 @@ function renderCareerPicker() {
   const offers = controller.getCareerOffers(100);
   const byId = new Map(offers.map((offer) => [offer.career.id, offer]));
   const container = document.querySelector('#career-groups');
-  container.replaceChildren(...CAREER_GROUPS.map((group) => {
+  const index = Math.max(0, Math.min(careerGroupPage, CAREER_GROUPS.length - 1));
+  careerGroupPage = index;
+  const group = CAREER_GROUPS[index];
+  const section = (() => {
     const section = document.createElement('section');
     section.className = 'career-group';
     const title = document.createElement('h3');
@@ -520,7 +589,24 @@ function renderCareerPicker() {
     }));
     section.append(title, list);
     return section;
-  }));
+  })();
+  const pager = document.createElement('nav');
+  pager.className = 'career-pager';
+  pager.setAttribute('aria-label', '직업군 페이지');
+  const previous = document.createElement('button');
+  previous.type = 'button';
+  previous.dataset.careerPage = 'previous';
+  previous.textContent = '← 이전 직업군';
+  previous.disabled = index === 0;
+  const status = document.createElement('span');
+  status.textContent = `${index + 1} / ${CAREER_GROUPS.length} · ${group.label}`;
+  const next = document.createElement('button');
+  next.type = 'button';
+  next.dataset.careerPage = 'next';
+  next.textContent = '다음 직업군 →';
+  next.disabled = index === CAREER_GROUPS.length - 1;
+  pager.append(previous, status, next);
+  container.replaceChildren(section, pager);
 }
 
 function openCareerPicker() {
@@ -528,6 +614,7 @@ function openCareerPicker() {
   controller.pause();
   updatePlayback();
   lastFocused = document.activeElement;
+  careerGroupPage = 0;
   renderCareerPicker();
   main.inert = true;
   careerDialog.showModal();
@@ -542,7 +629,10 @@ function showPastLives() {
     empty.textContent = '아직 끝까지 살아본 삶이 없습니다.';
     list.replaceChildren(empty);
   } else {
-    list.replaceChildren(...lives.map((life) => {
+    const pageSize = collectionPageSize();
+    const pageCount = Math.max(1, Math.ceil(lives.length / pageSize));
+    pastLivesPage = Math.max(0, Math.min(pastLivesPage, pageCount - 1));
+    const cards = lives.slice(pastLivesPage * pageSize, (pastLivesPage + 1) * pageSize).map((life) => {
       const article = document.createElement('article');
       article.className = 'past-life-card';
       const kicker = document.createElement('p');
@@ -559,7 +649,15 @@ function showPastLives() {
       remove.textContent = '이 기록 삭제';
       article.append(kicker, title, copy, remove);
       return article;
-    }));
+    });
+    if (pageCount > 1) {
+      const pager = document.createElement('nav');
+      pager.className = 'collection-pager';
+      pager.setAttribute('aria-label', '전생 기록 페이지');
+      pager.innerHTML = `<button type="button" data-past-page="previous" ${pastLivesPage === 0 ? 'disabled' : ''}>← 이전</button><span>${pastLivesPage + 1} / ${pageCount}</span><button type="button" data-past-page="next" ${pastLivesPage === pageCount - 1 ? 'disabled' : ''}>다음 →</button>`;
+      cards.push(pager);
+    }
+    list.replaceChildren(...cards);
   }
   showView('past-lives');
 }
@@ -646,6 +744,11 @@ decisionDialog.querySelector('[data-decision="choices"]').addEventListener('clic
   if (resolution) openAgencyOverride(resolution);
   updatePlayback();
 });
+decisionDialog.querySelector('[data-decision="pager"]').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-decision-page]');
+  if (!button || button.disabled) return;
+  setDecisionChoicePage(decisionChoicePage + (button.dataset.decisionPage === 'next' ? 1 : -1));
+});
 
 agencyDialog.addEventListener('cancel', (event) => event.preventDefault());
 document.querySelector('#agency-continue-button').addEventListener('click', () => {
@@ -690,9 +793,15 @@ document.querySelector('#source-button').addEventListener('click', () => {
   controller?.pause();
   updatePlayback();
   lastFocused = document.activeElement;
+  setSourcePage(0);
   main.inert = true;
   sourceDialog.showModal();
   document.querySelector('#source-title').focus();
+});
+sourceDialog.querySelector('.source-pager').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-source-page]');
+  if (!button || button.disabled) return;
+  setSourcePage(sourcePage + (button.dataset.sourcePage === 'next' ? 1 : -1));
 });
 function closeSourceDialog() {
   unlockBackground(sourceDialog);
@@ -714,6 +823,11 @@ financeDialog.addEventListener('cancel', (event) => {
   closeFinanceMenu();
 });
 financeDialog.addEventListener('click', (event) => {
+  const pageButton = event.target.closest('[data-finance-page]');
+  if (pageButton) {
+    setFinancePage(pageButton.dataset.financePage);
+    return;
+  }
   const button = event.target.closest('[data-finance-action]');
   if (!button || button.disabled) return;
   financeAction(button.dataset.financeAction);
@@ -725,11 +839,42 @@ careerDialog.addEventListener('cancel', (event) => {
   unlockBackground(careerDialog);
 });
 document.querySelector('#career-groups').addEventListener('click', (event) => {
+  const pageButton = event.target.closest('[data-career-page]');
+  if (pageButton && !pageButton.disabled) {
+    careerGroupPage += pageButton.dataset.careerPage === 'next' ? 1 : -1;
+    renderCareerPicker();
+    return;
+  }
   const button = event.target.closest('[data-career-id]');
   if (!button || button.disabled || !controller) return;
   controller.selectCareer(button.dataset.careerId);
   unlockBackground(careerDialog);
   liveRegion.textContent = `${button.querySelector('strong').textContent} 일을 시작했습니다.`;
+});
+
+document.querySelector('.result-page-tabs').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-result-page-target]');
+  if (button) setResultPage(button.dataset.resultPageTarget);
+});
+document.querySelector('.result-timeline-link').addEventListener('click', (event) => {
+  event.preventDefault();
+  setResultPage('curve');
+});
+
+document.querySelector('#money-panel').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-money-page]');
+  if (button) setMoneyPage(button.dataset.moneyPage);
+});
+setMoneyPage('flow');
+
+document.querySelectorAll('.life-sidebar').forEach((sidebar) => {
+  sidebar.addEventListener('toggle', (event) => {
+    const opened = event.target;
+    if (!(opened instanceof HTMLDetailsElement) || !opened.open) return;
+    sidebar.querySelectorAll('details[open]').forEach((details) => {
+      if (details !== opened) details.open = false;
+    });
+  }, true);
 });
 
 document.querySelector('#new-life-button').addEventListener('click', () => {
@@ -771,6 +916,13 @@ document.querySelectorAll('[data-network-tab]').forEach((button) => {
 document.querySelectorAll('.network-view').forEach((view) => {
   view.addEventListener('click', async (event) => {
     const memorial = view.dataset.network === 'memorial';
+    const pageButton = event.target.closest('[data-network-page]');
+    if (pageButton && !pageButton.disabled) {
+      const key = memorial ? 'memorial' : 'community';
+      networkPages[key] += pageButton.dataset.networkPage === 'next' ? 1 : -1;
+      renderNetworkLists([...publicLivesById.values()]);
+      return;
+    }
     const panel = view.querySelector('[data-network-detail]');
     const open = event.target.closest('[data-public-life-open]');
     if (open) {
@@ -836,6 +988,12 @@ document.querySelector('#clear-past-lives-button').addEventListener('click', () 
   showPastLives();
 });
 document.querySelector('#past-lives-list').addEventListener('click', (event) => {
+  const pageButton = event.target.closest('[data-past-page]');
+  if (pageButton && !pageButton.disabled) {
+    pastLivesPage += pageButton.dataset.pastPage === 'next' ? 1 : -1;
+    showPastLives();
+    return;
+  }
   const button = event.target.closest('[data-past-life-id]');
   if (!button) return;
   deletePastLife(storage, button.dataset.pastLifeId);
@@ -863,7 +1021,11 @@ document.querySelector('.brand').addEventListener('click', (event) => {
 });
 
 document.addEventListener('visibilitychange', () => controller?.setVisible(!document.hidden));
-window.addEventListener('resize', syncFigmaStageScale);
+window.addEventListener('resize', () => {
+  syncFigmaStageScale();
+  if (document.body.dataset.view === 'past-lives') showPastLives();
+  if (document.body.dataset.view === 'community' || document.body.dataset.view === 'memorial') renderNetworkLists([...publicLivesById.values()]);
+});
 window.addEventListener('beforeunload', () => {
   if (controller) saveCurrentLife(storage, controller.getState());
   community.destroy();

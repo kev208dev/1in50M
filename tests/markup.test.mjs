@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 const html = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
 const css = await readFile(new URL('../dist/styles.css', import.meta.url), 'utf8');
+const themeCss = await readFile(new URL('../dist/theme.css', import.meta.url), 'utf8');
 const renderSource = await readFile(new URL('../dist/ui/render.js', import.meta.url), 'utf8');
 const appSource = await readFile(new URL('../dist/app.js', import.meta.url), 'utf8');
 
@@ -15,9 +16,21 @@ test('세 화면과 모든 주요 동작이 존재한다', () => {
   assert.doesNotMatch(html, /id=["']same-life-button["']/);
 });
 
-test('인트로는 터치와 키보드 모두를 안내한다', () => {
-  assert.doesNotMatch(html, /PRESS ANY KEY/);
-  assert.match(html, /화면을 눌러 시작/);
+test('시작 화면은 Figma Desktop - 1의 원문과 조작 안내를 그대로 사용한다', () => {
+  assert.match(html, /If you are born poor its not your mistake/);
+  assert.match(html, /But if you die poor its your mistake/);
+  assert.match(html, /태어날 때 가난하게 태어난 것은/);
+  assert.match(html, /-빌 게이츠-/);
+  assert.match(html, /PRESS ANY KEY TO CONTINUE/);
+});
+
+test('시스템 메시지를 제외한 화면은 스크롤되지 않고 출처는 문서 명암 기준으로 보인다', () => {
+  const combined = `${css}\n${themeCss}`;
+  assert.match(combined, /\.view\s*\{[^}]*overflow:\s*hidden/);
+  assert.match(combined, /\.system-feed\s*\{[^}]*overflow(?:-y)?:\s*auto/);
+  assert.match(combined, /\.source-readable[\s\S]*color:\s*#8a8a8a/i);
+  assert.match(combined, /\.source-readable[\s\S]*font-size:\s*11px/i);
+  assert.match(combined, /\.source-readable[\s\S]*opacity:\s*1/i);
 });
 
 test('공개 통계 기반과 모델링 값의 구분을 인트로와 결과에 표시한다', () => {
@@ -72,15 +85,16 @@ test('성격이 선택을 뒤집으면 요청과 실제 선택을 확인시킨�
   assert.match(appSource, /pendingAgencyResolution/);
 });
 
-test('PC 생애 화면은 뷰포트에 고정되고 내부 패널만 스크롤한다', () => {
+test('PC 생애 화면은 뷰포트에 고정되고 시스템 메시지만 스크롤한다', () => {
   assert.match(css, /@media \(min-width: 960px\)[\s\S]*body\[data-view="life"\][\s\S]*overflow:\s*hidden/);
   assert.match(css, /@media \(min-width: 960px\)[\s\S]*\.life-layout[\s\S]*min-height:\s*0/);
-  assert.match(css, /@media \(min-width: 960px\)[\s\S]*\.life-sidebar[\s\S]*overflow-y:\s*auto/);
+  assert.match(themeCss, /\.life-layout\s*>\s*\.life-story,[\s\S]*\.life-layout\s*>\s*\.life-sidebar[\s\S]*overflow:\s*hidden\s*!important/);
 });
 
-test('모바일 생애 화면도 페이지 자체는 고정하고 선택 패널만 내부 스크롤한다', () => {
+test('모바일 생애 화면은 탭으로 패널을 전환하고 내부 스크롤을 만들지 않는다', () => {
   assert.match(css, /@media \(max-width: 959px\)[\s\S]*body\[data-view="life"\][^}]*overflow:\s*hidden/);
   assert.match(css, /@media \(max-width: 959px\)[\s\S]*\.life-layout[^}]*overflow:\s*hidden/);
+  assert.match(themeCss, /data-mobile-panel="status"[\s\S]*\.life-story[\s\S]*display:\s*none/);
 });
 
 test('360px 모바일 생애 그리드는 탭을 위한 별도 행을 보존한다', () => {
@@ -94,6 +108,36 @@ test('돈 요약·투자 메뉴·복권 방송·하단 시스템 메시지 UI가
   }
   assert.match(html, /대한민국 전도에서 투자 지역을 고르세요/);
   assert.match(appSource, /renderSystemFeed/);
+  for (const page of ['stock', 'crypto', 'lottery', 'car', 'property']) assert.match(html, new RegExp(`data-finance-page=["']${page}["']`));
+});
+
+test('긴 직업·금융·결과 내용은 스크롤 대신 페이지 전환으로 접근한다', () => {
+  assert.match(appSource, /careerGroupPage/);
+  assert.match(appSource, /dataCareerPage|dataset\.careerPage/);
+  for (const page of ['summary', 'curve', 'status', 'influence', 'records']) {
+    assert.match(html, new RegExp(`data-result-page-target=["']${page}["']`));
+  }
+  assert.match(themeCss, /result-page-tabs[\s\S]*repeat\(5,/);
+});
+
+test('모바일에서 잘릴 수 있는 선택·자산·기록은 스크롤 대신 페이지로 접근한다', () => {
+  assert.match(html, /data-decision=["']pager["']/);
+  assert.match(appSource, /setDecisionChoicePage/);
+  for (const page of ['flow', 'assets']) assert.match(html, new RegExp(`data-money-page=["']${page}["']`));
+  assert.match(appSource, /dataNetworkPage|dataset\.networkPage/);
+  assert.match(appSource, /dataPastPage|dataset\.pastPage/);
+  assert.match(renderSource, /collection-pager/);
+  assert.match(appSource, /innerHeight\s*<\s*520/);
+  assert.match(appSource, /dataSourcePage|dataset\.sourcePage/);
+  assert.match(html, /class=["']source-pager decision-pager["']/);
+  assert.match(appSource, /result-timeline-link[\s\S]*setResultPage\('curve'\)/);
+  assert.match(themeCss, /data-result-page="influence"[\s\S]*\.result-position\s*\{\s*display:\s*block/);
+});
+
+test('모바일 제목은 무대 축소 해제 뒤 읽을 수 있는 반응형 글꼴을 쓴다', () => {
+  assert.match(css, /@media \(max-width: 900px\)[\s\S]*\.figma-stage[^}]*transform:\s*none/);
+  assert.match(themeCss, /@media \(max-width: 560px\)[\s\S]*\.intro-stage \.intro-quote[^}]*font-size:\s*clamp\(17px/);
+  assert.match(themeCss, /\.intro-stage \.intro-continue[^}]*height:\s*44px[^}]*font-size:\s*clamp\(13px/);
 });
 
 test('생애 화면은 외모·성격 칩과 자산 상세, 투자 안내를 제공한다', () => {

@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+KR:wght@400;500;600;700;900&family=Nuosu+SIL&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
-  <link rel="stylesheet" href="./theme.css">
+  <link rel="stylesheet" href="./theme.css?v=20261016">
 </head>
 <body>
   <div class="ambient-grid" aria-hidden="true"></div>
@@ -37,10 +37,11 @@
           <img src="./assets/figma/logo-underline.svg" alt="" aria-hidden="true">
         </div>
         <div class="intro-quote">
-          <p class="intro-quote-en" lang="en">“You do not choose where you are born.<br>A life begins with what was given.”</p>
-          <p class="intro-quote-ko">태어날 곳은 고를 수 없습니다.<br>주어진 시작에서<br>한 사람의 삶이 이어집니다.</p>
+          <p class="intro-quote-en" lang="en">“If you are born poor its not your mistake,<br>But if you die poor its your mistake.”</p>
+          <p class="intro-quote-ko">태어날 때 가난하게 태어난 것은<br>당신의 잘못이 아니지만,<br>죽을 때 가난하게 죽는 것은<br>당신의 잘못이다.</p>
+          <cite>-빌 게이츠-</cite>
         </div>
-        <button id="title-continue-button" class="intro-continue" type="button">화면을 눌러 시작 · Enter / Space</button>
+        <button id="title-continue-button" class="intro-continue" type="button">PRESS ANY KEY TO CONTINUE</button>
       </div>
     </section>
 
@@ -205,7 +206,7 @@
             <div class="panel-body" data-life-list="stats"></div>
           </details>
 
-          <details id="wellbeing-panel" class="life-panel" open>
+          <details id="wellbeing-panel" class="life-panel">
             <summary><span>02</span> 마음과 생활 리듬</summary>
             <div class="wellbeing-summary panel-body">
               <strong data-life="mental-health">안정</strong>
@@ -213,9 +214,13 @@
             </div>
           </details>
 
-          <details id="money-panel" class="life-panel" open>
+          <details id="money-panel" class="life-panel">
             <summary><span>03</span> 돈과 자산</summary>
-            <dl class="metric-list panel-body">
+            <nav class="money-page-tabs panel-body" aria-label="돈과 자산 상세">
+              <button type="button" data-money-page="flow" aria-pressed="true">현금 흐름</button>
+              <button type="button" data-money-page="assets" aria-pressed="false">보유 자산</button>
+            </nav>
+            <dl class="metric-list panel-body" data-money-section="flow">
               <div><dt>현금</dt><dd data-life="cash">0원</dd></div>
               <div data-household-support-row><dt>가정 지원</dt><dd data-life="household-support">0원</dd></div>
               <div><dt>월 소득</dt><dd data-life="income">0원</dd></div>
@@ -224,12 +229,14 @@
               <div><dt>병역 상태</dt><dd data-life="service">미판정</dd></div>
               <div class="metric-total"><dt>순자산</dt><dd data-life="net-worth">0원</dd></div>
             </dl>
-            <div id="asset-details" class="asset-details panel-body" aria-label="자산별 보유액"></div>
-            <div id="business-status" class="business-status panel-body"><span>사업</span><strong data-life="business">운영 중인 사업 없음</strong></div>
-            <p class="investment-notice">가상 수익률이며 실제 투자·도박 조언이 아닙니다.</p>
+            <div data-money-section="assets">
+              <div id="asset-details" class="asset-details panel-body" aria-label="자산별 보유액"></div>
+              <div id="business-status" class="business-status panel-body"><span>사업</span><strong data-life="business">운영 중인 사업 없음</strong></div>
+              <p class="investment-notice source-readable">가상 수익률이며 실제 투자·도박 조언이 아닙니다.</p>
+            </div>
           </details>
 
-          <details class="life-panel focus-panel" open>
+          <details class="life-panel focus-panel">
             <summary><span>04</span> 올해의 초점</summary>
             <div class="panel-body">
               <strong data-life="focus">휴식과 균형</strong>
@@ -274,7 +281,7 @@
             <summary><span>05</span> 사람들</summary>
             <ul class="people-list panel-body" data-life-list="family"><li>가족</li></ul>
           </details>
-          <details class="life-panel" open>
+          <details class="life-panel">
             <summary><span>06</span> 배움과 일</summary>
             <div id="profile-chips" class="profile-chips panel-body" aria-label="외모와 성격"></div>
             <dl class="profile-list panel-body">
@@ -286,21 +293,21 @@
             </dl>
             <button id="career-select-button" class="panel-action" type="button" hidden>직업군과 직업 선택</button>
           </details>
-          <details class="life-panel" open>
+          <details class="life-panel">
             <summary><span>07</span> 사는 곳</summary>
             <div class="panel-body housing-panel-copy">
               <strong data-life="housing">가족과 동거</strong>
               <p data-life="location">대한민국</p>
             </div>
           </details>
-          <details class="life-panel" open>
+          <details class="life-panel">
             <summary><span>08</span> 상태의 흐름</summary>
             <div class="panel-body mini-chart" aria-label="아직 상태 변화 기록이 없습니다."></div>
           </details>
-          <details class="life-panel" open>
+          <details class="life-panel">
             <summary><span>09</span> 생존 곡선</summary>
             <div id="survival-curve" class="survival-curve panel-body"></div>
-            <p class="investment-notice">개인의 수명을 예측하지 않는 가상 곡선입니다.</p>
+            <p class="investment-notice source-readable">개인의 수명을 예측하지 않는 가상 곡선입니다.</p>
           </details>
           <details class="life-panel cohort-life-panel">
             <summary><span>10</span> 같은 해 태어난 네 사람</summary>
@@ -348,6 +355,13 @@
         </aside>
 
         <div class="result-main">
+          <nav class="result-page-tabs" aria-label="결과 화면">
+            <button type="button" data-result-page-target="summary" aria-pressed="true">요약</button>
+            <button type="button" data-result-page-target="curve" aria-pressed="false">인생 곡선</button>
+            <button type="button" data-result-page-target="status" aria-pressed="false">상태</button>
+            <button type="button" data-result-page-target="influence" aria-pressed="false">영향</button>
+            <button type="button" data-result-page-target="records" aria-pressed="false">기록</button>
+          </nav>
           <section class="result-death" aria-label="생애 종료 이유">
             <span>마지막 기록</span><strong data-result="death-reason">삶을 마쳤습니다</strong>
           </section>
@@ -445,7 +459,12 @@
       <h2 id="decision-title" tabindex="-1" data-decision="title">어떤 길을 선택할까요?</h2>
       <p class="decision-prompt" data-decision="prompt">이 선택은 이후의 삶에 영향을 줍니다.</p>
       <div class="decision-choices" data-decision="choices"></div>
-      <p class="decision-source" data-decision="source" hidden></p>
+      <nav class="decision-pager" data-decision="pager" aria-label="선택지 페이지" hidden>
+        <button type="button" data-decision-page="previous">← 이전</button>
+        <span data-decision="page-status">1 / 1</span>
+        <button type="button" data-decision-page="next">다음 →</button>
+      </nav>
+      <p class="decision-source source-readable" data-decision="source" hidden></p>
       <p class="decision-footnote">조건을 충족하지 못한 선택도 이유와 함께 표시됩니다.</p>
     </form>
   </dialog>
@@ -456,7 +475,7 @@
       <h2 id="identity-title" tabindex="-1">가상 인물이 자신의<br><em data-identity="label">성 정체성</em>을 찾았습니다.</h2>
       <p class="identity-notice" data-identity="notice">실제 사용자의 정체성을 판정하는 결과가 아니라, 이 가상 인생에만 적용되는 시뮬레이션 사건입니다.</p>
       <p class="identity-method-note">약 5%는 온라인 조사에 기반한 가상 시뮬레이션 값이며 공식 인구 비율이 아닙니다. 실제로 서로 겹칠 수 있는 정체성을 단순화해 표시합니다.</p>
-      <a class="identity-source" data-identity="source" href="https://www.ipsos.com/sites/default/files/ct/publication/documents/2024-06/Ipsos_Pride-Report-2024.pdf" target="_blank" rel="noreferrer">확률 참고: Ipsos Pride Report 2024</a>
+      <a class="identity-source source-readable" data-identity="source" href="https://www.ipsos.com/sites/default/files/ct/publication/documents/2024-06/Ipsos_Pride-Report-2024.pdf" target="_blank" rel="noreferrer">확률 참고: Ipsos Pride Report 2024</a>
       <button id="identity-continue-button" class="primary-button" type="button">이 삶을 계속 살아간다 <span aria-hidden="true">→</span></button>
     </div>
   </dialog>
@@ -500,24 +519,31 @@
       <div class="dialog-topline"><p class="eyebrow"><span>MONEY LAB</span> 직접 체험</p><button id="finance-close-button" class="text-button" type="button">닫기 ×</button></div>
       <h2 id="finance-title" tabindex="-1">돈을 직접 움직여<br><em>결과를 확인하세요.</em></h2>
       <p id="finance-feedback" class="finance-feedback" aria-live="polite">금액과 위험을 확인한 뒤 선택하세요.</p>
+      <nav class="finance-page-tabs" aria-label="투자와 구매 메뉴">
+        <button type="button" data-finance-page="stock" aria-pressed="true">주식</button>
+        <button type="button" data-finance-page="crypto" aria-pressed="false">비트코인</button>
+        <button type="button" data-finance-page="lottery" aria-pressed="false">로또</button>
+        <button type="button" data-finance-page="car" aria-pressed="false">자동차</button>
+        <button type="button" data-finance-page="property" aria-pressed="false">부동산</button>
+      </nav>
       <div class="finance-grid">
-        <section class="finance-experience">
+        <section class="finance-experience" data-finance-section="stock">
           <h3>주식 체험</h3><p>100만원 단위로 매수·매도합니다. 해가 바뀔 때 시장 수익률이 반영됩니다.</p>
           <div><button type="button" data-finance-action="stock-buy">주식 100만원 매수</button><button type="button" data-finance-action="stock-sell">주식 100만원 매도</button></div>
         </section>
-        <section class="finance-experience is-risk">
+        <section class="finance-experience is-risk" data-finance-section="crypto" hidden>
           <h3>비트코인 위험 체험 <b>도파민 <span data-life="dopamine">0</span>/100</b></h3><p>200만원 단위. 변동폭이 매우 크며 거래할수록 도파민 수치가 올라갑니다.</p>
           <div><button type="button" data-finance-action="crypto-buy">비트코인 200만원 매수</button><button type="button" data-finance-action="crypto-sell">비트코인 200만원 매도</button></div>
         </section>
-        <section class="finance-experience lottery-experience">
+        <section class="finance-experience lottery-experience" data-finance-section="lottery" hidden>
           <h3>로또 방송</h3><p>복권을 사도 결과는 자동 공개되지 않습니다.</p>
           <div><button type="button" data-finance-action="lottery-buy">복권 1만원 구매</button><button id="lottery-broadcast-button" type="button" data-finance-action="lottery-broadcast">로또 방송 확인하기</button></div>
         </section>
-        <section class="finance-experience">
+        <section class="finance-experience" data-finance-section="car" hidden>
           <h3>자동차 구매</h3><p>중고차 1,600만원 · 선납 800만원 · 대출 800만원 · 월 유지비 30만원</p>
           <div><button type="button" data-finance-action="car-buy">중고차 구매</button></div>
         </section>
-        <section class="finance-experience real-estate-experience">
+        <section class="finance-experience real-estate-experience" data-finance-section="property" hidden>
           <h3>부동산 투자</h3><p>대한민국 전도에서 투자 지역을 고르세요. 선납 2,000만원 · 매입가 1억 5,000만원 · 대출 1억 3,000만원</p>
           <div id="investment-korea-map" class="investment-korea-map"></div>
           <div class="property-choice"><span>선택 지역: <strong id="property-region-label">지역을 선택하세요</strong></span><button id="property-buy-button" type="button" data-finance-action="property-buy" disabled>이 지역 땅 사기</button></div>
@@ -540,7 +566,7 @@
       </div>
       <div class="event-footer">
         <button id="event-continue-button" class="primary-button" type="button">이 삶을 계속 살아간다 <span aria-hidden="true">→</span></button>
-        <p class="event-source" data-event="source"></p>
+        <p class="event-source source-readable" data-event="source"></p>
       </div>
     </div>
   </dialog>
@@ -550,17 +576,22 @@
       <div class="dialog-topline"><h2 id="source-title" tabindex="-1">안내와 데이터 출처</h2><button id="source-close-button" class="icon-button" type="button" aria-label="닫기"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"/></svg></button></div>
       <p class="decision-prompt">이 게임의 결과는 실제 인구통계가 아닌 체험용 가상 시뮬레이션입니다. 일부 검증 자료와 창작용 가중치를 함께 사용합니다.</p>
       <ul class="source-list">
-        <li><div><strong>출생 지역 · 시대별 인구</strong><span>통계청 인구동향 등을 참고한 창작용 가중치</span></div><b class="source-tag">검증 + 창작</b></li>
-        <li><div><strong>역사 사건</strong><span>우리역사넷 연표, 국가기록원 등 사건마다 출처 표기</span></div><b class="source-tag">역사적 사실</b></li>
-        <li><div><strong>미래 사건</strong><span>정부 전망 보고서를 바탕으로 만든 가상 시나리오</span></div><b class="source-tag is-future">미래 전망</b></li>
-        <li><div><strong>돈 · 투자 · 복권</strong><span>가상 수익률이며 실제 투자·도박 조언이 아닙니다</span></div><b class="source-tag">가상</b></li>
+        <li data-source-item><div><strong>출생 지역 · 시대별 인구</strong><span>통계청 인구동향 등을 참고한 창작용 가중치</span></div><b class="source-tag">검증 + 창작</b></li>
+        <li data-source-item><div><strong>역사 사건</strong><span>우리역사넷 연표, 국가기록원 등 사건마다 출처 표기</span></div><b class="source-tag">역사적 사실</b></li>
+        <li data-source-item><div><strong>미래 사건</strong><span>정부 전망 보고서를 바탕으로 만든 가상 시나리오</span></div><b class="source-tag is-future">미래 전망</b></li>
+        <li data-source-item><div><strong>돈 · 투자 · 복권</strong><span>가상 수익률이며 실제 투자·도박 조언이 아닙니다</span></div><b class="source-tag">가상</b></li>
       </ul>
+      <nav class="source-pager decision-pager" aria-label="출처 페이지">
+        <button type="button" data-source-page="previous">← 이전</button>
+        <span data-source-page-status>1 / 2</span>
+        <button type="button" data-source-page="next">다음 →</button>
+      </nav>
       <button id="source-ok-button" class="secondary-button source-ok" type="button">확인</button>
     </div>
   </dialog>
 
   <p id="live-region" class="sr-only" aria-live="polite"></p>
   <script src="./config.js"></script>
-  <script type="module" src="./app.js"></script>
+  <script type="module" src="./app.js?v=20261016"></script>
 </body>
 </html>
