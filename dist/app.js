@@ -23,7 +23,7 @@ import {
   deletePastLife,
   clearPastLives,
 } from './storage.js';
-import { createSimulationController } from './ui/controls.js';
+import { createSimulationController, resumeAfterBlockingDialog } from './ui/controls.js';
 import { createCommunityClient } from './community.js';
 import {
   renderLife,
@@ -86,6 +86,7 @@ let pendingAgencyResolution = null;
 let lastCompletedSummary = null;
 let selectedPropertyRegion = null;
 let resumeAfterFinance = false;
+let resumeAfterSource = false;
 
 function syncFigmaStageScale() {
   document.documentElement.style.setProperty('--figma-stage-scale', String(fitFigmaStage(window.innerWidth, window.innerHeight)));
@@ -285,7 +286,7 @@ function showNextBigEvent() {
   if (!controller || anyDialogOpen()) return;
   const next = bigEventQueue.shift();
   if (!next) {
-    if (resumeAfterBigEvents && controller.getState().status === 'living' && !controller.getState().pendingDecisionId) {
+    if (resumeAfterBlockingDialog(resumeAfterBigEvents, false) && controller.getState().status === 'living' && !controller.getState().pendingDecisionId) {
       controller.play();
     }
     resumeAfterBigEvents = false;
@@ -353,7 +354,7 @@ function openFinanceMenu() {
 
 function closeFinanceMenu() {
   unlockBackground(financeDialog);
-  if (resumeAfterFinance && controller?.getState().status === 'living' && !controller.getState().pendingDecisionId) controller.play();
+  if (resumeAfterBlockingDialog(resumeAfterFinance, false) && controller?.getState().status === 'living' && !controller.getState().pendingDecisionId) controller.play();
   resumeAfterFinance = false;
   updatePlayback();
 }
@@ -685,17 +686,26 @@ document.querySelector('#event-continue-button').addEventListener('click', () =>
 
 document.querySelector('#source-button').addEventListener('click', () => {
   if (sourceDialog.open) return;
+  resumeAfterSource = Boolean(controller?.isPlaying());
+  controller?.pause();
+  updatePlayback();
   lastFocused = document.activeElement;
   main.inert = true;
   sourceDialog.showModal();
   document.querySelector('#source-title').focus();
 });
+function closeSourceDialog() {
+  unlockBackground(sourceDialog);
+  if (resumeAfterBlockingDialog(resumeAfterSource, false) && controller?.getState().status === 'living' && !controller.getState().pendingDecisionId) controller.play();
+  resumeAfterSource = false;
+  updatePlayback();
+}
 ['#source-close-button', '#source-ok-button'].forEach((selector) => {
-  document.querySelector(selector).addEventListener('click', () => unlockBackground(sourceDialog));
+  document.querySelector(selector).addEventListener('click', closeSourceDialog);
 });
 sourceDialog.addEventListener('cancel', (event) => {
   event.preventDefault();
-  unlockBackground(sourceDialog);
+  closeSourceDialog();
 });
 
 document.querySelector('#finance-close-button').addEventListener('click', closeFinanceMenu);

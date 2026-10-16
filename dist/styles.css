@@ -588,12 +588,13 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
 .decision-tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
 .decision-tags i { padding: 4px 6px; border: 1px solid var(--line); color: var(--ink-muted); font-size: 8px; font-style: normal; }
 .decision-footnote { margin: 18px 0 0; color: var(--ink-muted); font-size: 10px; }
-.decision-source { margin: 16px 0 0; color: var(--ink-muted); font-size: 10px; }
-.decision-source a, .identity-source { color: var(--accent); text-underline-offset: 3px; }
+.decision-source { margin: 16px 0 0; color: var(--ink-muted); font-size: 8px; opacity: .3; }
+.decision-source a, .identity-source { color: inherit; text-underline-offset: 3px; }
 .identity-card em { color: var(--accent); font-style: normal; }
 .identity-notice { max-width: 620px; margin: 22px 0 16px; color: var(--ink-muted); font-size: 14px; line-height: 1.8; }
 .identity-method-note { max-width: 620px; margin: 0 0 14px; color: var(--ink-faint); font-size: 11px; line-height: 1.65; }
-.identity-source { display: inline-block; margin-bottom: 28px; font-size: 11px; }
+.identity-source { display: inline-block; margin-bottom: 28px; font-size: 8px; opacity: .3; }
+.log-source, .event-source { color: var(--ink-faint); font-size: 8px; opacity: .28; }
 .identity-card .primary-button { width: 100%; }
 .agency-card .primary-button { width: 100%; margin-top: 24px; }
 .agency-card h2 { max-width: 620px; }
@@ -877,6 +878,18 @@ body[data-view="profile"] main { height: calc(100dvh - 80px); }
   .result-actions { display: grid; }
   .past-lives-list { grid-template-columns: 1fr; }
   .career-list { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .life-toolbar { max-height: 112px; overflow-y: auto; }
+  .money-hud { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .money-hud dt { font-size: 8px; }
+  .money-hud dd { font-size: 11px; }
+  .decision-card { max-height: 100dvh; overflow-y: auto; }
+  .decision-choices { max-height: 52dvh; overflow-y: auto; overscroll-behavior: contain; }
+  .system-feed-shell { min-height: 0; max-height: 132px; }
+  .system-feed { max-height: 92px; overflow-y: auto; overscroll-behavior: contain; }
+  .cohort-preview-panel { max-height: 42dvh; overflow-y: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {

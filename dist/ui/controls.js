@@ -16,6 +16,10 @@ import { ensureServiceAssessment } from '../engine/service.js';
 
 const INTERVALS = { 1: 8000, 2: 4000, 4: 2000, 8: 1000, 12: 667, 16: 500 };
 
+export function resumeAfterBlockingDialog(wasPlaying, userPaused) {
+  return Boolean(wasPlaying && !userPaused);
+}
+
 function browserClock() {
   return {
     now: () => Date.now(),
@@ -219,6 +223,12 @@ export function createSimulationController({
       const decision = getDecision(life);
       if (decision) {
         life = normalizeLife({ ...life, pendingDecisionId: decision.id });
+        if (autoDecision) {
+          life = chooseAutomatically(life, decision.id);
+          publish();
+          resumeInterruptedPlayback();
+          return structuredClone(life);
+        }
         publish();
         onDecision(decision, structuredClone(life));
         return structuredClone(life);
@@ -230,7 +240,10 @@ export function createSimulationController({
       if (!life.pendingIdentityDiscovery) return structuredClone(life);
       life = normalizeLife(acknowledgeIdentityDiscovery(life));
       const decision = getDecision(life);
-      if (decision) life = normalizeLife({ ...life, pendingDecisionId: decision.id });
+      if (decision) {
+        life = normalizeLife({ ...life, pendingDecisionId: decision.id });
+        if (autoDecision) life = chooseAutomatically(life, decision.id);
+      }
       publish();
       resumeInterruptedPlayback();
       return structuredClone(life);

@@ -15,6 +15,11 @@ test('세 화면과 모든 주요 동작이 존재한다', () => {
   assert.doesNotMatch(html, /id=["']same-life-button["']/);
 });
 
+test('인트로는 터치와 키보드 모두를 안내한다', () => {
+  assert.doesNotMatch(html, /PRESS ANY KEY/);
+  assert.match(html, /화면을 눌러 시작/);
+});
+
 test('공개 통계 기반과 모델링 값의 구분을 인트로와 결과에 표시한다', () => {
   const matches = html.match(/공개 통계 기반/g) ?? [];
   assert.ok(matches.length >= 2);

@@ -27,6 +27,8 @@ test('시대에 존재하지 않은 교육 선택지는 표시되지 않는다',
   const ids = getChoices(in2000, 'choose-high-school').map((item) => item.id);
   assert.equal(ids.includes('meister'), false);
   assert.equal(ids.includes('autonomous'), false);
+  assert.equal(getChoices(makeLifeAtAge(10, { year: 1990 }), 'private-education')
+    .some((item) => item.id === 'public-program'), false);
 });
 
 test('자사고 표시 비용과 잠금 비용이 같다', () => {

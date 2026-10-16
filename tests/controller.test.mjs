@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DECISIONS } from '../dist/data/decisions.js';
-import { createSimulationController } from '../dist/ui/controls.js';
+import { createSimulationController, resumeAfterBlockingDialog } from '../dist/ui/controls.js';
 import { createRng } from '../dist/engine/random.js';
 import { makeLifeAtAge, makeLifeAtYear, makeMaleLifeAtAge, fakeClock } from './support/life-fixtures.mjs';
 
@@ -167,6 +167,19 @@ test('회고가 열리면 멈추고 답한 뒤 자동 재생한다', () => {
   assert.equal(controller.isPlaying(), false);
   controller.answerReflection('play');
   assert.equal(controller.getState().pendingReflectionId, null);
+  assert.equal(controller.isPlaying(), true);
+});
+
+test('자동 결정 중 회고 뒤 같은 나이의 결정도 자동으로 처리한다', () => {
+  const clock = fakeClock();
+  const controller = createSimulationController({ clock, initialLife: makeLifeAtAge(14) });
+  controller.setAutoDecision(true);
+  controller.play();
+  clock.advance(8000);
+  assert.equal(controller.getState().pendingReflectionId, 'reflection-15');
+  controller.answerReflection('people');
+  assert.equal(controller.getState().pendingDecisionId, null);
+  assert.equal(controller.getState().decisions['choose-high-school'] !== undefined, true);
   assert.equal(controller.isPlaying(), true);
 });
 
@@ -383,4 +396,10 @@ test('누적된 밤샘 습관은 실제 컨트롤러에서 도움 장면을 연�
   clock.advance(8000);
   assert.equal(controller.getState().pendingDecisionId, 'mental-health-support');
   assert.equal(controller.isPlaying(), false);
+});
+
+test('재생 중 열린 차단 창만 처리 후 자동 재개한다', () => {
+  assert.equal(resumeAfterBlockingDialog(true, false), true);
+  assert.equal(resumeAfterBlockingDialog(false, true), false);
+  assert.equal(resumeAfterBlockingDialog(true, true), false);
 });
