@@ -1128,6 +1128,18 @@ body[data-view="profile"] .slot-view {
   box-shadow: none;
 }
 #slot-accept-button.figma-birth-button:hover:not(:disabled) { background: transparent; }
+.roulette-continue-button {
+  position: absolute;
+  top: 64px;
+  right: 80px;
+  z-index: 8;
+  min-height: 42px;
+  padding: 0 18px;
+  border-color: rgba(255, 255, 255, .35);
+  background: rgba(0, 0, 0, .78);
+  backdrop-filter: blur(8px);
+}
+.roulette-continue-button[hidden] { display: none; }
 
 /* Viewport contract: only the chronological system-message rail scrolls. */
 .view { overflow: hidden; }
@@ -1271,6 +1283,7 @@ body[data-view="life"] .life-view,
 }
 
 @media (max-width: 959px) {
+  .roulette-continue-button { top: 18px; right: 16px; min-height: 36px; padding: 0 10px; font-size: 10px; }
   .intro-stage .intro-quote {
     top: 15%;
     left: 22px;

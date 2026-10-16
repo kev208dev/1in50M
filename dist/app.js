@@ -245,6 +245,15 @@ async function spinBirthSlot() {
   liveRegion.textContent = `${candidateProfile.name.full}, ${candidateProfile.region.name} ${candidateProfile.district} 출생 조건이 정해졌습니다.`;
 }
 
+function startBirthRoulette() {
+  if (isDrawing) return;
+  candidateProfile = null;
+  candidateResult = null;
+  renderKoreaMap();
+  document.querySelector('#roulette-continue-button').hidden = !loadCurrentLife(storage);
+  void spinBirthSlot();
+}
+
 function updatePlayback() {
   if (!controller) return;
   const playing = controller.isPlaying();
@@ -689,6 +698,10 @@ controls.continue.addEventListener('click', () => {
   const saved = loadCurrentLife(storage);
   if (saved) startLife(saved);
 });
+document.querySelector('#roulette-continue-button').addEventListener('click', () => {
+  const saved = loadCurrentLife(storage);
+  if (saved) startLife(saved);
+});
 controls.back.addEventListener('click', () => showView('profile'));
 controls.play.addEventListener('click', () => {
   if (!controller) return;
@@ -878,10 +891,7 @@ document.querySelectorAll('.life-sidebar').forEach((sidebar) => {
 });
 
 document.querySelector('#new-life-button').addEventListener('click', () => {
-  candidateProfile = null;
-  candidateResult = null;
-  renderKoreaMap();
-  showView('intro');
+  startBirthRoulette();
 });
 document.querySelector('#past-lives-button').addEventListener('click', showPastLives);
 document.querySelector('#share-life-button').addEventListener('click', async () => {
@@ -937,11 +947,11 @@ document.querySelectorAll('.network-view').forEach((view) => {
     }
     const action = event.target.closest('[data-network-action]');
     if (action?.dataset.networkAction === 'retry') await refreshCommunity();
-    if (action?.dataset.networkAction === 'start') showView('intro');
+    if (action?.dataset.networkAction === 'start') startBirthRoulette();
   });
 });
 document.querySelectorAll('[data-network-back]').forEach((button) => {
-  button.addEventListener('click', () => showView('intro'));
+  button.addEventListener('click', startBirthRoulette);
 });
 document.querySelector('#publish-life-button').addEventListener('click', async (event) => {
   const publishButton = event.currentTarget;
@@ -1016,8 +1026,7 @@ document.querySelector('.brand').addEventListener('click', (event) => {
   event.preventDefault();
   controller?.pause();
   updatePlayback();
-  controls.continue.hidden = !loadCurrentLife(storage);
-  showView('intro');
+  startBirthRoulette();
 });
 
 document.addEventListener('visibilitychange', () => controller?.setVisible(!document.hidden));
@@ -1039,8 +1048,7 @@ renderKoreaMap();
 
 function leaveTitle() {
   if (document.body.dataset.view !== 'title') return;
-  showView('intro');
-  document.querySelector('#birth-button')?.focus({ preventScroll: true });
+  startBirthRoulette();
 }
 document.addEventListener('keydown', (event) => {
   if (document.body.dataset.view !== 'title' || event.isComposing) return;

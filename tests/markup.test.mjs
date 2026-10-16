@@ -24,6 +24,14 @@ test('시작 화면은 Figma Desktop - 1의 원문과 조작 안내를 그대로
   assert.match(html, /PRESS ANY KEY TO CONTINUE/);
 });
 
+test('빌 게이츠 화면과 새 삶 진입점은 태어나기 안내를 건너뛰고 룰렛을 바로 실행한다', () => {
+  assert.match(appSource, /function startBirthRoulette\(\)/);
+  assert.match(appSource, /function leaveTitle\(\)[\s\S]*startBirthRoulette\(\)/);
+  assert.doesNotMatch(appSource, /showView\('intro'\)/);
+  assert.match(html, /id=["']roulette-continue-button["']/);
+  assert.match(appSource, /roulette-continue-button[\s\S]*loadCurrentLife\(storage\)[\s\S]*startLife/);
+});
+
 test('시스템 메시지를 제외한 화면은 스크롤되지 않고 출처는 문서 명암 기준으로 보인다', () => {
   const combined = `${css}\n${themeCss}`;
   assert.match(combined, /\.view\s*\{[^}]*overflow:\s*hidden/);
