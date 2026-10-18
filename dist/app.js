@@ -42,7 +42,7 @@ import {
   fitResponsiveFigmaStage,
   nextBirthMapMode,
   slotDuration,
-} from './ui/birth-slot.js?v=20261018-3';
+} from './ui/birth-slot.js?v=20261018-5';
 
 const viewNames = ['title', 'intro', 'profile', 'future', 'life', 'result', 'past-lives', 'community', 'memorial'];
 const views = Object.fromEntries(viewNames.map((name) => [name, document.querySelector(`#${name}-view`)]));

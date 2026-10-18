@@ -45,6 +45,16 @@ test('렌더링은 출생 결과를 다시 추첨하지 않는다', () => {
   assert.equal(model.reels[8].value, result.name.surname);
 });
 
+test('외모 카드는 짧은 요약을 표시하고 출생 상세에는 전체 설명을 보존한다', () => {
+  const result = createBirthSlotResult('appearance-summary', 2026);
+  const reel = slotRows(result).find((row) => row.id === 'appearance');
+  assert.ok(reel.value.includes(`${result.appearance.heightCm}cm`));
+  assert.ok(reel.value.length < 30);
+  assert.ok(reel.detail.includes(result.appearance.description));
+  const fact = birthSlotUi.birthCertificateModel(result).facts.find((item) => item.label === '외모');
+  assert.equal(fact.value, result.appearance.description);
+});
+
 test('Figma 1440×1024 무대를 뷰포트 안에 비율대로 맞춘다', () => {
   assert.equal(typeof birthSlotUi.fitFigmaStage, 'function');
   assert.equal(typeof birthSlotUi.fitResponsiveFigmaStage, 'function');

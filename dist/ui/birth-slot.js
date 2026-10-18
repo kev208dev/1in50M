@@ -1,4 +1,5 @@
 import { getStatistic, historicalDistrictName } from '../engine/historical-context.js';
+import { FACE_SHAPES } from '../data/appearance.js';
 
 const STOP_SCHEDULE = [400, 520, 640, 760, 880, 1080, 1200, 1320, 1520, 1640, 1760];
 
@@ -66,8 +67,8 @@ export function slotMachineModel(result) {
       id: 'appearance',
       group: 'birth',
       label: '외모',
-      value: result.appearance.description,
-      detail: `${result.appearance.attractivenessLabel} · 관리 ${result.appearance.grooming}`,
+      value: `${result.appearance.heightCm}cm · ${FACE_SHAPES.find((face) => face.id === result.appearance.faceShape)?.label ?? '인상'}`,
+      detail: `${result.appearance.description} · ${result.appearance.attractivenessLabel} · 관리 ${result.appearance.grooming}`,
       tone: 'blue',
     },
     ...personality.map((trait, index) => ({
@@ -169,6 +170,7 @@ export function birthCertificateModel(result) {
       { label: '출생', value: `${result.year}년 · ${result.region.name} ${district}`, kind: 'narrative' },
       { label: '가족', value: result.household.summary, kind: 'narrative' },
       { label: '가정 형편', value: `${result.finance.value} · ${result.housing.value}`, kind: 'narrative' },
+      { label: '외모', value: result.appearance.description, kind: 'narrative' },
       { label: '기대수명', value: `약 ${expectancy.value}세`, sourceYear: expectancy.year, sourceKey: expectancy.sourceKey, kind: expectancy.kind },
     ],
   };

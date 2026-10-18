@@ -1,0 +1,100 @@
+/* Birth screen: readable results, separate controls, quiet surfaces. */
+.profile-stage .slot-spotlight { opacity: .2; }
+.profile-stage .slot-title { top: 160px; font-size: 42px; line-height: 1.4; }
+.profile-stage .roulette-continue-button { top: 58px; right: 210px; min-height: 42px; font-size: 15px; }
+.profile-stage .profile-details-drawer { top: 58px; right: 80px; z-index: 20; }
+.profile-stage .profile-details-drawer > summary { height: 42px; min-width: 104px; color: #aaa; font: 13px var(--font-body); border-radius: 10px; }
+.profile-stage .profile-details-drawer .birth-context-panel { top: 54px; max-height: none; border: 1px solid #343434; background: #111; }
+.profile-stage .slot-machine-shell { top: 300px; left: 580px; width: 780px; height: 590px; padding: 24px; gap: 24px; border-color: #254333; border-radius: 20px; background: #0b0d0c; box-shadow: 0 16px 60px #000, 0 0 45px #06b7520d; }
+.profile-stage .birth-slot { width: 100%; height: auto; flex: 1 1 0; min-height: 0; grid-template-rows: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; }
+.profile-stage .slot-reel-group { min-height: 0; padding: 0; gap: 10px; border: 0; border-radius: 0; background: none; box-shadow: none; }
+.profile-stage .slot-reel { position: relative; min-width: 0; padding: 38px 10px 16px; border: 1px solid #2b302d; border-radius: 12px; background: linear-gradient(155deg, #181d1a, #101311); box-shadow: none; }
+.profile-stage .slot-reel-heading { top: 14px; color: #939e97; font: 13px var(--font-body); }
+.profile-stage .slot-window { display: grid; width: 100%; min-width: 0; min-height: 0; flex: 1; align-items: center; }
+.profile-stage .slot-strip { width: 100%; min-width: 0; }
+.profile-stage .slot-strip > * { min-height: 0; }
+.profile-stage .slot-value { display: block; width: 100%; max-width: 100%; overflow: visible; white-space: normal; overflow-wrap: anywhere; word-break: keep-all; text-overflow: clip; font-size: 28px; line-height: 1.5; -webkit-line-clamp: unset; }
+.profile-stage .slot-reel[data-slot="region"] .slot-value { font-size: 22px; }
+.profile-stage .slot-reel[data-slot="household"] .slot-value,
+.profile-stage .slot-reel[data-slot="appearance"] .slot-value { display: block; overflow: visible; font: 500 17px/1.65 var(--font-body); -webkit-line-clamp: unset; }
+.profile-stage .slot-reel-group-personality .slot-value { font-size: 22px; }
+.profile-stage .slot-reel-group-name .slot-value { font-size: 38px; }
+.profile-stage .birth-slot:not(.is-spinning) .slot-ghost { display: none; }
+.profile-stage .slot-ghost { opacity: .35; }
+.profile-stage .slot-actions { display: flex; justify-content: center; align-items: center; width: 100%; height: 60px; flex: 0 0 60px; }
+.profile-stage #slot-accept-button { position: static; transform: none; width: 230px; height: 56px; border: 1px solid #16cd68; border-radius: 12px; background: #06b752; color: #001d0c; box-shadow: none; }
+.profile-stage #slot-accept-button img { display: none; }
+.profile-stage #slot-accept-button span { font: 700 20px var(--font-body); }
+.profile-stage #slot-accept-button:hover:not(:disabled) { background: #21d673; }
+.profile-stage .birth-map-label { top: auto; bottom: 48px; left: 40px; width: 440px; max-width: calc(100% - 80px); padding: 14px 12px; border-top: 1px solid #26352c; text-align: center; white-space: normal; overflow: visible; color: #c5d0c9; font: 15px/1.5 var(--font-body); }
+.profile-stage .cohort-preview-panel { right: 80px; bottom: 68px; width: 780px; margin: 0; padding: 0; border: 0; background: transparent; overflow: visible !important; }
+.profile-stage .cohort-preview-panel > summary { padding: 12px 16px; color: #a4afa8; font: 14px var(--font-body); border: 1px solid #292e2b; border-radius: 10px; background: #0c0f0d; cursor: pointer; }
+.profile-stage .cohort-preview-panel[open] { z-index: 15; }
+.profile-stage .cohort-preview-panel[open] .cohort-grid { position: absolute; bottom: 54px; left: 0; width: 100%; padding: 16px; border: 1px solid #343c37; border-radius: 14px; background: #101612; box-shadow: 0 12px 40px #000; }
+.profile-stage > .slot-notice { bottom: 36px; }
+.profile-stage .birth-context-panel { display: block; }
+.profile-stage .birth-context-heading { margin-bottom: 12px; }
+.profile-stage .birth-facts { grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+.profile-stage .birth-fact-value { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.5; }
+.profile-stage .birth-fact:has(.birth-fact-value):nth-last-child(2) { grid-column: 1 / -1; }
+
+@media (max-width: 959px) {
+  .profile-stage .profile-logo { top: 20px; left: 16px; width: 96px; height: 24px; }
+  .profile-stage .profile-logo .figma-logo-one,
+  .profile-stage .profile-logo .figma-logo-total { font-size: 30px; }
+  .profile-stage .profile-logo .figma-logo-over { font-size: 12px; }
+  .profile-stage .roulette-continue-button { top: 20px; right: 100px; min-height: 32px; padding: 0 8px; font-size: 0; }
+  .profile-stage .roulette-continue-button > span { display: none; }
+  .profile-stage .profile-details-drawer { top: 20px; right: 12px; }
+  .profile-stage .profile-details-drawer > summary { min-width: 76px; height: 32px; padding: 0 8px; font-size: 11px; }
+  .profile-stage .profile-details-drawer .birth-context-panel { top: 44px; width: min(88vw, 520px); padding: 14px; }
+  .profile-stage .birth-record-narrative { font-size: 12px; }
+  .profile-stage .birth-facts { gap: 8px 12px; }
+  .profile-stage .birth-fact-value { font-size: 12px; }
+  .profile-stage .slot-title { top: 80px; left: 16px; font-size: 26px; line-height: 1.3; }
+  .profile-stage .slot-machine-shell { top: 210px; left: 12px; width: calc(100% - 24px); height: calc(100% - 222px - env(safe-area-inset-bottom)); padding: 12px; gap: 10px; border-radius: 14px; }
+  .profile-stage .birth-slot { height: auto; flex: 1 1 0; grid-template-rows: minmax(0, 2fr) minmax(0, 1fr); gap: 8px; }
+  .profile-stage .slot-reel-group { gap: 6px; }
+  .profile-stage .slot-reel-group-birth { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); }
+  .profile-stage .slot-reel-group-birth .slot-reel { grid-column: span 2; }
+  .profile-stage .slot-reel-group-birth .slot-reel:nth-child(n+4) { grid-column: span 3; }
+  .profile-stage .slot-reel { padding: 26px 5px 7px; border-radius: 8px; }
+  .profile-stage .slot-reel-heading { top: 8px; font-size: 10px; }
+  .profile-stage .slot-value { font-size: 18px; line-height: 1.4; }
+  .profile-stage .slot-reel[data-slot="region"] .slot-value { font-size: 13px; }
+  .profile-stage .slot-reel[data-slot="household"] .slot-value,
+  .profile-stage .slot-reel[data-slot="appearance"] .slot-value { font-size: 11px; line-height: 1.4; }
+  .profile-stage .slot-reel-group-personality .slot-value { font-size: 12px; }
+  .profile-stage .slot-reel-group-name .slot-value { font-size: 25px; }
+  .profile-stage .slot-actions { height: 44px; flex-basis: 44px; }
+  .profile-stage #slot-accept-button { width: 100%; height: 44px; border-radius: 8px; }
+  .profile-stage #slot-accept-button span { font-size: 16px; }
+  .profile-stage .birth-map-label { top: auto; bottom: 0; left: 0; width: 100%; max-width: 100%; padding: 10px 4px; font-size: 12px; background: #080c09e8; }
+  .profile-stage .cohort-preview-panel { top: 210px; right: 16px; bottom: 16px; left: 16px; width: auto; padding: 0; }
+  .profile-stage .cohort-preview-panel > summary { margin-bottom: 10px; }
+  .profile-stage .cohort-preview-panel[open] .cohort-grid { position: static; padding: 0; border: 0; background: none; box-shadow: none; }
+}
+
+@media (max-width: 959px) and (max-height: 520px) and (orientation: landscape) {
+  .profile-stage .slot-title { top: 76px; width: 40%; font-size: 21px; }
+  .profile-stage .slot-title br { display: none; }
+  .profile-stage .profile-page-tabs { top: 74px; }
+  .profile-stage .slot-machine-shell { top: 122px; height: calc(100% - 134px); padding: 10px; gap: 6px; }
+  .profile-stage .birth-slot { grid-template-rows: minmax(0, 1.25fr) minmax(0, 1fr); gap: 6px; }
+  .profile-stage .slot-reel-group-birth { grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); }
+  .profile-stage .slot-reel-group-birth .slot-reel,
+  .profile-stage .slot-reel-group-birth .slot-reel:nth-child(n+4) { grid-column: auto; }
+  .profile-stage .slot-reel { padding: 20px 6px 3px; }
+  .profile-stage .slot-reel-heading { top: 4px; font-size: 9px; }
+  .profile-stage .slot-value { font-size: 15px; }
+  .profile-stage .slot-reel[data-slot="region"] .slot-value { font-size: 12px; }
+  .profile-stage .slot-reel[data-slot="household"] .slot-value,
+  .profile-stage .slot-reel[data-slot="appearance"] .slot-value { font-size: 10px; line-height: 1.3; }
+  .profile-stage .slot-reel-group-name .slot-value { font-size: 22px; }
+  .profile-stage .cohort-preview-panel { top: 122px; }
+  .profile-stage .profile-details-drawer .birth-context-panel { width: min(88vw, 720px); }
+  .profile-stage .birth-context-heading { display: none; }
+  .profile-stage .birth-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 14px; }
+  .profile-stage .birth-record-narrative { margin-bottom: 0; }
+  .profile-stage .birth-fact-value { font-size: 11px; }
+}
