@@ -1203,6 +1203,15 @@ body[data-view="life"] .life-view,
 .intro-stage .intro-quote cite { top: 436px; left: 732px; width: 263px; font-size: 48px; }
 .intro-stage .intro-continue { top: 900px; left: 416px; width: 607px; height: 52px; font-size: 36px; }
 
+/* Keep the original Figma coordinates at 1440×1024, while calming the type
+   hierarchy when the same frame is presented in a much wider viewport. */
+@media (min-width: 960px) and (min-aspect-ratio: 31/20) {
+  .intro-stage .intro-quote { font-size: 44px; line-height: 1.42; }
+  .intro-stage .intro-quote-ko { margin-top: 38px !important; }
+  .intro-stage .intro-quote cite { top: 404px; left: 748px; font-size: 42px; }
+  .intro-stage .intro-continue { font-size: 32px; }
+}
+
 /* Long menus use explicit pages rather than hidden internal scrolling. */
 .career-groups { grid-template-rows: minmax(0, 1fr) auto; max-height: none; padding: 0; }
 .career-pager,
@@ -1282,7 +1291,53 @@ body[data-view="life"] .life-view,
   .life-sidebar-left .life-panel[open] { max-height: calc(100% - 282px); overflow: hidden; }
 }
 
+/* Short desktop windows need a denser workspace. Every accordion header and
+   every active panel remains reachable above the fixed system-message rail. */
+@media (min-width: 960px) and (max-height: 900px) {
+  .life-view { grid-template-rows: 66px 28px minmax(0, 1fr) auto; }
+  .life-toolbar { min-height: 66px; }
+  .simulation-notice { padding-top: 3px; font-size: 9px; }
+  .life-layout { gap: 10px 14px; padding-top: 8px; padding-bottom: 8px; }
+
+  .life-profile-card { grid-template-columns: 70px minmax(0, 1fr); gap: 9px; margin-bottom: 5px; padding: 8px 10px; }
+  .life-profile-card .life-portrait { width: 70px; height: 88px; }
+  .life-identity strong { font-size: 25px; }
+  .life-identity span { font-size: 11px; }
+
+  .life-sidebar { padding-right: 0; }
+  .life-sidebar .life-panel { margin-bottom: 5px; }
+  .life-sidebar .life-panel summary { min-height: 34px; padding: 6px 10px; font-size: 12px; }
+  .life-sidebar .life-panel .panel-body { padding-right: 10px; padding-left: 10px; padding-bottom: 10px; }
+  .life-sidebar-left .life-panel[open],
+  .life-sidebar-right .life-panel[open] { max-height: calc(100% - 208px); overflow: hidden; }
+  .life-stat + .life-stat { margin-top: 7px; }
+  .life-stat-heading { margin-bottom: 4px; font-size: 10px; }
+  .metric-list div, .profile-list div { padding: 5px 0; }
+  .people-list { line-height: 1.55; }
+
+  .current-moment { padding: 20px 28px; }
+  .current-moment h1 { font-size: clamp(27px, 3.5vh, 34px); }
+  .current-moment > p:last-child { margin-top: 10px; font-size: 13px; line-height: 1.5; }
+  .moment-kicker { margin-bottom: 10px; font-size: 10px; }
+  .status-tile { gap: 5px; padding: 13px 16px; }
+  .status-tile strong { font-size: 18px; }
+  .log-section { padding: 14px 16px; }
+
+  .life-timeline-bar { gap: 8px 14px; margin-bottom: 8px; padding: 9px 18px; }
+  .system-feed-shell { grid-template-columns: 140px minmax(0, 1fr); max-height: 38px; padding-bottom: 6px; }
+  .system-feed { height: 32px; }
+  .system-feed-item { padding-block: 5px; }
+  .play-button { width: 48px; height: 48px; }
+  .speed-controls button { min-width: 36px; min-height: 30px; font-size: 10px; }
+  .toolbar-button { min-height: 34px; font-size: 11px; }
+  .life-character-track { height: 30px; }
+  .life-character { width: 24px; height: 32px; bottom: 2px; }
+  .life-years-grid { margin-bottom: 10px; }
+}
+
 @media (max-width: 959px) {
+  body[data-view="life"] .site-header { display: none; }
+  body[data-view="life"] .life-view { grid-template-rows: auto auto auto minmax(0, 1fr) auto; padding-bottom: 0; }
   .roulette-continue-button { top: 18px; right: 16px; min-height: 36px; padding: 0 10px; font-size: 10px; }
   .intro-stage .intro-quote {
     top: 15%;
@@ -1386,9 +1441,127 @@ body[data-view="life"] .life-view,
   .system-feed-shell { max-height: 38px; padding-bottom: 0; }
   .system-feed { height: 32px; max-height: 32px; }
   .system-feed-item { flex-basis: min(330px, 86vw); padding-block: 5px; }
-  .playback-controls { min-height: 44px; padding: 0; }
+  .playback-controls { width: 100%; min-height: 44px; gap: 4px; padding: 0; }
   .play-button { width: 42px; height: 42px; }
-  .speed-controls button { min-width: 30px; min-height: 30px; font-size: 10px; }
+  .speed-controls { flex: 1; min-width: 0; }
+  .speed-controls button { flex: 1; min-width: 0; min-height: 30px; padding-inline: 2px; font-size: 9px; }
+  .playback-controls .toolbar-button { display: inline-grid; min-height: 32px; padding: 0 7px; place-items: center; font-size: 9px; white-space: nowrap; }
+}
+
+/* Phones and small tablets in landscape cannot use the portrait-mobile type
+   scale. Keep the full quote, portrait and call-to-action in one viewport. */
+@media (max-width: 959px) and (max-height: 520px) and (orientation: landscape) {
+  .intro-stage > .figma-logo { top: 14px; left: 22px; width: 126px; height: 31px; }
+  .intro-stage > .figma-logo .figma-logo-one,
+  .intro-stage > .figma-logo .figma-logo-total { font-size: 39px; }
+  .intro-stage > .figma-logo .figma-logo-over { margin-bottom: 1px; font-size: 16px; }
+  .intro-stage .intro-portrait { top: 0; bottom: auto; left: 50%; width: 50%; height: 100%; object-position: 54% center; opacity: .42; }
+  .intro-stage .intro-quote { top: 64px; left: 22px; width: calc(100% - 44px); font-size: clamp(17px, 2.7vw, 23px); line-height: 1.38; }
+  .intro-stage .intro-quote-ko { width: 58%; margin-top: 16px !important; }
+  .intro-stage .intro-quote cite { position: absolute; top: 208px; right: 0; margin: 0; font-size: 17px; text-align: right; }
+  .intro-stage .intro-continue { bottom: 10px; left: 25%; width: 50%; height: 36px; font-size: clamp(12px, 2.4vw, 18px); }
+
+  .profile-stage .profile-logo { top: 12px; left: 18px; width: 126px; height: 31px; }
+  .profile-stage .profile-logo .figma-logo-one,
+  .profile-stage .profile-logo .figma-logo-total { font-size: 39px; }
+  .profile-stage .profile-logo .figma-logo-over { margin-bottom: 1px; font-size: 16px; }
+  .profile-stage .slot-title { top: 62px; left: 18px; width: 430px; font-size: 29px; line-height: 1.2; }
+  .profile-stage .slot-machine-shell { top: 148px; height: calc(100% - 160px - env(safe-area-inset-bottom)); }
+  .profile-stage .birth-slot { height: calc(100% - 66px); flex-basis: calc(100% - 66px); }
+  .profile-stage .slot-actions { height: 60px; flex-basis: 60px; }
+  .profile-stage .figma-birth-button { width: 56px; height: 56px; }
+  .profile-stage .figma-birth-button .spin-ring { width: 56px; height: 56px; }
+  .profile-stage .figma-birth-button .spin-cap { top: 6px; left: 6px; width: 44px; height: 44px; }
+  .profile-stage .figma-birth-button .spin-pulse-outer { top: -13px; left: -13px; width: 82px; height: 82px; }
+  .profile-stage .figma-birth-button .spin-pulse-inner { top: -7px; left: -7px; width: 70px; height: 70px; }
+
+  body[data-view="life"] .life-toolbar { min-height: 56px; padding: 4px 12px; }
+  body[data-view="life"] .life-view { grid-template-rows: auto auto minmax(0, 1fr) auto; }
+  body[data-view="life"] .life-clock { gap: 8px; }
+  body[data-view="life"] .life-clock #year-display { font-size: 22px; }
+  body[data-view="life"] .life-clock small { max-width: 70px; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+  body[data-view="life"] .money-hud { gap: 4px; }
+  body[data-view="life"] .money-hud dt { font-size: 7px; }
+  body[data-view="life"] .money-hud dd { font-size: 10px; }
+  body[data-view="life"] .simulation-notice { display: none; }
+  body[data-view="life"] .life-panel-tabs { margin: 0 12px; }
+  body[data-view="life"] .life-panel-tabs button { min-height: 34px; font-size: 10px; }
+  body[data-view="life"] .life-layout { padding: 6px 12px 0; gap: 6px; }
+  body[data-view="life"] .life-story { grid-template-columns: minmax(0, 1.18fr) minmax(0, .82fr); grid-template-rows: minmax(0, 1fr); gap: 8px; overflow: hidden; }
+  body[data-view="life"] .life-story > .map-section,
+  body[data-view="life"] .life-story > .log-section { display: none; }
+  body[data-view="life"] .current-moment { min-height: 0; padding: 12px 16px; }
+  body[data-view="life"] .current-moment h1 { font-size: 25px; }
+  body[data-view="life"] .current-moment > p:last-child { margin-top: 6px; font-size: 10px; line-height: 1.35; }
+  body[data-view="life"] .moment-kicker { margin-bottom: 6px; font-size: 8px; }
+  body[data-view="life"] .life-status-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+  body[data-view="life"] .status-tile { min-height: 0; padding: 8px 10px; }
+  body[data-view="life"] .status-tile strong { font-size: 14px; }
+  body[data-view="life"] .life-timeline-bar { grid-template-columns: minmax(220px, 1fr) auto; grid-template-rows: 38px 16px; gap: 2px 10px; max-height: 66px; padding: 5px 10px; border-radius: 14px 14px 0 0; }
+  body[data-view="life"] .life-timeline-bar .system-feed-shell { grid-column: 1; grid-row: 1; }
+  body[data-view="life"] .life-timeline-bar .playback-controls { grid-column: 2; grid-row: 1; min-height: 38px; justify-content: flex-end; }
+  body[data-view="life"] .life-timeline-bar .map-section { grid-column: 1 / -1; grid-row: 2; order: initial; height: 16px; }
+  body[data-view="life"] .life-timeline-bar .life-character-track { height: 14px; }
+  body[data-view="life"] .life-timeline-bar .life-character { width: 14px; height: 16px; }
+  body[data-view="life"] .play-button { width: 36px; height: 36px; }
+  body[data-view="life"] .speed-controls button { min-width: 27px; min-height: 28px; font-size: 8px; }
+  body[data-view="life"] .toolbar-button { min-height: 30px; padding: 0 8px; font-size: 9px; }
+
+  body[data-view="result"] .site-header { display: none; }
+  body[data-view="result"] main { height: 100dvh; }
+  body[data-view="result"] .result-view { height: 100%; padding: 7px 12px; }
+  body[data-view="result"] .result-layout { grid-template-rows: 64px minmax(0, 1fr); gap: 5px; }
+  body[data-view="result"] .result-hero { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: 1fr; align-items: center; gap: 8px; }
+  body[data-view="result"] .result-badge { padding: 4px 8px; font-size: 9px; }
+  body[data-view="result"] .result-view h1 { display: flex; align-items: baseline; gap: 8px; font-size: 28px; line-height: 1; }
+  body[data-view="result"] .result-view h1 small { font-size: 9px; }
+  body[data-view="result"] .result-narrative { display: none; }
+  body[data-view="result"] .result-main { gap: 4px; }
+  body[data-view="result"] .result-page-tabs { gap: 3px; }
+  body[data-view="result"] .result-page-tabs button { min-height: 28px; font-size: 8px; }
+  body[data-view="result"] .result-actions { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3px; margin: 0; }
+  body[data-view="result"] .result-actions button { min-height: 30px; font-size: 8px; }
+  body[data-view="result"] .result-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+  body[data-view="result"] .result-summary > div { gap: 2px; padding: 5px 7px; }
+  body[data-view="result"] .result-summary dt { font-size: 8px; }
+  body[data-view="result"] .result-summary dd { font-size: 13px; }
+  body[data-view="result"] .result-summary small { display: none; }
+  body[data-view="result"] .result-row { gap: 4px; }
+  body[data-view="result"] .result-highlight-card,
+  body[data-view="result"] .result-position,
+  body[data-view="result"] .result-curve { padding: 6px 8px; }
+  body[data-view="result"] .result-row h2,
+  body[data-view="result"] .result-curve h2,
+  body[data-view="result"] .result-review-grid h2 { margin-bottom: 3px; font-size: 11px; }
+  body[data-view="result"] .result-highlight-card { gap: 2px; }
+  body[data-view="result"] .result-highlight-card strong { font-size: 13px; }
+  body[data-view="result"] .result-position-rows { gap: 2px; }
+  body[data-view="result"] .position-heading { margin-bottom: 2px; font-size: 9px; }
+  body[data-view="result"] .result-curve-chart { height: 92px; }
+  body[data-view="result"] .result-turning-points { margin-top: 3px; }
+  body[data-view="result"] .result-point { padding-top: 3px; }
+  body[data-view="result"] .result-review-grid { gap: 4px; }
+  body[data-view="result"] .result-review-grid > section { padding: 7px; }
+  body[data-view="result"] .result-influences { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+  body[data-view="result"] .influence-item { gap: 2px; padding: 5px; }
+  body[data-view="result"] .influence-item span,
+  body[data-view="result"] .influence-item strong { font-size: 8px; line-height: 1.25; }
+  body[data-view="result"] .result-cohort .cohort-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  body[data-view="result"] .result-cohort .cohort-card { padding: 5px; }
+  body[data-view="result"] .result-cohort h2 { margin: 0 0 4px; font-size: 13px; }
+  body[data-view="result"] .result-epitaph { padding: 5px; }
+  body[data-view="result"] .result-epitaph h2,
+  body[data-view="result"] .result-epitaph p,
+  body[data-view="result"] .result-epitaph label > span { display: none; }
+  body[data-view="result"] .result-epitaph label { gap: 0; }
+  body[data-view="result"] .result-epitaph textarea { height: 30px; min-height: 30px; padding: 5px 8px; font-size: 9px; }
+  body[data-view="result"] .result-view[data-result-page="summary"] .result-death { display: none; }
+  body[data-view="result"] .result-view[data-result-page="summary"] .result-main { grid-template-rows: 28px auto minmax(0, 1fr) 30px; }
+  body[data-view="result"] .result-view[data-result-page="influence"] .result-row { display: none; }
+  body[data-view="result"] .result-view[data-result-page="influence"] .result-main,
+  body[data-view="result"] .result-view[data-result-page="status"] .result-main,
+  body[data-view="result"] .result-view[data-result-page="curve"] .result-main { grid-template-rows: 28px minmax(0, 1fr) 30px; }
+  body[data-view="result"] .result-view[data-result-page="records"] .result-main { grid-template-rows: 28px auto minmax(0, 1fr) 30px; }
 }
 
 @media (max-width: 560px) {
@@ -1424,7 +1597,269 @@ body[data-view="life"] .life-view,
   .result-review-grid { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 560px) {
+  body[data-view="life"] .life-story { grid-template-rows: minmax(150px, .9fr) minmax(180px, 1fr) minmax(150px, 1fr); gap: 8px; overflow: hidden; }
+  body[data-view="life"] .current-moment { min-height: 0; padding: 16px 18px; }
+  body[data-view="life"] .moment-kicker { margin-bottom: 8px; font-size: 10px; }
+  body[data-view="life"] .current-moment h1 { font-size: 28px; line-height: 1.2; }
+  body[data-view="life"] .current-moment > p:last-child { display: -webkit-box; margin-top: 8px; overflow: hidden; font-size: 11px; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  body[data-view="life"] .life-status-grid { gap: 8px; }
+  body[data-view="life"] .status-tile { min-height: 0; padding: 10px 12px; }
+  body[data-view="life"] .status-tile strong { font-size: 16px; }
+  body[data-view="life"] .log-section { padding: 12px 16px; }
+  body[data-view="life"] .log-section .life-section-heading { margin-bottom: 6px; }
+  .playback-controls #skip-button,
+  .playback-controls #auto-button { width: 46px; padding: 0; font-size: 0; }
+  .playback-controls #skip-button::after { content: '다음'; font-size: 9px; }
+  .playback-controls #auto-button::after { content: '자동'; font-size: 9px; }
+  .result-view[data-result-page="influence"] .result-main { grid-template-rows: auto auto minmax(0, 1fr) auto; }
+  .result-view[data-result-page="influence"] .result-row { min-height: 0; }
+  .result-view[data-result-page="influence"] .result-influence-panel { padding: 9px; }
+  .result-view[data-result-page="influence"] .result-influences { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+  .result-view[data-result-page="influence"] .influence-item { gap: 4px; padding: 8px; }
+  .result-view[data-result-page="influence"] .influence-item strong { font-size: 10px; line-height: 1.3; }
+}
+
+.profile-page-tabs, .life-sidebar-picker { display: none; }
+.investment-korea-map .kmap { width: auto; height: 100%; max-width: 100%; margin-inline: auto; }
+.log-section { position: relative; }
+.log-pager { grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; }
+.log-pager button { min-height: 30px; padding: 4px 8px; font-size: 10px; }
+.log-pager span { font: 10px var(--font-mono); color: var(--ink-muted); }
+
+@media (min-width: 960px) and (max-height: 900px) {
+  .life-layout { grid-template-rows: 184px minmax(0, 1fr); }
+  .life-sidebar-right { display: grid; grid-template-rows: 34px minmax(0, 1fr); gap: 6px; }
+  .life-sidebar-right .life-sidebar-picker { display: block; width: 100%; height: 34px; padding: 0 10px; border: 1px solid var(--line-bright); border-radius: 10px; color: var(--ink); background: var(--surface); font: 11px var(--font-body); }
+  .life-sidebar-right > .life-panel { display: none; }
+  .life-sidebar-right > .life-panel.is-mobile-active { display: block; height: 100%; max-height: none; margin: 0; }
+  .life-sidebar-right > .life-panel > summary { display: none; }
+  .life-sidebar-right .profile-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 8px 10px 4px; }
+  .life-sidebar-right .profile-chip { padding: 6px; }
+  .life-sidebar-right .profile-chip small, .life-sidebar-right .profile-chip strong { font-size: 10px; }
+  .life-sidebar-right .profile-list { padding: 0 10px 4px; }
+  .life-sidebar-right .profile-list div { padding-block: 4px; }
+  .life-sidebar-right .profile-list dt, .life-sidebar-right .profile-list dd { font-size: 11px; }
+  .life-sidebar-right .profile-list .appearance-row dd { font-size: 10px; line-height: 1.4; }
+  .life-sidebar-right .panel-action { min-height: 32px; margin: 0 10px 6px; width: calc(100% - 20px); font-size: 11px; }
+  .life-sidebar-right .panel-body { padding-top: 10px; }
+  .life-sidebar-right .cohort-grid { grid-template-columns: 1fr 1fr; gap: 5px; }
+  .life-sidebar-right .cohort-card { padding: 7px; }
+  .life-sidebar-right .cohort-card p { font-size: 10px; }
+  .log-section { grid-template-rows: auto minmax(0, 1fr) auto; }
+
+  .result-view { padding-block: 8px; }
+  .result-layout { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); gap: 8px; }
+  .result-hero { grid-template-columns: auto 1fr; grid-template-rows: auto auto; gap: 4px 12px; align-content: start; }
+  .result-portrait, .result-timeline-link { display: none; }
+  .result-badge { align-self: end; padding-block: 5px; font-size: 10px; }
+  .result-view h1 { align-self: end; gap: 4px; font-size: 38px; line-height: 1; }
+  .result-view h1 small { font-size: 11px; }
+  .result-narrative { grid-column: 1 / -1; display: -webkit-box; margin: 0; overflow: hidden; font-size: 11px; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .result-main { gap: 6px; }
+  .result-page-tabs { gap: 4px; }
+  .result-page-tabs button { min-height: 32px; padding: 0 4px; font-size: 10px; }
+  .result-death { min-height: 30px; padding: 6px 10px; font-size: 11px; }
+  .result-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .result-summary > div { gap: 3px; padding: 8px 10px; border-radius: 10px; }
+  .result-summary dt, .result-summary small { font-size: 9px; }
+  .result-summary dd { font-size: 17px; }
+  .result-row { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .result-highlight-card, .result-position, .result-curve { padding: 9px 10px; border-radius: 10px; }
+  .result-row h2, .result-curve h2, .result-review-grid h2 { margin-bottom: 5px; font-size: 13px; }
+  .result-highlight-card { gap: 4px; }
+  .result-highlight-card strong { font-size: 16px; }
+  .result-position > p { display: none; }
+  .result-position-rows { gap: 4px; }
+  .position-heading { margin-bottom: 4px; font-size: 11px; }
+  .result-curve-chart { height: min(22vh, 130px); }
+  .result-turning-points { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; margin-top: 6px; }
+  .result-point { padding-top: 5px; }
+  .result-point span, .result-point strong { font-size: 9px; }
+  .result-review-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .result-review-grid > section { border-radius: 10px; }
+  .result-cohort { margin-top: 0; }
+  .result-cohort .cohort-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+  .result-cohort .cohort-card { padding: 7px; }
+  .result-cohort .cohort-card p { display: -webkit-box; margin: 3px 0; overflow: hidden; font-size: 9px; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
+  .result-epitaph { margin-top: 0; padding: 8px; }
+  .result-epitaph textarea { min-height: 38px; }
+  .result-actions { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; margin-top: 0; overflow: hidden; }
+  .result-actions button { min-width: 0; min-height: 32px; padding: 0 4px; overflow: hidden; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+  .result-notice { display: none; }
+}
+
+/* Small screens page through the same content instead of shrinking or losing
+   controls. Native selectors keep every sidebar section keyboard-accessible. */
+@media (max-width: 959px) {
+  .profile-stage .slot-title { top: 68px; font-size: 30px; line-height: 1.25; }
+  .profile-page-tabs { position: absolute; z-index: 8; top: 160px; left: 16px; right: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .profile-page-tabs button { min-height: 36px; border: 1px solid var(--line-bright); border-radius: 8px; color: var(--ink-muted); background: #0a0a0a; font: 11px var(--font-body); cursor: pointer; }
+  .profile-page-tabs button[aria-pressed="true"] { color: #000; background: var(--ink); }
+  .profile-stage .slot-machine-shell { top: 210px; height: calc(100% - 222px - env(safe-area-inset-bottom)); }
+  .profile-stage .birth-map { top: 208px; left: 16px; width: calc(100% - 32px); height: calc(100% - 224px); }
+  .profile-stage .birth-map-canvas { inset: 0 auto auto 50%; width: auto; height: 100%; max-width: 100%; aspect-ratio: 4 / 5; transform: translateX(-50%); }
+  .profile-stage .birth-map-overview, .profile-stage .birth-map-region { top: 0; left: 0; width: 100%; height: 100%; }
+  .profile-stage .birth-map-detail { top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
+  .profile-stage .birth-map-label { top: calc(var(--birth-map-y) + 12px); left: 0; width: 100%; max-width: 100%; padding: 4px; text-align: center; font-size: 12px; }
+  .profile-stage .birth-map-marker { top: var(--birth-map-y); left: var(--birth-map-x); }
+  .profile-stage .birth-map-tooltip { top: clamp(0px, var(--birth-map-y), calc(100% - 80px)); left: clamp(0px, var(--birth-map-x), calc(100% - 132px)); }
+  .profile-stage .cohort-preview-panel { position: absolute; top: 210px; right: 16px; bottom: 16px; left: 16px; width: auto; max-height: none; margin: 0; padding: 14px; }
+  .profile-stage .cohort-preview-panel > summary { margin-bottom: 14px; pointer-events: none; }
+  .profile-stage .cohort-preview-panel .cohort-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .profile-stage .cohort-preview-panel .cohort-card { padding: 12px; }
+  .profile-stage:not([data-profile-page="roulette"]) .slot-machine-shell,
+  .profile-stage:not([data-profile-page="map"]) .birth-map,
+  .profile-stage:not([data-profile-page="cohort"]) .cohort-preview-panel { display: none; }
+  .roulette-continue-button { top: 16px; right: 92px; width: 82px; min-height: 30px; padding: 0; font-size: 0; }
+  .roulette-continue-button::after { content: '이어 살기 →'; font-size: 10px; }
+
+  .life-panel-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .life-sidebar-picker { display: block; width: 100%; height: 38px; padding: 0 12px; border: 1px solid var(--line-bright); border-radius: 10px; color: var(--ink); background: var(--surface); font: 12px var(--font-body); }
+  body[data-view="life"] .life-sidebar { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); height: 100%; align-content: stretch; gap: 8px; }
+  body[data-view="life"] .life-sidebar-left { grid-template-rows: auto auto minmax(0, 1fr); }
+  .life-sidebar-left .life-sidebar-picker { grid-row: 2; }
+  .life-sidebar-left .life-profile-card { grid-row: 1; }
+  body[data-view="life"] .life-sidebar > .life-panel { display: none; }
+  body[data-view="life"] .life-sidebar > .life-panel.is-mobile-active { display: block; height: 100%; max-height: none; margin: 0; overflow: hidden; }
+  .life-sidebar > .life-panel.is-mobile-active > summary { display: none; }
+  .life-sidebar > .life-panel.is-mobile-active > :nth-child(2) { padding-top: 14px; }
+  .life-sidebar .cohort-grid { grid-template-columns: 1fr 1fr; }
+  .life-sidebar .profile-chips { display: grid; grid-template-columns: 1fr 1fr; }
+  .life-view[data-mobile-panel="story"] .life-story { grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); height: 100%; }
+  .life-view[data-mobile-panel="story"] .log-section { display: none; }
+  .life-view[data-mobile-panel="records"] .life-sidebar,
+  .life-view[data-mobile-panel="records"] .current-moment,
+  .life-view[data-mobile-panel="records"] .life-status-grid { display: none; }
+  body[data-view="life"] .life-view[data-mobile-panel="records"] .life-story { display: grid; grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr); width: 100%; height: 100%; }
+  body[data-view="life"] .life-view[data-mobile-panel="records"] .log-section { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; min-height: 0; }
+  .life-view[data-mobile-panel="records"] .life-log { max-height: none; }
+}
+
+@media (max-width: 560px) and (max-height: 740px) {
+  body[data-view="life"] .life-profile-card { grid-template-columns: 52px minmax(0, 1fr); padding: 6px 10px; }
+  body[data-view="life"] .life-profile-card .life-portrait { width: 52px; height: 58px; }
+  .life-identity strong { font-size: 22px; }
+  .life-identity span { font-size: 10px; }
+  .life-sidebar [data-life-list="wellbeing"] { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .life-sidebar .wellbeing-row + .wellbeing-row { margin-top: 0; }
+  .life-sidebar .life-stat-heading { font-size: 11px; }
+  .life-sidebar .focus-options { grid-template-columns: repeat(3, 1fr); }
+  .life-sidebar .focus-options button { min-height: 32px; padding: 5px; }
+  .life-sidebar .profile-chips { padding-top: 8px; padding-bottom: 6px; gap: 4px; }
+  .life-sidebar .profile-chip { padding: 6px; }
+  .life-sidebar .profile-list div { padding-block: 4px; }
+  .life-sidebar .profile-list dt, .life-sidebar .profile-list dd { font-size: 11px; }
+  .life-sidebar .people-list { font-size: 12px; line-height: 1.5; }
+  .life-sidebar .cohort-card { padding: 7px; }
+  .life-sidebar .cohort-card p { font-size: 10px; }
+  body[data-view="life"] .current-moment { padding: 12px 14px; }
+  body[data-view="life"] .current-moment h1 { font-size: 24px; }
+  .life-sidebar #money-panel .asset-details { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+  .life-sidebar .asset-row { padding: 3px 5px; }
+  .life-sidebar .business-status { padding-bottom: 4px; }
+  .life-sidebar .panel-action { margin-bottom: 8px; }
+}
+
+@media (max-width: 560px) {
+  body[data-view="life"] .life-toolbar { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; gap: 2px 8px; }
+  .life-toolbar .life-clock { grid-column: 1; grid-row: 1; justify-content: start; gap: 8px; }
+  .life-toolbar .life-clock #year-display { font-size: 20px; }
+  .life-toolbar .life-clock #age-display, .life-toolbar .life-clock small { font-size: 12px; }
+  .life-toolbar .money-hud { grid-column: 1; grid-row: 2; display: block; }
+  .life-toolbar .money-hud > div:first-child { display: flex; align-items: baseline; gap: 8px; }
+  .life-toolbar .money-hud > div:first-child dd { overflow: visible; font-size: 13px; white-space: nowrap; }
+  .life-toolbar .life-toolbar-actions { grid-column: 2; grid-row: 1 / -1; align-self: center; gap: 6px; }
+}
+
+@media (max-width: 959px) and (max-height: 520px) and (orientation: landscape) {
+  .profile-stage .slot-title { top: 58px; left: 18px; width: 300px; font-size: 22px; }
+  body[data-view="life"] .life-view[data-mobile-panel="story"] .life-story { grid-template-rows: minmax(0, 1fr); }
+  .profile-page-tabs { top: 64px; left: 46%; right: 16px; }
+  .profile-stage .slot-machine-shell { top: 122px; height: calc(100% - 134px); }
+  .profile-stage .birth-map { top: 112px; left: 16px; width: calc(100% - 32px); height: calc(100% - 124px); }
+  .profile-stage .birth-map-overview, .profile-stage .birth-map-region, .profile-stage .birth-map-detail { left: 0; width: 100%; }
+  .profile-stage .cohort-preview-panel { top: 122px; padding: 10px; }
+  .profile-stage .cohort-preview-panel > summary { margin-bottom: 8px; }
+  .profile-stage .cohort-preview-panel .cohort-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .profile-stage .cohort-preview-panel .cohort-card { padding: 8px; }
+  body[data-view="life"] .life-sidebar { gap: 6px; }
+  body[data-view="life"] .life-sidebar-left { grid-template-columns: 142px minmax(0, 1fr); grid-template-rows: 32px minmax(0, 1fr); }
+  .life-sidebar-left .life-sidebar-picker { grid-column: 2; grid-row: 1; }
+  body[data-view="life"] .life-sidebar-left .life-profile-card { grid-column: 1; grid-row: 1 / -1; display: flex; flex-direction: column; justify-content: center; padding: 8px; }
+  .life-sidebar-left > .life-panel { grid-column: 2; grid-row: 2; }
+  body[data-view="life"] .life-sidebar-right { grid-template-rows: 32px minmax(0, 1fr); }
+  .life-sidebar-picker { height: 32px; font-size: 11px; }
+  .life-sidebar .life-panel .panel-body { padding: 8px 12px; }
+  .life-sidebar .life-panel.is-mobile-active > :nth-child(2) { padding-top: 8px; }
+  .life-sidebar [data-life-list="stats"], .life-sidebar [data-life-list="wellbeing"] { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; }
+  .life-sidebar .life-stat + .life-stat, .life-sidebar .wellbeing-row + .wellbeing-row { margin-top: 0; }
+  .life-sidebar .life-stat-heading { margin-bottom: 4px; font-size: 10px; }
+  .life-sidebar .metric-list, .life-sidebar .profile-list { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; }
+  .life-sidebar .metric-list > div, .life-sidebar .profile-list > div { min-height: 0; padding-block: 3px; }
+  .life-sidebar .metric-list dt, .life-sidebar .profile-list dt { font-size: 10px; }
+  .life-sidebar .metric-list dd, .life-sidebar .profile-list dd { font-size: 11px; }
+  .life-sidebar .profile-chips { display: none; }
+  .life-sidebar .profile-list .appearance-row dd { font-size: 10px; }
+  .life-sidebar .money-page-tabs { gap: 4px; padding-block: 6px; }
+  .life-sidebar .money-page-tabs button { min-height: 28px; font-size: 10px; }
+  .life-sidebar #money-panel .asset-details { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+  .life-sidebar .asset-row { flex-direction: column; align-items: start; gap: 2px; padding: 4px; }
+  .life-sidebar .cohort-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .life-sidebar .cohort-card { padding: 6px; }
+  .life-sidebar .cohort-card p { font-size: 10px; }
+  .life-sidebar .panel-action { min-height: 30px; margin-bottom: 4px; }
+  .life-sidebar .focus-options { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
+  .life-sidebar .focus-options button { min-height: 34px; padding: 5px; font-size: 11px; }
+  body[data-view="life"] .life-view[data-mobile-panel="records"] .log-section { display: grid; padding: 10px 14px; }
+  .life-view[data-mobile-panel="records"] .log-section .eyebrow { display: none; }
+}
+
 @media (max-height: 520px) {
+  .decision-dialog { max-height: calc(100dvh - 24px); }
+  .decision-dialog .decision-card { min-height: 0; max-height: calc(100dvh - 26px); padding: 12px 20px; gap: 4px; align-content: start; }
+  .decision-card .eyebrow { margin: 0; padding-block: 4px; font-size: 9px; }
+  .decision-card h2 { margin: 0; font-size: 25px; line-height: 1.2; }
+  .decision-card h2 br { display: none; }
+  .decision-card .decision-prompt { margin: 2px 0 6px; font-size: 11px; line-height: 1.4; }
+  .decision-card .decision-choices { gap: 6px; }
+  .decision-card .decision-choice { min-height: 42px; padding: 6px 10px; gap: 5px; }
+  .decision-card .decision-number { width: 22px; height: 22px; font-size: 10px; }
+  .decision-card .decision-copy { gap: 3px; }
+  .decision-card .decision-copy strong { font-size: 14px; }
+  .decision-card .decision-copy small { font-size: 10px; line-height: 1.35; }
+  .decision-card .choice-meta { gap: 3px; padding-top: 5px; }
+  .decision-card .choice-meta-row { font-size: 10px; }
+  .decision-card .decision-tags { gap: 4px; }
+  .decision-card .decision-tags i { padding: 2px 5px; font-size: 8px; }
+  .decision-card .choice-note { margin: 0; font-size: 9px; }
+  .decision-card .decision-source { margin: 0; font-size: 9px; }
+  .decision-card .decision-pager button { min-height: 28px; padding: 3px 8px; font-size: 10px; }
+  .decision-card .decision-pager { margin-top: 0; }
+  .decision-card .decision-footnote { margin: 2px 0; font-size: 9px; line-height: 1.4; }
+  .decision-card .primary-button { min-height: 36px; margin-top: 4px; font-size: 12px; }
+  .identity-notice, .identity-method-note { margin: 4px 0; font-size: 11px; line-height: 1.45; }
+  .agency-compare > div { min-height: 60px; padding: 10px; }
+  .agency-compare { gap: 10px; }
+  .finance-card .finance-feedback { margin: 0; padding: 6px 8px; font-size: 10px; }
+  .finance-card .finance-page-tabs button { min-height: 28px; }
+  .finance-card .finance-experience { padding: 8px 12px; }
+  .finance-card .finance-experience h3 { margin-bottom: 4px; font-size: 15px; }
+  .finance-card .finance-experience p { margin-bottom: 6px; font-size: 10px; }
+  .finance-card .finance-experience button { min-height: 30px; font-size: 10px; }
+  .finance-card .real-estate-experience { display: grid; grid-template-columns: 1fr 180px; }
+  .finance-card .investment-korea-map { grid-column: 2; grid-row: 1 / span 3; height: 120px; margin: 0; }
+  .event-stage { padding: 16px 24px; gap: 12px; }
+  .event-content { gap: 8px; }
+  .event-content h2 { font-size: 34px; }
+  .event-badge { padding: 5px 10px; font-size: 10px; }
+  .event-when { font-size: 10px; }
+  .event-text { font-size: 12px; line-height: 1.45; }
+  .event-impact { min-width: 90px; padding: 6px 12px; gap: 2px; }
+  .event-impact span { font-size: 10px; }
+  .event-impact strong { font-size: 18px; }
+  .event-footer { gap: 6px; }
+  .event-footer .primary-button { min-height: 34px; padding: 0 16px; font-size: 12px; }
   .source-card { gap: 4px; padding: 10px 14px; }
   .source-card h2 { font-size: 20px; }
   .source-card .decision-prompt { margin: 2px 0 4px; font-size: 10px; line-height: 1.35; }

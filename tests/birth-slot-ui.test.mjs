@@ -47,9 +47,13 @@ test('렌더링은 출생 결과를 다시 추첨하지 않는다', () => {
 
 test('Figma 1440×1024 무대를 뷰포트 안에 비율대로 맞춘다', () => {
   assert.equal(typeof birthSlotUi.fitFigmaStage, 'function');
+  assert.equal(typeof birthSlotUi.fitResponsiveFigmaStage, 'function');
   assert.equal(birthSlotUi.fitFigmaStage(1440, 1024), 1);
   assert.equal(birthSlotUi.fitFigmaStage(1920, 1080), 1.0546875);
   assert.equal(birthSlotUi.fitFigmaStage(1024, 768), 0.7111111111111111);
+  assert.equal(birthSlotUi.fitResponsiveFigmaStage(1440, 1024), 1);
+  assert.equal(birthSlotUi.fitResponsiveFigmaStage(1470, 779), 779 / 960);
+  assert.equal(birthSlotUi.fitResponsiveFigmaStage(390, 844), 390 / 1440);
 });
 
 test('출생 결과는 Desktop 2 지도 표시와 연결된다', () => {

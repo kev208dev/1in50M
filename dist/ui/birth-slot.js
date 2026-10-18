@@ -15,6 +15,17 @@ export function fitFigmaStage(viewportWidth, viewportHeight, frameWidth = 1440, 
   return Math.min(width / frameWidth, height / frameHeight);
 }
 
+export function fitResponsiveFigmaStage(viewportWidth, viewportHeight, frameWidth = 1440, frameHeight = 1024) {
+  const width = Math.max(0, Number(viewportWidth) || 0);
+  const height = Math.max(0, Number(viewportHeight) || 0);
+  if (!width || !height) return 0;
+  if (width < 960 || width / height < 1.55) return fitFigmaStage(width, height, frameWidth, frameHeight);
+  // The Figma frames have 32–64 px of expendable vertical canvas around the
+  // visible controls. On short desktop viewports, scale against that safe area
+  // so the composition uses the screen without stretching or clipping controls.
+  return fitFigmaStage(width, height, frameWidth, Math.min(frameHeight, 960));
+}
+
 export function nextBirthMapMode(mode, action) {
   if (action === 'back') return 'region';
   if (action === 'leave') return 'marker';

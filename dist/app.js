@@ -39,7 +39,7 @@ import {
 import {
   renderBirthSlot,
   renderBirthCertificate,
-  fitFigmaStage,
+  fitResponsiveFigmaStage,
   nextBirthMapMode,
   slotDuration,
 } from './ui/birth-slot.js';
@@ -91,6 +91,7 @@ let careerGroupPage = 0;
 let decisionChoicePage = 0;
 let pastLivesPage = 0;
 let sourcePage = 0;
+let lifeLogPage = 0;
 const networkPages = { community: 0, memorial: 0 };
 
 function collectionPageSize() {
@@ -100,7 +101,34 @@ function collectionPageSize() {
 }
 
 function syncFigmaStageScale() {
-  document.documentElement.style.setProperty('--figma-stage-scale', String(fitFigmaStage(window.innerWidth, window.innerHeight)));
+  document.documentElement.style.setProperty('--figma-stage-scale', String(fitResponsiveFigmaStage(window.innerWidth, window.innerHeight)));
+}
+
+function setProfilePage(page = 'roulette') {
+  const stage = document.querySelector('.profile-stage');
+  stage.dataset.profilePage = page;
+  stage.querySelectorAll('.profile-page-tabs button').forEach((button) => {
+    button.setAttribute('aria-pressed', String(button.dataset.profilePage === page));
+  });
+  if (page === 'cohort') stage.querySelector('.cohort-preview-panel').open = true;
+}
+
+function updateLifeLogPage(page = lifeLogPage) {
+  const log = document.querySelector('#life-log');
+  const entries = [...log.querySelectorAll('.log-entry')];
+  const pageSize = window.innerHeight <= 520 || (window.innerWidth >= 960 && window.innerHeight <= 900) ? 1 : window.innerWidth < 960 ? 2 : 3;
+  const pages = Math.max(1, Math.ceil(entries.length / pageSize));
+  lifeLogPage = Math.max(0, Math.min(page, pages - 1));
+  entries.forEach((entry, index) => { entry.hidden = Math.floor(index / pageSize) !== lifeLogPage; });
+  let pager = log.parentElement.querySelector('.log-pager');
+  if (!pager) {
+    pager = document.createElement('nav');
+    pager.className = 'collection-pager log-pager';
+    pager.setAttribute('aria-label', '인생 기록 페이지');
+    log.after(pager);
+  }
+  pager.hidden = pages <= 1;
+  pager.innerHTML = `<button type="button" data-log-page="previous" ${lifeLogPage === 0 ? 'disabled' : ''}>← 이전</button><span>${lifeLogPage + 1} / ${pages}</span><button type="button" data-log-page="next" ${lifeLogPage === pages - 1 ? 'disabled' : ''}>다음 →</button>`;
 }
 
 function setBirthMapMode(mode) {
@@ -183,6 +211,8 @@ function renderProfileContext(profile) {
   if (stage && selected) {
     stage.style.setProperty('--birth-map-left', `${40 + (selected.x / 100) * 440}px`);
     stage.style.setProperty('--birth-map-top', `${30 + (selected.y / 120) * 550}px`);
+    stage.style.setProperty('--birth-map-x', `${selected.x}%`);
+    stage.style.setProperty('--birth-map-y', `${(selected.y / 120) * 100}%`);
   }
   const label = document.querySelector('[data-birth-map="label"]');
   if (label) label.textContent = `${profile.region.name} ${profile.district}`;
@@ -228,6 +258,7 @@ function readRuntimeSettings() {
 async function spinBirthSlot() {
   if (isDrawing) return;
   setDrawDisabled(true);
+  setProfilePage('roulette');
   showView('profile');
   runtimeSettings = readRuntimeSettings();
   const seed = nextBirthSeed();
@@ -344,6 +375,7 @@ function trackBigEvents(life) {
 function renderCurrentLife(life) {
   trackBigEvents(life);
   renderLife(views.life, life);
+  updateLifeLogPage();
   renderSystemFeed(document.querySelector('#system-feed'), life);
   renderCohort(document.querySelector('#cohort-life'), advanceCohort(life.cohort, life.age), life.age);
   updateFinanceDialog(life);
@@ -730,6 +762,14 @@ document.querySelector('#life-panel-tabs').addEventListener('click', (event) => 
     item.setAttribute('aria-pressed', String(item === button));
   });
 });
+document.querySelector('.profile-page-tabs').addEventListener('click', (event) => {
+  const button = event.target.closest('button[data-profile-page]');
+  if (button) setProfilePage(button.dataset.profilePage);
+});
+views.life.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-log-page]');
+  if (button) updateLifeLogPage(lifeLogPage + (button.dataset.logPage === 'next' ? 1 : -1));
+});
 
 document.querySelector('#speed-controls').addEventListener('click', (event) => {
   const button = event.target.closest('[data-speed]');
@@ -880,10 +920,32 @@ document.querySelector('#money-panel').addEventListener('click', (event) => {
 });
 setMoneyPage('flow');
 
-document.querySelectorAll('.life-sidebar').forEach((sidebar) => {
+document.querySelectorAll('.life-sidebar').forEach((sidebar, sidebarIndex) => {
+  const panels = [...sidebar.querySelectorAll(':scope > details')];
+  const picker = document.createElement('select');
+  picker.className = 'life-sidebar-picker';
+  picker.setAttribute('aria-label', sidebarIndex === 0 ? '상태와 자산 항목' : '사람과 생활 항목');
+  panels.forEach((panel, index) => {
+    const option = document.createElement('option');
+    option.value = String(index);
+    option.textContent = panel.querySelector('summary').textContent.replace(/^\s*\d+\s*/, '').trim();
+    picker.append(option);
+    panel.classList.toggle('is-mobile-active', panel.open);
+  });
+  sidebar.prepend(picker);
+  picker.addEventListener('change', () => {
+    panels.forEach((panel, index) => {
+      const active = index === Number(picker.value);
+      panel.classList.toggle('is-mobile-active', active);
+      panel.open = active;
+    });
+  });
   sidebar.addEventListener('toggle', (event) => {
     const opened = event.target;
     if (!(opened instanceof HTMLDetailsElement) || !opened.open) return;
+    if (window.innerWidth < 960 || (sidebar.classList.contains('life-sidebar-right') && window.innerHeight <= 900)) return;
+    picker.value = String(panels.indexOf(opened));
+    panels.forEach((panel) => panel.classList.toggle('is-mobile-active', panel === opened));
     sidebar.querySelectorAll('details[open]').forEach((details) => {
       if (details !== opened) details.open = false;
     });
@@ -1032,6 +1094,7 @@ document.querySelector('.brand').addEventListener('click', (event) => {
 document.addEventListener('visibilitychange', () => controller?.setVisible(!document.hidden));
 window.addEventListener('resize', () => {
   syncFigmaStageScale();
+  updateLifeLogPage();
   if (document.body.dataset.view === 'past-lives') showPastLives();
   if (document.body.dataset.view === 'community' || document.body.dataset.view === 'memorial') renderNetworkLists([...publicLivesById.values()]);
 });

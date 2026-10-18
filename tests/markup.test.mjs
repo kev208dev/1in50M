@@ -97,6 +97,8 @@ test('PC 생애 화면은 뷰포트에 고정되고 시스템 메시지만 스�
   assert.match(css, /@media \(min-width: 960px\)[\s\S]*body\[data-view="life"\][\s\S]*overflow:\s*hidden/);
   assert.match(css, /@media \(min-width: 960px\)[\s\S]*\.life-layout[\s\S]*min-height:\s*0/);
   assert.match(themeCss, /\.life-layout\s*>\s*\.life-story,[\s\S]*\.life-layout\s*>\s*\.life-sidebar[\s\S]*overflow:\s*hidden\s*!important/);
+  assert.match(themeCss, /@media \(min-width: 960px\) and \(max-height: 900px\)[\s\S]*\.life-sidebar \.life-panel/);
+  assert.match(themeCss, /@media \(min-width: 960px\) and \(max-height: 900px\)[\s\S]*\.life-timeline-bar/);
 });
 
 test('모바일 생애 화면은 탭으로 패널을 전환하고 내부 스크롤을 만들지 않는다', () => {
@@ -143,9 +145,12 @@ test('모바일에서 잘릴 수 있는 선택·자산·기록은 스크롤 대�
 });
 
 test('모바일 제목은 무대 축소 해제 뒤 읽을 수 있는 반응형 글꼴을 쓴다', () => {
-  assert.match(css, /@media \(max-width: 900px\)[\s\S]*\.figma-stage[^}]*transform:\s*none/);
+  assert.match(css, /@media \(max-width: 959px\)[\s\S]*\.figma-stage[^}]*transform:\s*none/);
   assert.match(themeCss, /@media \(max-width: 560px\)[\s\S]*\.intro-stage \.intro-quote[^}]*font-size:\s*clamp\(17px/);
   assert.match(themeCss, /\.intro-stage \.intro-continue[^}]*height:\s*44px[^}]*font-size:\s*clamp\(13px/);
+  assert.match(themeCss, /@media \(max-width: 959px\) and \(max-height: 520px\) and \(orientation: landscape\)[\s\S]*\.intro-stage \.intro-quote[^}]*font-size:\s*clamp\(17px, 2\.7vw, 23px\)/);
+  assert.match(themeCss, /body\[data-view="life"\] \.life-view \{[^}]*grid-template-rows: auto auto auto minmax\(0, 1fr\) auto;[^}]*padding-bottom:\s*0/);
+  assert.match(themeCss, /orientation: landscape\)[\s\S]*body\[data-view="life"\] \.life-timeline-bar[^}]*grid-template-columns:\s*minmax\(220px, 1fr\) auto/);
 });
 
 test('생애 화면은 외모·성격 칩과 자산 상세, 투자 안내를 제공한다', () => {
