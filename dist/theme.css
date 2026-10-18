@@ -857,6 +857,7 @@ body[data-view="life"] .logo b { font-size: 26px; }
 .finance-experience > div:not(.investment-korea-map) { display: flex; flex-wrap: wrap; gap: 8px; }
 .finance-experience button { min-height: 38px; padding: 0 12px; border: 1px solid var(--line-bright); border-radius: 9px; color: var(--ink); background: transparent; cursor: pointer; }
 .finance-experience button:hover:not(:disabled) { color: #000; background: var(--accent); border-color: var(--accent); }
+.finance-experience button:disabled { opacity: 1; color: #aaa; border-color: rgba(255, 255, 255, .16); }
 .finance-experience.is-risk { border-color: rgba(255,211,110,.35); }
 .real-estate-experience { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr minmax(240px, 420px); column-gap: 24px; }
 .real-estate-experience h3, .real-estate-experience > p, .property-choice { grid-column: 1; }

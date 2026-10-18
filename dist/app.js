@@ -6,7 +6,7 @@ import { createKoreaMap, regionLabel } from './ui/korea-map.js?v=20261018-6';
 import { createEventNotice, renderBigEvent } from './ui/big-event.js?v=20261019-1';
 import { renderSystemFeed } from './ui/system-feed.js?v=20261019-1';
 import { financeMenuState } from './ui/finance-menu.js';
-import { renderMomentContext } from './ui/moment-context.js';
+import { renderMomentContext } from './ui/moment-context.js?v=20261019-2';
 import { createCohortPeers, advanceCohort } from './engine/cohort.js';
 import { renderCohort } from './ui/cohort.js';
 import { createLife } from './engine/life.js';
