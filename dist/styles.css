@@ -958,7 +958,8 @@ body[data-view="life"] .life-view { max-height: 100%; overflow: auto; }
 .figma-logo-one,
 .figma-logo-total { font-size: 72px; }
 .figma-logo-over { margin: 0 2px 2px; font-size: 29px; }
-.figma-logo img { position: absolute; right: 0; bottom: -6px; left: 0; width: 100%; height: 4px; }
+/* The compact line box is shorter than the font's painted glyphs. */
+.figma-logo img { position: absolute; right: 0; bottom: -16px; left: 0; width: 100%; height: 4px; }
 
 /* Desktop - 1 */
 .intro-portrait {
