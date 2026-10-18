@@ -781,7 +781,7 @@ body[data-view="life"] .logo b { font-size: 26px; }
   right: -2vw;
   bottom: -6vw;
   z-index: -1;
-  color: rgba(255, 255, 255, .05);
+  color: rgba(255, 255, 255, .22);
   font-family: var(--font-display);
   font-size: clamp(200px, 32vw, 480px);
   font-weight: 700;
@@ -829,6 +829,9 @@ body[data-view="life"] .logo b { font-size: 26px; }
 .life-timeline-bar { grid-template-columns: auto minmax(0, 1fr); }
 .system-feed-shell { grid-column: 1 / -1; display: grid; grid-template-columns: 150px minmax(0, 1fr); min-width: 0; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
 .system-feed-heading { display: flex; align-items: center; gap: 8px; color: var(--accent); font-family: var(--font-mono); font-size: 10px; letter-spacing: .09em; }
+#event-details-button { display: flex; align-self: center; min-height: 32px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: transparent; letter-spacing: 0; white-space: nowrap; }
+#event-details-button:disabled { opacity: .4; cursor: default; }
+#event-details-button:not(:disabled):hover { border-color: var(--accent); background: rgba(6, 183, 82, .1); }
 .system-feed { display: flex; gap: 8px; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
 .system-feed-item { display: grid; grid-template-columns: auto auto minmax(150px, 1fr); gap: 8px; align-items: center; flex: 0 0 min(390px, 72vw); padding: 8px 10px; border-left: 2px solid rgba(255,255,255,.2); background: rgba(255,255,255,.035); }
 .system-feed-item.is-choice { border-left-color: var(--accent); }
@@ -879,7 +882,7 @@ body[data-view="life"] .logo b { font-size: 26px; }
   .life-layout { min-height: 0; overflow: hidden; }
   .life-layout > .life-story, .life-layout > .life-sidebar { min-height: 0; overflow-y: auto; }
   .life-timeline-bar { position: static; display: grid; max-height: 210px; margin: 0; border-right: 0; border-bottom: 0; border-left: 0; border-radius: 18px 18px 0 0; overflow: hidden; }
-  .system-feed-shell { grid-template-columns: 1fr; gap: 6px; }
+  .system-feed-shell { grid-template-columns: 112px minmax(0, 1fr); gap: 6px; }
   .system-feed-heading { display: none; }
   .system-feed-item { flex-basis: min(330px, 86vw); }
   .finance-grid { grid-template-columns: 1fr; }

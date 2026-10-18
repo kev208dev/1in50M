@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+KR:wght@400;500;600;700;900&family=Nuosu+SIL&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css?v=20261018-4">
-  <link rel="stylesheet" href="./theme.css?v=20261018-2">
+  <link rel="stylesheet" href="./theme.css?v=20261018-3">
   <link rel="stylesheet" href="./profile.css?v=20261018-2">
 </head>
 <body>
@@ -317,7 +317,7 @@
 
       <footer class="life-timeline-bar">
         <section class="system-feed-shell" aria-label="연속 시스템 메시지">
-          <div class="system-feed-heading"><span class="status-dot"></span><strong>SYSTEM MESSAGE</strong></div>
+          <button id="event-details-button" class="system-feed-heading" type="button" disabled><span class="status-dot"></span><strong>최근 사건 자세히</strong></button>
           <div id="system-feed" class="system-feed" role="log" aria-live="polite" aria-relevant="additions"></div>
         </section>
         <div class="playback-controls" aria-label="시간 진행">
@@ -564,7 +564,7 @@
         <div class="event-impacts" data-event="impacts"></div>
       </div>
       <div class="event-footer">
-        <button id="event-continue-button" class="primary-button" type="button">이 삶을 계속 살아간다 <span aria-hidden="true">→</span></button>
+        <button id="event-continue-button" class="primary-button" type="button">게임으로 돌아가기 <span aria-hidden="true">→</span></button>
         <p class="event-source source-readable" data-event="source"></p>
       </div>
     </div>
@@ -591,6 +591,6 @@
 
   <p id="live-region" class="sr-only" aria-live="polite"></p>
   <script src="./config.js"></script>
-  <script type="module" src="./app.js?v=20261018-6"></script>
+  <script type="module" src="./app.js?v=20261018-7"></script>
 </body>
 </html>

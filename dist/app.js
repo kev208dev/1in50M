@@ -3,7 +3,7 @@ import { CAREER_GROUPS } from './data/careers.js';
 import { createBirthSlotResult, profileFromSlotResult } from './engine/birth-slot.js';
 import { normalizeRuntimeSettings, resolveBirthYear } from './data/runtime-settings.js';
 import { createKoreaMap, regionLabel } from './ui/korea-map.js?v=20261018-6';
-import { detectBigEvents, renderBigEvent } from './ui/big-event.js';
+import { createEventNotice, renderBigEvent } from './ui/big-event.js?v=20261018-7';
 import { renderSystemFeed } from './ui/system-feed.js';
 import { createCohortPeers, advanceCohort } from './engine/cohort.js';
 import { renderCohort } from './ui/cohort.js';
@@ -71,8 +71,8 @@ const eventDialog = document.querySelector('#event-dialog');
 const sourceDialog = document.querySelector('#source-dialog');
 const blockingDialogs = [decisionDialog, identityDialog, reflectionDialog, agencyDialog, careerDialog, financeDialog, eventDialog, sourceDialog];
 let previousLifeSnapshot = null;
-let bigEventQueue = [];
 let resumeAfterBigEvents = false;
+const eventNotice = createEventNotice(openBigEvent);
 let candidateProfile = null;
 let candidateResult = null;
 let runtimeSettings = normalizeRuntimeSettings();
@@ -320,21 +320,10 @@ function anyDialogOpen() {
   return blockingDialogs.some((dialog) => dialog?.open);
 }
 
-function showNextBigEvent() {
+function openBigEvent(next) {
   if (!controller || anyDialogOpen()) return;
-  const next = bigEventQueue.shift();
-  if (!next) {
-    if (resumeAfterBlockingDialog(resumeAfterBigEvents, false) && controller.getState().status === 'living' && !controller.getState().pendingDecisionId) {
-      controller.play();
-    }
-    resumeAfterBigEvents = false;
-    updatePlayback();
-    return;
-  }
-  if (controller.isPlaying()) {
-    resumeAfterBigEvents = true;
-    controller.pause();
-  }
+  resumeAfterBigEvents = controller.isPlaying();
+  controller.pause();
   updatePlayback();
   lastFocused = document.activeElement;
   renderBigEvent(eventDialog, next, controller.getState().profile?.name?.full ?? '');
@@ -345,15 +334,8 @@ function showNextBigEvent() {
 }
 
 function trackBigEvents(life) {
-  const events = detectBigEvents(previousLifeSnapshot, life);
+  document.querySelector('#event-details-button').disabled = !eventNotice.update(previousLifeSnapshot, life);
   previousLifeSnapshot = life;
-  if (!events.length || controller?.isAutoDecision()) return;
-  bigEventQueue.push(...events);
-  if (controller?.isPlaying()) {
-    resumeAfterBigEvents = true;
-    controller.pause();
-  }
-  setTimeout(showNextBigEvent, 0);
 }
 
 function renderCurrentLife(life) {
@@ -477,7 +459,6 @@ function unlockBackground(dialog, focus = true) {
   main.inert = false;
   if (dialog.open) dialog.close();
   if (focus && lastFocused?.isConnected) lastFocused.focus();
-  if (dialog !== eventDialog && dialog !== sourceDialog && bigEventQueue.length) setTimeout(showNextBigEvent, 0);
 }
 
 function openDecision(decision, life) {
@@ -537,7 +518,6 @@ function finishLife(life) {
 function startLife(life) {
   controller?.destroy();
   previousLifeSnapshot = null;
-  bigEventQueue = [];
   resumeAfterBigEvents = false;
   controller = createSimulationController({
     initialLife: life,
@@ -805,11 +785,18 @@ reflectionDialog.querySelector('[data-reflection="choices"]').addEventListener('
   updatePlayback();
 });
 
-eventDialog.addEventListener('cancel', (event) => event.preventDefault());
-document.querySelector('#event-continue-button').addEventListener('click', () => {
+document.querySelector('#event-details-button').addEventListener('click', () => eventNotice.open());
+function closeBigEvent() {
   unlockBackground(eventDialog);
-  showNextBigEvent();
+  if (resumeAfterBlockingDialog(resumeAfterBigEvents, false) && controller?.getState().status === 'living' && !controller.getState().pendingDecisionId) controller.play();
+  resumeAfterBigEvents = false;
+  updatePlayback();
+}
+eventDialog.addEventListener('cancel', (event) => {
+  event.preventDefault();
+  closeBigEvent();
 });
+document.querySelector('#event-continue-button').addEventListener('click', closeBigEvent);
 
 document.querySelector('#source-button').addEventListener('click', () => {
   if (sourceDialog.open) return;

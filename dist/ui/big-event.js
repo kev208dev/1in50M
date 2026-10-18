@@ -107,6 +107,22 @@ const BADGES = {
   life: '인생의 순간',
 };
 
+// Automatic events remain in the system feed. Full-screen details are opt-in.
+export function createEventNotice(show) {
+  let latest = null;
+  return {
+    update(previous, next) {
+      if (!previous || previous.seed !== next?.seed) latest = null;
+      const events = detectBigEvents(previous, next);
+      if (events.length) latest = events.at(-1);
+      return Boolean(latest);
+    },
+    open() {
+      if (latest) show(latest);
+    },
+  };
+}
+
 export function renderBigEvent(dialog, event, name = '') {
   if (!dialog || !event) return;
   const set = (field, value) => {
