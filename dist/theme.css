@@ -1203,15 +1203,6 @@ body[data-view="life"] .life-view,
 .intro-stage .intro-quote cite { top: 436px; left: 732px; width: 263px; font-size: 48px; }
 .intro-stage .intro-continue { top: 900px; left: 416px; width: 607px; height: 52px; font-size: 36px; }
 
-/* Keep the original Figma coordinates at 1440×1024, while calming the type
-   hierarchy when the same frame is presented in a much wider viewport. */
-@media (min-width: 960px) and (min-aspect-ratio: 31/20) {
-  .intro-stage .intro-quote { font-size: 44px; line-height: 1.42; }
-  .intro-stage .intro-quote-ko { margin-top: 38px !important; }
-  .intro-stage .intro-quote cite { top: 404px; left: 748px; font-size: 42px; }
-  .intro-stage .intro-continue { font-size: 32px; }
-}
-
 /* Long menus use explicit pages rather than hidden internal scrolling. */
 .career-groups { grid-template-rows: minmax(0, 1fr) auto; max-height: none; padding: 0; }
 .career-pager,

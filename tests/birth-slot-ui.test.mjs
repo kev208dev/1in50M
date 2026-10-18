@@ -52,7 +52,7 @@ test('Figma 1440×1024 무대를 뷰포트 안에 비율대로 맞춘다', () =>
   assert.equal(birthSlotUi.fitFigmaStage(1920, 1080), 1.0546875);
   assert.equal(birthSlotUi.fitFigmaStage(1024, 768), 0.7111111111111111);
   assert.equal(birthSlotUi.fitResponsiveFigmaStage(1440, 1024), 1);
-  assert.equal(birthSlotUi.fitResponsiveFigmaStage(1470, 779), 779 / 960);
+  assert.equal(birthSlotUi.fitResponsiveFigmaStage(1470, 779), 779 / 1024);
   assert.equal(birthSlotUi.fitResponsiveFigmaStage(390, 844), 390 / 1440);
 });
 
