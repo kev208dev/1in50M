@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+KR:wght@400;500;600;700;900&family=Nuosu+SIL&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css?v=20261018-4">
   <link rel="stylesheet" href="./theme.css?v=20261018-2">
-  <link rel="stylesheet" href="./profile.css?v=20261018-1">
+  <link rel="stylesheet" href="./profile.css?v=20261018-2">
 </head>
 <body>
   <div class="ambient-grid" aria-hidden="true"></div>
@@ -130,16 +130,7 @@
         </nav>
 
         <section class="birth-map" aria-label="출생 지역 지도">
-          <button id="birth-map-button" class="birth-map-canvas" type="button" aria-label="출생 지역 자세히 보기">
-            <img class="birth-map-overview" src="./assets/figma/korea-map-overview.png" alt="대한민국 17개 시도 지도">
-            <img class="birth-map-region" src="./assets/figma/korea-map-region.svg" alt="선택 지역이 강조된 대한민국 지도">
-            <img class="birth-map-detail" src="./assets/figma/korea-map-detail.svg" alt="선택 지역 확대 지도">
-            <span class="birth-map-marker" aria-hidden="true"></span>
-            <span class="birth-map-label" data-birth-map="label">출생 지역</span>
-            <span class="birth-map-tooltip"><strong data-birth-map="region">선택 지역</strong><small>출생 지역 확인</small></span>
-          </button>
-          <button id="birth-map-back" class="birth-map-back" type="button"><img src="./assets/figma/chevron-left.svg" alt=""> 전국 지도</button>
-          <div class="birth-map-title"><strong data-birth-map="region">선택 지역</strong><span>출생 지역 <b data-birth-map="district">—</b></span></div>
+          <div id="slot-korea-map" class="kmap-host"></div>
         </section>
 
         <div class="slot-machine-shell">
@@ -600,6 +591,6 @@
 
   <p id="live-region" class="sr-only" aria-live="polite"></p>
   <script src="./config.js"></script>
-  <script type="module" src="./app.js?v=20261018-5"></script>
+  <script type="module" src="./app.js?v=20261018-6"></script>
 </body>
 </html>

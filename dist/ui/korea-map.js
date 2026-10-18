@@ -178,8 +178,10 @@ export function createKoreaMap(host, { interactive = true, label = '대한민국
       y = point.y;
     }
     tooltip.hidden = false;
-    const left = Math.min(Math.max(x - box.left + 18, 8), box.width - tooltip.offsetWidth - 8);
-    const top = Math.max(y - box.top - tooltip.offsetHeight - 14, 8);
+    const scaleX = box.width / root.offsetWidth || 1;
+    const scaleY = box.height / root.offsetHeight || 1;
+    const left = Math.max(8, Math.min((x - box.left) / scaleX + 18, root.offsetWidth - tooltip.offsetWidth - 8));
+    const top = Math.max(8, Math.min((y - box.top) / scaleY - tooltip.offsetHeight - 14, root.offsetHeight - tooltip.offsetHeight - 8));
     tooltip.style.transform = `translate(${left}px, ${top}px)`;
   }
 
@@ -204,7 +206,10 @@ export function createKoreaMap(host, { interactive = true, label = '대한민국
     if (!shape) return;
     const point = svgPointToClient(shape.cx, shape.cy);
     const box = root.getBoundingClientRect();
-    birthLabel.style.transform = `translate(${point.x - box.left}px, ${point.y - box.top}px)`;
+    const scaleX = box.width / root.offsetWidth || 1;
+    const scaleY = box.height / root.offsetHeight || 1;
+    const left = Math.max(0, Math.min((point.x - box.left) / scaleX, root.offsetWidth - birthLabel.offsetWidth - 34));
+    birthLabel.style.transform = `translate(${left}px, ${(point.y - box.top) / scaleY}px)`;
     markerLayer.setAttribute('transform', `translate(${shape.cx} ${shape.cy})`);
   }
 
@@ -220,6 +225,7 @@ export function createKoreaMap(host, { interactive = true, label = '대한민국
       setLifted(code, true);
     }
     showTooltip(code, event?.clientX, event?.clientY);
+    host.dispatchEvent(new CustomEvent('kmap:hover', { detail: { code } }));
   }
 
   function unhover() {
@@ -227,6 +233,7 @@ export function createKoreaMap(host, { interactive = true, label = '대한민국
     hoveredCode = null;
     delete root.dataset.hover;
     hideTooltip();
+    host.dispatchEvent(new CustomEvent('kmap:hover', { detail: { code: null } }));
   }
 
   function zoomTo(code) {
@@ -255,6 +262,7 @@ export function createKoreaMap(host, { interactive = true, label = '대한민국
 
   function resetZoom() {
     if (!zoomedCode) return;
+    unhover();
     zoomedCode = null;
     delete root.dataset.zoom;
     for (const { path } of groups.values()) path.classList.remove('is-zoomed');

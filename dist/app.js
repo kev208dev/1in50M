@@ -2,8 +2,7 @@ import { validateProfile } from './simulator.js';
 import { CAREER_GROUPS } from './data/careers.js';
 import { createBirthSlotResult, profileFromSlotResult } from './engine/birth-slot.js';
 import { normalizeRuntimeSettings, resolveBirthYear } from './data/runtime-settings.js';
-import { mapRegionState } from './data/korea-map.js';
-import { createKoreaMap, regionLabel } from './ui/korea-map.js';
+import { createKoreaMap, regionLabel } from './ui/korea-map.js?v=20261018-6';
 import { detectBigEvents, renderBigEvent } from './ui/big-event.js';
 import { renderSystemFeed } from './ui/system-feed.js';
 import { createCohortPeers, advanceCohort } from './engine/cohort.js';
@@ -40,7 +39,6 @@ import {
   renderBirthSlot,
   renderBirthCertificate,
   fitResponsiveFigmaStage,
-  nextBirthMapMode,
   slotDuration,
 } from './ui/birth-slot.js?v=20261018-5';
 
@@ -133,11 +131,9 @@ function updateLifeLogPage(page = lifeLogPage) {
 
 function setBirthMapMode(mode) {
   const stage = document.querySelector('.profile-stage');
-  const mapButton = document.querySelector('#birth-map-button');
-  if (!stage || !mapButton) return;
+  if (!stage) return;
   stage.dataset.mapMode = mode;
   stage.dataset.figmaFrame = mode === 'detail' ? 'Desktop 2-3' : mode === 'region' ? 'Desktop 2-2' : 'Desktop 2-1';
-  mapButton.setAttribute('aria-expanded', String(mode === 'detail'));
 }
 
 let publicLivesById = new Map();
@@ -204,18 +200,6 @@ function renderProfileContext(profile) {
   if (!validateProfile(profile)) return;
   setText('future-location', `${profile.region.name} ${profile.district}`);
   setText('future-birth-summary', `${profile.birthYear}년 ${profile.region.short}, ${profile.familyType}`);
-  document.querySelectorAll('[data-birth-map="region"]').forEach((node) => { node.textContent = profile.region.name; });
-  document.querySelectorAll('[data-birth-map="district"]').forEach((node) => { node.textContent = profile.district; });
-  const selected = mapRegionState(profile.region.code).find((point) => point.selected);
-  const stage = document.querySelector('.profile-stage');
-  if (stage && selected) {
-    stage.style.setProperty('--birth-map-left', `${40 + (selected.x / 100) * 440}px`);
-    stage.style.setProperty('--birth-map-top', `${30 + (selected.y / 120) * 550}px`);
-    stage.style.setProperty('--birth-map-x', `${selected.x}%`);
-    stage.style.setProperty('--birth-map-y', `${(selected.y / 120) * 100}%`);
-  }
-  const label = document.querySelector('[data-birth-map="label"]');
-  if (label) label.textContent = `${profile.region.name} ${profile.district}`;
   setBirthMapMode('marker');
   renderKoreaMap(profile.region.code, `${profile.region.name} ${profile.district}`);
 }
@@ -705,27 +689,14 @@ function showPastLives() {
 
 controls.birth.addEventListener('click', spinBirthSlot);
 controls.accept.addEventListener('click', beginCandidateLife);
-const birthMapButton = document.querySelector('#birth-map-button');
-const birthMapBack = document.querySelector('#birth-map-back');
-birthMapButton.addEventListener('pointermove', () => {
-  if (document.querySelector('.profile-stage')?.dataset.mapMode !== 'detail') setBirthMapMode(nextBirthMapMode('marker', 'preview'));
+document.querySelector('#slot-korea-map').addEventListener('kmap:zoom', (event) => {
+  setBirthMapMode(event.detail.code ? 'detail' : 'marker');
 });
-birthMapButton.addEventListener('focus', () => {
-  if (document.querySelector('.profile-stage')?.dataset.mapMode !== 'detail') setBirthMapMode(nextBirthMapMode('marker', 'preview'));
+document.querySelector('#slot-korea-map').addEventListener('kmap:hover', (event) => {
+  if (document.querySelector('.profile-stage').dataset.mapMode !== 'detail') {
+    setBirthMapMode(event.detail.code ? 'region' : 'marker');
+  }
 });
-birthMapButton.addEventListener('pointerleave', () => {
-  const mode = document.querySelector('.profile-stage')?.dataset.mapMode;
-  if (mode !== 'detail') setBirthMapMode(nextBirthMapMode(mode, 'leave'));
-});
-birthMapButton.addEventListener('blur', () => {
-  const mode = document.querySelector('.profile-stage')?.dataset.mapMode;
-  if (mode !== 'detail') setBirthMapMode(nextBirthMapMode(mode, 'leave'));
-});
-birthMapButton.addEventListener('click', () => {
-  const mode = document.querySelector('.profile-stage')?.dataset.mapMode ?? 'marker';
-  setBirthMapMode(nextBirthMapMode(mode, 'open'));
-});
-birthMapBack.addEventListener('click', () => setBirthMapMode(nextBirthMapMode('detail', 'back')));
 controls.continue.addEventListener('click', () => {
   const saved = loadCurrentLife(storage);
   if (saved) startLife(saved);
