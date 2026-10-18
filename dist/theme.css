@@ -503,6 +503,8 @@ body[data-view="profile"] main { height: calc(100dvh - 88px); }
 .current-moment h1 em { color: var(--ink); }
 .current-moment h1.is-event { font-size: clamp(26px, 2.8vw, 38px); word-break: keep-all; }
 .current-moment > p:last-child { max-width: 640px; margin-top: 16px; color: var(--ink-muted); font-size: 16px; line-height: 1.7; }
+body[data-view="life"] .current-moment[data-reading="true"] { overflow-y: auto; overscroll-behavior: contain; }
+body[data-view="life"] .current-moment[data-reading="true"] > p:last-child { display: block; overflow: visible; white-space: pre-line; -webkit-line-clamp: unset; }
 
 /* status grid */
 .life-status-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
@@ -833,13 +835,14 @@ body[data-view="life"] .logo b { font-size: 26px; }
 #event-details-button:disabled { opacity: .4; cursor: default; }
 #event-details-button:not(:disabled):hover { border-color: var(--accent); background: rgba(6, 183, 82, .1); }
 .system-feed { display: flex; gap: 8px; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
-.system-feed-item { display: grid; grid-template-columns: auto auto minmax(150px, 1fr); gap: 8px; align-items: center; flex: 0 0 min(390px, 72vw); padding: 8px 10px; border-left: 2px solid rgba(255,255,255,.2); background: rgba(255,255,255,.035); }
+.system-feed-item { display: grid; grid-template-columns: auto auto minmax(150px, 1fr); gap: 8px; align-items: center; flex: 0 0 min(390px, 72vw); min-width: 0; text-align: left; border: 0; border-radius: 0; padding: 8px 10px; border-left: 2px solid rgba(255,255,255,.2); background: rgba(255,255,255,.035); }
+.system-feed-item:hover, .system-feed-item:focus-visible { background: rgba(255,255,255,.09); }
 .system-feed-item.is-choice { border-left-color: var(--accent); }
 .system-feed-item.is-history { border-left-color: #8bbcff; }
 .system-feed-item.is-finance { border-left-color: #ffd36e; }
 .system-feed-item b { color: var(--ink); font-family: var(--font-mono); font-size: 9px; white-space: nowrap; }
 .system-feed-item span { color: var(--ink-faint); font-family: var(--font-mono); font-size: 9px; white-space: nowrap; }
-.system-feed-item p { margin: 0; overflow: hidden; color: var(--ink-muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.system-feed-item .system-feed-text { min-width: 0; margin: 0; overflow: hidden; color: #bdbdbd; font-family: var(--font-body); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 
 .finance-dialog { width: min(1100px, calc(100% - 36px)); }
 .finance-card { max-height: calc(100dvh - 40px); overflow-y: auto; }
@@ -1178,6 +1181,7 @@ body[data-view="life"] .life-view,
 .career-groups { overflow: hidden !important; }
 
 .system-feed {
+  position: relative;
   overflow: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;

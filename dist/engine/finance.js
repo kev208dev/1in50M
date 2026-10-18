@@ -5,6 +5,21 @@ const clampRoll = (value) => Math.max(0, Math.min(1, Number(value) || 0));
 const money = (value) => Math.max(0, Math.round(Number(value) || 0));
 const dopamine = (value) => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
 
+function nextTransactionId(life) {
+  const previous = life.economy.transactions ?? [];
+  const lastSequence = previous.reduce((max, item) => {
+    const match = /^tx-\d+-(\d+)$/.exec(item.id ?? '');
+    return Math.max(max, match ? Number(match[1]) : 0);
+  }, previous.length);
+  return `tx-${life.year}-${lastSequence + 1}`;
+}
+
+function positiveAmount(value) {
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || Math.round(amount) <= 0) throw new RangeError('거래 금액은 1원 이상이어야 합니다.');
+  return Math.round(amount);
+}
+
 export function compoundAsset(value, model, marketRoll) {
   const centered = (clampRoll(marketRoll) * 2) - 1;
   return Math.max(0, Math.round(money(value) * (1 + model.annualMean + centered * model.volatility)));
@@ -22,13 +37,13 @@ export function resolveLottery(roll, stake) {
 export function purchaseLotteryTicket(life, { amount = 10000, roll } = {}) {
   const current = structuredClone(life);
   if (current.economy.pendingLotteryDraw) throw new RangeError('먼저 기다리는 복권 방송을 확인해 주세요.');
-  const stake = money(amount);
+  const stake = positiveAmount(amount);
   requireOwnCash(current, stake);
-  const drawRoll = roll ?? createRng(`${current.seed}:lottery:${current.year}:${current.age}`).next();
+  const drawRoll = roll ?? createRng(`${current.seed}:lottery:${nextTransactionId(current)}`).next();
   const result = resolveLottery(drawRoll, stake);
   current.economy.cash -= stake;
   current.economy.pendingLotteryDraw = {
-    id: `lottery-${current.year}-${current.age}`,
+    id: `lottery-${nextTransactionId(current)}`,
     amount: stake,
     payout: result.payout,
     tier: result.tier,
@@ -53,7 +68,7 @@ export function revealLotteryBroadcast(life) {
 function transaction(life, action, details = {}) {
   const previous = Array.isArray(life.economy.transactions) ? life.economy.transactions : [];
   return [...previous, {
-    id: `tx-${life.year}-${previous.length + 1}`,
+    id: nextTransactionId(life),
     age: life.age,
     year: life.year,
     type: action.type,
@@ -69,7 +84,7 @@ function requireOwnCash(life, amount) {
 
 export function applyFinancialAction(life, action = {}) {
   const current = structuredClone(life);
-  const amount = money(action.amount);
+  const amount = positiveAmount(action.amount);
   const assets = { ...current.economy.assets };
   let cash = Number(current.economy.cash) || 0;
   let housingDebt = Number(current.economy.housingDebt) || 0;
@@ -92,7 +107,7 @@ export function applyFinancialAction(life, action = {}) {
     cash += amount;
   } else if (action.type === 'lottery') {
     requireOwnCash(current, amount);
-    const roll = action.roll ?? createRng(`${current.seed}:lottery:${current.year}:${current.age}`).next();
+    const roll = action.roll ?? createRng(`${current.seed}:lottery:${nextTransactionId(current)}`).next();
     const result = resolveLottery(roll, amount);
     cash = cash - amount + result.payout;
     details = { payout: result.payout, tier: result.tier };
@@ -100,7 +115,7 @@ export function applyFinancialAction(life, action = {}) {
     requireOwnCash(current, amount);
     const borrowed = money(action.borrowed);
     const stake = amount + borrowed;
-    const roll = clampRoll(action.roll ?? createRng(`${current.seed}:gamble:${current.year}:${current.age}`).next());
+    const roll = clampRoll(action.roll ?? createRng(`${current.seed}:gamble:${nextTransactionId(current)}`).next());
     const payout = roll >= 0.995 ? stake * 20 : roll >= 0.55 ? Math.round(stake * 1.7) : 0;
     cash = cash - amount + payout;
     otherDebt += borrowed;

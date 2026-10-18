@@ -6,6 +6,23 @@ import { systemFeedItems } from '../dist/ui/system-feed.js';
 const before = { seed: 'life', history: [] };
 const after = { ...before, history: [{ id: 'era-2003', type: 'era-event', year: 2003, age: 1, title: '시대의 변화', text: '새로운 시대를 경험했습니다.' }] };
 
+test('저장한 삶을 처음 불러와도 최근 사건 상세가 복원되며 자동으로 열리지 않는다', () => {
+  const shown = [];
+  const notice = bigEvent.createEventNotice((event) => shown.push(event));
+  assert.equal(notice.update(null, after), true);
+  assert.equal(shown.length, 0);
+  notice.open();
+  assert.equal(shown[0].id, 'era-2003');
+});
+
+test('이어하기는 기존 가족을 방금 생긴 사건으로 만들지 않는다', () => {
+  const shown = [];
+  const notice = bigEvent.createEventNotice((event) => shown.push(event));
+  notice.update(null, { ...after, year: 2040, age: 38, relationships: { partner: { id: 'partner' }, children: [{ id: 'child' }] } });
+  notice.open();
+  assert.equal(shown[0].id, 'era-2003');
+});
+
 test('자동 사건은 기록만 갱신하고 명시적으로 열 때만 상세 화면을 표시한다', () => {
   const shown = [];
   assert.equal(typeof bigEvent.createEventNotice, 'function');

@@ -10,7 +10,10 @@ const TYPE_META = {
   career: { kind: 'auto', label: '자동 발생' },
   birth: { kind: 'system', label: '시스템' },
   review: { kind: 'system', label: '시스템' },
+  reflection: { kind: 'choice', label: '회고 선택' },
 };
+
+const renderedFeeds = new WeakMap();
 
 export function systemFeedItems(life, limit = 5) {
   const seen = new Set();
@@ -19,7 +22,9 @@ export function systemFeedItems(life, limit = 5) {
     const id = String(entry.id ?? `${entry.year}-${entry.age}-${entry.text}`);
     if (seen.has(id)) continue;
     seen.add(id);
-    const meta = TYPE_META[entry.type] ?? { kind: 'auto', label: '자동 발생' };
+    const meta = entry.type === 'era-event' && entry.projection
+      ? { kind: 'history', label: '미래 전망' }
+      : TYPE_META[entry.type] ?? { kind: 'auto', label: '자동 발생' };
     items.push({
       id,
       year: entry.year,
@@ -31,21 +36,40 @@ export function systemFeedItems(life, limit = 5) {
   return items.slice(-Math.max(1, Number(limit) || 5));
 }
 
-export function renderSystemFeed(root, life, limit = 5) {
+export function renderSystemFeed(root, life, limit = 50) {
   if (!root) return;
+  if (!root.clientWidth) {
+    renderedFeeds.delete(root);
+    return;
+  }
+  const items = systemFeedItems(life, limit);
+  const signature = JSON.stringify([life?.seed, items]);
+  const previous = renderedFeeds.get(root);
+  if (previous?.signature === signature) return;
+  const followLatest = !previous || previous.seed !== life?.seed || !root.children.length || root.scrollWidth - root.clientWidth - root.scrollLeft < 24;
+  const previousLeft = root.scrollLeft;
+  const anchor = !followLatest && [...root.children].find((row) => row.offsetLeft + row.offsetWidth > previousLeft);
+  const anchorOffset = anchor ? previousLeft - anchor.offsetLeft : 0;
   const documentRef = root.ownerDocument ?? document;
-  root.replaceChildren(...systemFeedItems(life, limit).map((item) => {
-    const row = documentRef.createElement('div');
+  root.replaceChildren(...items.map((item) => {
+    const row = documentRef.createElement('button');
+    row.type = 'button';
     row.className = `system-feed-item is-${item.kind}`;
     row.dataset.messageId = item.id;
+    row.title = item.text;
     const badge = documentRef.createElement('b');
     badge.textContent = item.label;
     const when = documentRef.createElement('span');
     when.textContent = `${item.year} · ${item.age}세`;
-    const text = documentRef.createElement('p');
+    const text = documentRef.createElement('span');
+    text.className = 'system-feed-text';
     text.textContent = item.text;
     row.append(badge, when, text);
     return row;
   }));
-  root.scrollTop = root.scrollHeight;
+  const retained = anchor && [...root.children].find((row) => row.dataset.messageId === anchor.dataset.messageId);
+  root.scrollLeft = followLatest
+    ? Math.max(0, root.scrollWidth - root.clientWidth)
+    : retained ? Math.max(0, retained.offsetLeft + anchorOffset) : 0;
+  renderedFeeds.set(root, { signature, seed: life?.seed });
 }

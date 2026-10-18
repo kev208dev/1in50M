@@ -3,8 +3,10 @@ import { CAREER_GROUPS } from './data/careers.js';
 import { createBirthSlotResult, profileFromSlotResult } from './engine/birth-slot.js';
 import { normalizeRuntimeSettings, resolveBirthYear } from './data/runtime-settings.js';
 import { createKoreaMap, regionLabel } from './ui/korea-map.js?v=20261018-6';
-import { createEventNotice, renderBigEvent } from './ui/big-event.js?v=20261018-7';
-import { renderSystemFeed } from './ui/system-feed.js';
+import { createEventNotice, renderBigEvent } from './ui/big-event.js?v=20261019-1';
+import { renderSystemFeed } from './ui/system-feed.js?v=20261019-1';
+import { financeMenuState } from './ui/finance-menu.js';
+import { renderMomentContext } from './ui/moment-context.js';
 import { createCohortPeers, advanceCohort } from './engine/cohort.js';
 import { renderCohort } from './ui/cohort.js';
 import { createLife } from './engine/life.js';
@@ -22,7 +24,7 @@ import {
   deletePastLife,
   clearPastLives,
 } from './storage.js';
-import { createSimulationController, resumeAfterBlockingDialog } from './ui/controls.js';
+import { createSimulationController, resumeAfterBlockingDialog } from './ui/controls.js?v=20261019-1';
 import { createCommunityClient } from './community.js';
 import {
   renderLife,
@@ -185,9 +187,8 @@ const koreaMaps = {
 document.querySelector('#investment-korea-map')?.addEventListener('kmap:zoom', (event) => {
   selectedPropertyRegion = event.detail.code;
   const label = document.querySelector('#property-region-label');
-  const buy = document.querySelector('#property-buy-button');
   if (label) label.textContent = selectedPropertyRegion ? regionLabel(selectedPropertyRegion) : '지역을 선택하세요';
-  if (buy) buy.disabled = !selectedPropertyRegion;
+  updateFinanceDialog();
 });
 
 function renderKoreaMap(regionCode = null, label) {
@@ -312,7 +313,7 @@ function setMomentTitle(age, headline) {
 function updateMoment(life) {
   setMomentTitle(life.age, momentHeadline(life));
   const latest = life.history.at(-1);
-  document.querySelector('#moment-copy').textContent = latest?.text ?? '새로운 삶이 시작되었습니다.';
+  renderMomentContext(document.querySelector('.current-moment'), { year: life.year, age: life.age, text: latest?.text ?? '새로운 삶이 시작되었습니다.' });
   controls.career.hidden = life.age < 19 || Boolean(life.career.careerId) || life.status !== 'living';
 }
 
@@ -354,11 +355,16 @@ function renderCurrentLife(life) {
 function updateFinanceDialog(life = controller?.getState()) {
   if (!life) return;
   financeDialog?.querySelectorAll('[data-life="dopamine"]').forEach((node) => { node.textContent = String(life.economy.dopamine ?? 0); });
-  const pendingDraw = Boolean(life.economy.pendingLotteryDraw);
-  const buyLottery = financeDialog?.querySelector('[data-finance-action="lottery-buy"]');
-  const broadcast = document.querySelector('#lottery-broadcast-button');
-  if (buyLottery) buyLottery.disabled = pendingDraw || life.economy.cash < 10000;
-  if (broadcast) broadcast.disabled = !pendingDraw;
+  document.querySelector('#finance-balance').textContent = `현금 ${formatWon(life.economy.cash)} · 주식 ${formatWon(life.economy.assets.stocks)} · 비트코인 ${formatWon(life.economy.assets.crypto)}`;
+  const menu = financeMenuState(life, selectedPropertyRegion ? regionLabel(selectedPropertyRegion) : null);
+  financeDialog.querySelectorAll('[data-finance-action]').forEach((button) => {
+    const item = menu[button.dataset.financeAction];
+    if (!item) return;
+    button.dataset.label ??= button.textContent;
+    button.disabled = !item.enabled;
+    button.title = item.reason;
+    button.textContent = item.reason ? `${button.dataset.label} · ${item.reason}` : button.dataset.label;
+  });
 }
 
 function setFinancePage(page = 'stock') {
@@ -432,26 +438,19 @@ function closeFinanceMenu() {
 
 function financeAction(actionId) {
   if (!controller) return;
-  const actions = {
-    'stock-buy': { type: 'buy', asset: 'stocks', amount: 1000000 },
-    'stock-sell': { type: 'sell', asset: 'stocks', amount: 1000000 },
-    'crypto-buy': { type: 'buy', asset: 'crypto', amount: 2000000 },
-    'crypto-sell': { type: 'sell', asset: 'crypto', amount: 2000000 },
-    'lottery-buy': { type: 'lottery-ticket', amount: 10000 },
-    'car-buy': { type: 'vehicle', amount: 8000000, vehicleValue: 16000000, debt: 8000000, monthlyCost: 300000 },
-    'property-buy': { type: 'property', amount: 20000000, homeValue: 150000000, debt: 130000000, region: selectedPropertyRegion ? regionLabel(selectedPropertyRegion) : null },
-  };
-  const feedback = document.querySelector('#finance-feedback');
+  const menu = financeMenuState(controller.getState(), selectedPropertyRegion ? regionLabel(selectedPropertyRegion) : null);
+  const feedback = document.querySelector('#finance-result');
   try {
+    if (!menu[actionId]?.enabled) throw new RangeError(menu[actionId]?.reason ?? '거래를 선택하세요.');
     const next = actionId === 'lottery-broadcast'
       ? controller.revealLotteryBroadcast()
-      : controller.performFinancialAction(actions[actionId]);
+      : controller.performFinancialAction(menu[actionId].action);
     feedback.textContent = next.history.at(-1)?.text ?? '거래가 반영되었습니다.';
-    feedback.dataset.tone = 'success';
+    feedback.parentElement.dataset.tone = 'success';
     updateFinanceDialog(next);
   } catch (error) {
     feedback.textContent = error?.message ?? '이 거래를 진행할 수 없습니다.';
-    feedback.dataset.tone = 'error';
+    feedback.parentElement.dataset.tone = 'error';
   }
 }
 
@@ -535,6 +534,7 @@ function startLife(life) {
   }
   renderCurrentLife(current);
   showView('life');
+  renderSystemFeed(document.querySelector('#system-feed'), current);
   if (current.status === 'review') {
     finishLife(current);
     return;
@@ -688,7 +688,11 @@ document.querySelector('#roulette-continue-button').addEventListener('click', ()
 controls.back.addEventListener('click', () => showView('profile'));
 controls.play.addEventListener('click', () => {
   if (!controller) return;
-  if (controller.isPlaying()) controller.pause(); else controller.play();
+  if (controller.isPlaying()) controller.pause();
+  else {
+    updateMoment(controller.getState());
+    controller.play();
+  }
   updatePlayback();
 });
 controls.skip.addEventListener('click', () => {
@@ -1037,9 +1041,28 @@ document.querySelector('#life-map').addEventListener('click', (event) => {
   const life = controller.getState();
   if (age > life.age) return;
   const memories = life.history.filter((item) => item.age === age);
+  controller.pause();
+  updatePlayback();
   setMomentTitle(age, memories.at(-1)?.title ?? null);
-  document.querySelector('#moment-copy').textContent = memories.map((item) => item.text).join(' · ') || `${age}세의 기록은 아직 비어 있습니다.`;
+  renderMomentContext(document.querySelector('.current-moment'), {
+    year: life.year - life.age + age, age,
+    text: memories.map((item) => item.text).join('\n\n') || `${age}세의 기록은 아직 비어 있습니다.`,
+  }, true);
   liveRegion.textContent = `${age}세의 기록을 보고 있습니다.`;
+});
+
+document.querySelector('#system-feed').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-message-id]');
+  if (!button || !controller) return;
+  const entry = controller.getState().history.find((item) => String(item.id) === button.dataset.messageId);
+  if (!entry) return;
+  controller.pause();
+  updatePlayback();
+  views.life.dataset.mobilePanel = 'story';
+  document.querySelectorAll('[data-life-panel-target]').forEach((item) => item.setAttribute('aria-pressed', String(item.dataset.lifePanelTarget === 'story')));
+  setMomentTitle(entry.age, entry.title ?? entry.label ?? `${entry.year}년의 기록`);
+  renderMomentContext(document.querySelector('.current-moment'), entry, true);
+  liveRegion.textContent = `${entry.year}년 · ${entry.age}세. ${entry.text}`;
 });
 
 document.querySelector('.brand').addEventListener('click', (event) => {

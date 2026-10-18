@@ -5,7 +5,7 @@ import { calculateAnnualEconomy } from '../engine/economy.js';
 import { selectAnnualEvents, applyEvent } from '../engine/events.js';
 import { acknowledgeIdentityDiscovery } from '../engine/identity.js';
 import { updateRelationships } from '../engine/relationships.js';
-import { advancePortfolio, applyFinancialAction, purchaseLotteryTicket, revealLotteryBroadcast } from '../engine/finance.js';
+import { advancePortfolio, applyFinancialAction, purchaseLotteryTicket, revealLotteryBroadcast } from '../engine/finance.js?v=20261019-1';
 import { advanceBusiness } from '../engine/business.js';
 import { tickInterval } from '../data/runtime-settings.js';
 import { evaluateSurvival } from '../engine/mortality.js';
@@ -278,7 +278,7 @@ export function createSimulationController({
       life = normalizeLife({
         ...life,
         history: [...before.history, {
-          id: `finance-${life.year}-${life.economy.transactions.length}`,
+          id: `finance-${life.economy.transactions.at(-1).id}`,
           age: life.age,
           year: life.year,
           type: 'finance',
@@ -298,7 +298,7 @@ export function createSimulationController({
       life = normalizeLife({
         ...next,
         history: [...life.history, {
-          id: `lottery-broadcast-${life.year}-${next.economy.transactions.length}`,
+          id: `lottery-broadcast-${transactionItem.id}`,
           age: life.age,
           year: life.year,
           type: 'finance',

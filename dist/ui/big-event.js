@@ -113,8 +113,9 @@ export function createEventNotice(show) {
   return {
     update(previous, next) {
       if (!previous || previous.seed !== next?.seed) latest = null;
-      const events = detectBigEvents(previous, next);
-      if (events.length) latest = events.at(-1);
+      const baseline = !previous && next ? { ...next, history: [], economy: { transactions: [] } } : previous;
+      const events = detectBigEvents(baseline, next);
+      if (events.length) latest = events.sort((a, b) => a.year - b.year || a.age - b.age).at(-1);
       return Boolean(latest);
     },
     open() {
