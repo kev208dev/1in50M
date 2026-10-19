@@ -6,14 +6,14 @@ const choice = (id, label, description, effects = {}, tags = [], extra = {}) => 
 
 export const YOUTH_DECISIONS = [
   {
-    id: 'mental-health-support', ageRange: [13, 29], priority: 120, weight: 5,
+    id: 'mental-health-support', ageRange: [13, 40], priority: 120, weight: 5,
     title: '혼자 버티기 어려운 날',
-    prompt: '잠과 식사가 무너지고 마음의 위기가 깊어졌습니다. 지금은 성적보다 안전과 회복이 먼저입니다.',
+    prompt: '잠과 식사가 무너지고 마음의 위기가 깊어졌습니다. 지금은 무엇보다 안전과 회복이 먼저입니다. (실제로 마음이 힘들다면 자살예방상담전화 109, 24시간)',
     sourceKey: 'youthCaffeineMentalHealth2024',
     overridePolicy: 'forbidden',
     when: (life) => life.mentalHealthState === 'crisis',
     choices: [
-      choice('trusted-help', '믿을 만한 어른과 전문가에게 알린다', '보호자·교사·상담 전문가와 현재 상태를 나누고 회복 계획을 만듭니다.', { happiness: 5, relationships: 4 }, ['도움', '상담'], { riskEffects: { academicStress: -32, sleepDebt: -12, caffeineLoad: -10, support: 45 }, habitEffects: { privateEducation: false, gradePressure: false, nighttimeStudy: null } }),
+      choice('trusted-help', '믿을 만한 사람과 전문가에게 알린다', '가까운 사람과 상담 전문가에게 현재 상태를 나누고 회복 계획을 만듭니다.', { happiness: 5, relationships: 4 }, ['도움', '상담'], { riskEffects: { academicStress: -32, sleepDebt: -12, caffeineLoad: -10, support: 45 }, habitEffects: { privateEducation: false, gradePressure: false, nighttimeStudy: null } }),
       choice('reduce-schedule', '일정을 줄이고 제대로 쉰다', '학원과 밤샘을 멈추고 잠과 식사를 회복의 기준으로 삼습니다.', { health: 5, happiness: 4 }, ['휴식', '회복'], { riskEffects: { academicStress: -25, sleepDebt: -35, caffeineLoad: -25, support: 12 }, habitEffects: { privateEducation: false, gradePressure: false, nighttimeStudy: null } }),
       choice('peer-support', '친구와 함께 도움을 청한다', '혼자 설명하기 어려운 마음을 친구와 나누고 어른에게 연결을 부탁합니다.', { happiness: 4, relationships: 5 }, ['친구', '도움'], { riskEffects: { academicStress: -18, sleepDebt: -10, caffeineLoad: -8, support: 35 } }),
     ],

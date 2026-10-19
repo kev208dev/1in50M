@@ -78,6 +78,8 @@ test('자해 관련 위험은 여러 지표가 겹친 극심한 정신건강 위
     mentalHealthState: 'crisis',
     riskFactors: { academicStress: 95, sleepDebt: 90, caffeineLoad: 40, support: 0 },
   });
+  const sustained = { ...crisis, history: [...(crisis.history ?? []), { id: 'wellbeing-16-crisis', age: 16, type: 'health' }] };
   assert.equal(causeSpecificRisks(strained).selfHarm, 0);
-  assert.ok(causeSpecificRisks(crisis).selfHarm > 0);
+  assert.equal(causeSpecificRisks(crisis).selfHarm, 0, '위기가 처음 드러난 해에는 판정하지 않는다');
+  assert.ok(causeSpecificRisks(sustained).selfHarm > 0);
 });

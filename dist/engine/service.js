@@ -1,3 +1,4 @@
+import { josa } from '../data/scenes/josa.js';
 import { createRng } from './random.js';
 
 export const STATUS_BY_GRADE = {
@@ -92,7 +93,7 @@ export function ensureServiceAssessment(life) {
       type: 'service-assessment',
       text: service.status === 'recheck'
         ? '병역 판정에서 재검사가 결정되었습니다.'
-        : `병역 상태가 ${SERVICE_LABELS[service.status]}으로 자동 판정되었습니다.`,
+        : `병역 상태가 ${SERVICE_LABELS[service.status]}${josa(SERVICE_LABELS[service.status], '으로/로')} 자동 판정되었습니다.`,
       serviceStatus: service.status,
       serviceGrade: service.grade,
     }],

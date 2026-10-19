@@ -1,3 +1,4 @@
+import { josa } from '../data/scenes/josa.js';
 import { ALL_CAREERS, CAREER_BY_ID } from '../data/careers.js';
 import { createRng } from './random.js';
 import { normalizeLife } from './life.js';
@@ -45,7 +46,7 @@ export function acceptCareer(life, careerId) {
       history: [...current.career.history, { age: current.age, title: career.title, action: 'started' }],
     },
     economy: { ...current.economy, income: Math.round(annualIncome / 12) },
-    history: [...current.history, { id: `career-${current.age}-${career.id}`, age: current.age, year: current.year, type: 'career', text: `${career.title}(으)로 일을 시작했습니다.` }],
+    history: [...current.history, { id: `career-${current.age}-${career.id}`, age: current.age, year: current.year, type: 'career', text: `${career.title}${josa(career.title, '으로/로')} 일을 시작했습니다.` }],
     milestones: [...current.milestones, { age: current.age, type: 'career', label: career.title }],
   });
 }

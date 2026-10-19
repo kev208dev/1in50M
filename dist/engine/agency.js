@@ -24,6 +24,9 @@ export function resolveAgencyChoice(life, decision, requestedChoice, choices) {
     choice.enabled
     && choice.id !== requestedChoice.id
     && choice.personalityTags?.includes(personality.dominant)
+    // 성향이 계획을 앞지르더라도, 고르지 않은 큰 지출이나 빚을 대신 떠안게 하지는 않는다.
+    && !(Number(choice.cost) > Number(requestedChoice.cost ?? 0))
+    && !(choice.economyEffects && Object.values(choice.economyEffects).some((value) => Number(value) < 0))
   ));
   if (alternatives.length === 0) return keep(requestedChoice);
 

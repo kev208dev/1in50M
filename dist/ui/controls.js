@@ -1,5 +1,5 @@
 import { advanceYear, normalizeLife, setFocus as applyFocus } from '../engine/life.js';
-import { getDecision, applyUserDecision, chooseAutomatically } from '../engine/decisions.js';
+import { getDecision, applyUserDecision, chooseAutomatically, getChoices, applyDecision } from '../engine/decisions.js';
 import { getCareerOffers, acceptCareer, advanceCareer } from '../engine/career.js';
 import { calculateAnnualEconomy } from '../engine/economy.js';
 import { selectAnnualEvents, applyEvent } from '../engine/events.js';
@@ -13,6 +13,13 @@ import { getReflection, applyReflection } from '../data/reflections.js';
 import { advanceWellbeing } from '../engine/wellbeing.js';
 import { selectEraEvent, applyEraEvent } from '../engine/era-events.js';
 import { ensureServiceAssessment } from '../engine/service.js';
+
+// 돈이 모자라 「하지 않는다」만 남는 선택 결정. 고를 것이 없으면 창을 띄우지 않는다.
+// 진로·병역처럼 막힌 길 자체가 이야기인 결정은 잠긴 이유와 함께 그대로 보여 준다.
+const QUIET_WHEN_SINGLE = new Set([
+  'asset-allocation', 'alternative-assets', 'chance-money', 'startup-capital',
+  'major-purchase', 'housing-path', 'family-support-vs-retirement', 'self-employment',
+]);
 
 const INTERVALS = { 1: 8000, 2: 4000, 4: 2000, 8: 1000, 12: 667, 16: 500 };
 
@@ -70,8 +77,16 @@ export function createSimulationController({
 
   function setPendingDecision() {
     life = normalizeLife(ensureServiceAssessment(life));
-    const decision = getDecision(life);
+    // 작은 딜레마는 한 해를 다 산 뒤에만 고려한다(재생을 시작하자마자 뜨지 않도록).
+    const decision = getDecision(life, { dilemmas: true });
     if (!decision) return false;
+    const enabled = getChoices(life, decision.id).filter((item) => item.enabled);
+    if (enabled.length === 1 && QUIET_WHEN_SINGLE.has(decision.id)) {
+      // 고를 수 있는 길이 하나뿐이면 선택 창을 띄우지 않고 그 길로 이어 간다.
+      life = applyDecision(normalizeLife({ ...life, pendingDecisionId: null }), decision.id, enabled[0].id);
+      publish();
+      return false;
+    }
     life = normalizeLife({ ...life, pendingDecisionId: decision.id });
     if (autoDecision) {
       life = chooseAutomatically(life, decision.id);
@@ -129,7 +144,7 @@ export function createSimulationController({
       const survival = evaluateSurvival(life);
       if (!survival.survived) {
         const deathCopy = {
-          'self-harm': '오랜 정신건강 위기 끝에 이 삶이 너무 일찍 멈췄습니다.',
+          'self-harm': '오랜 정신건강 위기 끝에 이 삶이 너무 일찍 멈췄습니다. 지금 마음이 힘들다면 자살예방상담전화 109(24시간)에서 이야기를 들어 줍니다.',
           'caffeine-cardiac': '수면 부족과 고카페인 부담이 겹친 건강 위기 뒤 이 삶이 멈췄습니다.',
           'cardiovascular-disease': '오랫동안 관리해 온 심혈관 질환으로 이 삶의 시간이 멈췄습니다.',
           cancer: '치료와 돌봄을 이어 온 암으로 이 삶의 시간이 멈췄습니다.',

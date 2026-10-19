@@ -33,7 +33,11 @@ export function mortalityProfile(life, age = life?.age) {
     : 1;
   const health = clamp(Number(life?.stats?.health ?? 60), 0, 100);
   const conditionCount = (life?.conditions?.chronic ?? []).length;
-  const healthScale = Math.max(0.35, 1 + ((50 - health) / 55) + conditionCount * 0.18);
+  const care = new Set(life?.conditions?.care ?? []);
+  // 진단은 같아도 꾸준히 관리하는 쪽이 위험을 덜 키운다.
+  const managed = care.has('regular-treatment') ? 0.12 : care.has('lifestyle-care') ? 0.07 : 0;
+  const conditionLoad = Math.max(0, conditionCount * 0.18 - (conditionCount > 0 ? managed : 0));
+  const healthScale = Math.max(0.35, 1 + ((50 - health) / 55) + conditionLoad);
   const specific = causeSpecificRisks(life, normalizedAge);
   const annualRisk = clamp(
     baselineRisk(normalizedAge) * healthScale * expectancyScale + specific.selfHarm + specific.caffeineCardiac,
@@ -89,8 +93,12 @@ export function causeSpecificRisks(life, ageOverride) {
   const caffeineCardiac = age >= 13 && sleep >= 60 && caffeine >= 60
     ? clamp(((sleep - 55) * (caffeine - 55)) / 180000, 0, 0.008)
     : 0;
+  // 위기가 처음 드러난 해에는 도움을 청할 선택지가 아직 주어지지 않았으므로 판정하지 않는다.
+  const crisisSince = [...(life?.history ?? [])].reverse()
+    .find((entry) => typeof entry?.id === 'string' && entry.id.startsWith('wellbeing-') && entry.id.endsWith('-crisis'))?.age;
   const severeCrisis = age >= 13
     && life?.mentalHealthState === 'crisis'
+    && Number.isFinite(crisisSince) && crisisSince < age
     && stress >= 75
     && sleep >= 65
     && support <= 20

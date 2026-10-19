@@ -1,3 +1,4 @@
+import { josa } from '../data/scenes/josa.js';
 import { normalizeLife } from './life.js';
 import { EDUCATION_BY_ID } from '../data/education.js';
 
@@ -136,7 +137,7 @@ export function createLifeSummary(life) {
     + (current.relationships.partner ? 1 : 0);
   const influences = causalInfluences(current);
   const influenceSentence = influences.length
-    ? `${influences.slice(0, 2).map((item) => `${item.label}이 ${item.direction}하게`).join(', ')} 작용했습니다.`
+    ? `${influences.slice(0, 2).map((item) => `${item.label}${josa(item.label, '이/가')} ${item.direction}하게`).join(', ')} 작용했습니다.`
     : '출생 조건의 영향은 한 방향으로 단정할 수 없었습니다.';
   const representative = representativeMoment(current);
 
@@ -168,7 +169,7 @@ export function createLifeSummary(life) {
     } : null,
     endedReason: current.endedReason,
     epitaph: normalizeEpitaph(current.epitaph),
-    narrative: `${region}에서 시작한 삶은 ${finalRegion}에서 ${current.age}세의 시간을 맞았습니다. ${influenceSentence} ${school} 경로를 지나 ${longestCareer}의 시간을 보냈고, 숫자로 다 담을 수 없는 선택과 관계가 한 사람의 생애를 만들었습니다.`,
+    narrative: `${region}에서 시작한 삶은 ${finalRegion}에서 ${current.age}세의 시간을 맞았습니다. ${influenceSentence} ${school} 경로를 지나 ${longestCareer === '아직 정하지 않음' ? '정해진 직업 없이 시간을 보냈고,' : `${longestCareer}의 시간을 보냈고,`} 숫자로 다 담을 수 없는 선택과 관계가 한 사람의 생애를 만들었습니다.`,
     completedAt: new Date().toISOString(),
   };
 }

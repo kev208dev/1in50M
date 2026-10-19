@@ -331,7 +331,11 @@ export function renderLife(root, life) {
 
 /** 선택지의 비용·위험·예상 영향을 사람이 읽을 수 있는 짧은 문구로 만든다. */
 export function choiceMeta(choice) {
-  const cost = Number(choice.cost ?? choice.financialAction?.amount ?? choice.businessPlan?.capital ?? 0) || 0;
+  const cashEffect = Number(choice.economyEffects?.cash) || 0;
+  const cost = Math.max(
+    Number(choice.cost ?? choice.financialAction?.amount ?? choice.businessPlan?.capital ?? 0) || 0,
+    cashEffect < 0 ? -cashEffect : 0,
+  );
   const effects = describeEffectDirections(choice.effects);
   const tags = choice.tags ?? [];
   const negative = Object.values(choice.effects ?? {}).reduce((sum, value) => sum + Math.min(0, Number(value) || 0), 0);
@@ -340,7 +344,7 @@ export function choiceMeta(choice) {
   if (actionType === 'gamble' || tags.includes('대출') || negative <= -5 || (tags.includes('위험') && (tags.includes('충동') || tags.includes('창업')))) risk = '높음';
   else if (tags.includes('위험') || tags.includes('도전') || tags.includes('충동') || negative <= -2 || actionType === 'lottery') risk = '보통';
   return {
-    cost: cost > 0 ? formatWon(cost) : '없음',
+    cost: cost > 0 ? formatWon(cost) : cashEffect > 0 ? `없음 · ${formatWon(cashEffect)} 받음` : '없음',
     risk,
     effect: effects.slice(0, 3).join(' · ') || '방향을 알 수 없음',
   };
@@ -352,7 +356,7 @@ export function renderDecision(
   choices,
   currentAge = decision.age ?? decision.ageRange?.[0],
 ) {
-  renderTextFields(dialog, '[data-decision="kicker"]', `${currentAge}세 · 중요한 결정`);
+  renderTextFields(dialog, '[data-decision="kicker"]', `${currentAge}세 · ${decision.dilemma ? '그해의 선택' : '중요한 결정'}`);
   renderTextFields(dialog, '[data-decision="title"]', decision.title);
   renderTextFields(dialog, '[data-decision="prompt"]', decision.prompt);
   const list = dialog.querySelector('[data-decision="choices"]');
@@ -581,8 +585,9 @@ export function koreaPosition(summary) {
   const age = Number(summary.age) || 0;
   const lifespan = Math.round(Math.min(98, Math.max(2, 100 - (age - 55) * 2.4)));
   const happiness = Math.round(Math.min(98, Math.max(2, 100 - (Number(summary.finalStats?.happiness) || 0))));
+  // 어른이 되기 전에 멈춘 삶은 자산으로 줄 세우지 않는다.
   return [
-    { label: '자산', top: wealth },
+    ...(age >= 19 ? [{ label: '자산', top: wealth }] : []),
     { label: '수명', top: lifespan },
     { label: '행복', top: happiness },
   ];

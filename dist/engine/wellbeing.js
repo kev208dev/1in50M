@@ -113,7 +113,7 @@ export function advanceWellbeing(life) {
       year: current.year,
       type: 'health',
       text: mentalHealthState === 'crisis'
-        ? '학업 압박과 수면 부족이 겹치며 마음의 위기가 깊어졌습니다. 도움과 회복이 필요한 때입니다.'
+        ? '압박과 수면 부족이 겹치며 마음의 위기가 깊어졌습니다. 도움과 회복이 필요한 때입니다.'
         : mentalHealthState === 'strained'
           ? '지친 마음과 부족한 잠이 일상에 영향을 주기 시작했습니다.'
           : '생활 리듬과 마음의 상태가 다시 안정되었습니다.',

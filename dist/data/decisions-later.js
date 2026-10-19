@@ -13,8 +13,8 @@ export const LATER_DECISIONS = [
     sourceKey: 'olderAdults2024',
     choices: [
       choice('treatment', '진료와 약 복용을 이어간다', '정기 진료를 생활 일정에 넣습니다.', { health: 3, happiness: -1 }, ['만성질환 관리'], { conditionEffects: { chronic: ['cardiovascular'], care: ['regular-treatment'] } }),
-      choice('lifestyle', '식사와 운동부터 바꾼다', '매일 지킬 수 있는 작은 습관부터 시작합니다.', { health: 2, happiness: 1 }, ['생활 습관'], { conditionEffects: { chronic: ['cardiovascular'] } }),
-      choice('second-opinion', '다른 병원에서 다시 확인한다', '진단과 관리 방법을 한 번 더 확인합니다.', { knowledge: 2 }, ['재확인']),
+      choice('lifestyle', '식사와 운동부터 바꾼다', '약 대신 매일 지킬 수 있는 습관부터 시작합니다. 꾸준함이 관건입니다.', { health: 2, happiness: 1 }, ['생활 습관'], { conditionEffects: { chronic: ['cardiovascular'], care: ['lifestyle-care'] } }),
+      choice('second-opinion', '다른 병원에서 다시 확인한다', '진단을 한 번 더 확인하느라 관리 시작이 늦어집니다.', { knowledge: 2, happiness: -1 }, ['재확인'], { conditionEffects: { chronic: ['cardiovascular'] } }),
     ],
   },
   {

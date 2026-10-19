@@ -1,4 +1,5 @@
-import { DECISIONS, DECISION_BY_ID } from '../data/decisions.js';
+import { DECISIONS, DECISION_BY_ID, DILEMMAS } from '../data/decisions.js';
+import { DILEMMA_FAMILY_BY_ID } from '../data/scenes/index.js';
 import { ASSET_MODELS } from '../data/financial-paths.js';
 import { HOUSING_BY_ID } from '../data/housing.js';
 import { normalizeLife } from './life.js';
@@ -69,16 +70,73 @@ function chooseWeightedDecision(life, candidates) {
   return prioritized.at(-1) ?? null;
 }
 
-export function getDecision(life) {
+const DILEMMA_CHANCE = 0.24;
+const inYears = (range, year) => !range || (year >= range[0] && year <= (range[1] ?? 9999));
+const DILEMMAS_BY_FAMILY = DILEMMAS.reduce((groups, decision) => {
+  (groups[decision.family] ??= []).push(decision);
+  return groups;
+}, {});
+
+export function enabledChoiceCount(life, decision) {
+  return visibleChoices(life, decision).filter((choiceItem) => availability(life, choiceItem).enabled).length;
+}
+
+function dilemmaVariantEligible(life, decision) {
+  return life.age >= decision.ageRange[0]
+    && life.age <= decision.ageRange[1]
+    && !life.decisions[decision.id]
+    && inYears(decision.years, life.year)
+    && (!decision.when || decision.when(life))
+    && (!decision.whenWho || decision.whenWho(life))
+    && (!decision.whenDetail || decision.whenDetail(life))
+    && enabledChoiceCount(life, decision) >= 2;
+}
+
+/** 핵심 결정이 없는 해에 가끔, 앞뒤 해와 겹치지 않게 작은 딜레마 하나를 고른다. */
+export function pickDilemma(life) {
+  if (life.age < 8) return null;
+  const rng = createRng(`${life.seed}:dilemma:${life.age}`);
+  if (rng.next() >= DILEMMA_CHANCE) return null;
+  const crowded = (life.history ?? []).some((entry) => (
+    (entry.type === 'decision' && entry.age >= life.age - 1)
+    || (entry.type === 'era-event' && entry.age === life.age)
+  ));
+  if (crowded) return null;
+  const lastAge = {};
+  for (const entry of life.history ?? []) {
+    const match = /^dilemma:([^:]+):/.exec(entry.decisionId ?? '');
+    if (match) lastAge[match[1]] = entry.age;
+  }
+  const families = Object.entries(DILEMMAS_BY_FAMILY)
+    .map(([familyId, variants]) => {
+      const family = DILEMMA_FAMILY_BY_ID[familyId];
+      if (lastAge[familyId] !== undefined && life.age - lastAge[familyId] < (family?.cooldown ?? 6)) return null;
+      const open = variants.filter((decision) => dilemmaVariantEligible(life, decision));
+      return open.length ? { familyId, weight: family?.weight ?? 1, open } : null;
+    })
+    .filter(Boolean);
+  if (!families.length) return null;
+  const total = families.reduce((sum, item) => sum + item.weight, 0);
+  let roll = rng.next() * total;
+  let chosen = families.at(-1);
+  for (const item of families) {
+    roll -= item.weight;
+    if (roll < 0) { chosen = item; break; }
+  }
+  return chosen.open[Math.floor(rng.next() * chosen.open.length)];
+}
+
+export function getDecision(life, { dilemmas = false } = {}) {
   const current = normalizeLife(life);
   if (current.pendingDecisionId && DECISION_BY_ID[current.pendingDecisionId]) {
     const pending = DECISION_BY_ID[current.pendingDecisionId];
     return visibleChoices(current, pending).some((choiceItem) => availability(current, choiceItem).enabled) ? pending : null;
   }
-  return chooseWeightedDecision(current, DECISIONS.filter((decision) => (
+  const core = chooseWeightedDecision(current, DECISIONS.filter((decision) => (
     isDecisionEligible(current, decision)
     && visibleChoices(current, decision).some((choiceItem) => availability(current, choiceItem).enabled)
   )));
+  return core ?? (dilemmas ? pickDilemma(current) : null);
 }
 
 export function getChoices(life, decisionId) {

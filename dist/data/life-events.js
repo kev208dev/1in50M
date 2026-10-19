@@ -1,3 +1,5 @@
+import * as c from './scenes/context.js';
+
 const STAGE_CONFIG = {
   childhood: { ageRange: [0, 6], themes: [
     ['family-picnic', '가족과 가까운 공원에서 오래 걸었습니다.', { happiness: 2, relationships: 2 }],
@@ -61,14 +63,29 @@ const STAGE_CONFIG = {
   ] },
 };
 
+// 기본 사건이 캐릭터의 실제 상황과 어긋나지 않게 하는 조건.
+const BASE_WHEN = {
+  'first-pay': c.isWorking,
+  'team-task': c.any(c.isWorking, c.isUniversityStudent),
+  'work-project-success': c.isWorking,
+  'career-course': c.isWorking,
+  'role-change': c.isWorking,
+  'work-recognition': c.isWorking,
+  'family-call': c.any(c.hasLivingParents, c.hasSiblings, c.not(c.livesWithFamily)),
+  'family-care': c.any(c.hasAgingParents, c.hasChildren, c.hasPartner),
+  'family-meal': c.any(c.hasPartner, c.hasChildren, c.livesWithFamily),
+};
+
 const BASE_LIFE_EVENTS = Object.entries(STAGE_CONFIG).flatMap(([stage, config]) => (
   config.themes.map(([id, text, effects, economyEffects = {}, milestone = false], index) => ({
     id,
     stage,
     ageRange: config.ageRange,
     conditions: {},
+    when: BASE_WHEN[id],
     weight: index < 2 ? 1.2 : 1,
-    cooldownYears: 5,
+    // 매년 고르는 사건의 대부분은 장면 계열이 맡으므로, 기본 사건은 한 시기에 한 번 정도만 나온다.
+    cooldownYears: 12,
     text,
     effects,
     economyEffects,
@@ -164,7 +181,7 @@ export const PROFILE_EVENTS = [
   {
     id: 'military-gap', stage: 'young-adult', conditionStage: 'youngAdult', ageRange: [19, 28], weight: 0.6,
     cooldownYears: 9, tags: ['career', 'service'],
-    when: (life) => life?.profile?.sex?.id === 'male' || life?.profile?.sex === 'male',
+    when: (life) => c.isMale(life) && ['active', 'completed', 'supplementary'].includes(life?.service?.status),
     effects: { knowledge: 1, relationships: -1 },
     text: '병역으로 생긴 학업과 경력의 공백을 어떻게 설명하고 회복할지 고민했습니다.',
   },
@@ -177,7 +194,7 @@ export const PROFILE_EVENTS = [
   },
   {
     id: 'workplace-hierarchy', stage: 'adult', conditionStage: 'adult', ageRange: [30, 49], weight: 0.9,
-    cooldownYears: 5, tags: ['career'], effects: { happiness: -1, knowledge: 1 },
+    cooldownYears: 5, tags: ['career'], when: c.isEmployee, effects: { happiness: -1, knowledge: 1 },
     text: '직급과 연차가 강하게 작동하는 회의에서 의견을 꺼내는 방식을 배웠습니다.',
   },
   {
@@ -215,12 +232,12 @@ export const PROFILE_EVENTS = [
   },
   {
     id: 'parent-care', stage: 'midlife', conditionStage: 'midlife', ageRange: [45, 69], weight: 0.9,
-    cooldownYears: 6, tags: ['family', 'care'], effects: { health: -1, relationships: 3 },
+    cooldownYears: 6, tags: ['family', 'care'], when: c.hasAgingParents, effects: { health: -1, relationships: 3 },
     text: '부모의 병원 일정과 생활 돌봄을 가족들과 구체적으로 나누었습니다.',
   },
   {
     id: 'business-network', stage: 'midlife', conditionStage: 'midlife', ageRange: [45, 64], weight: 0.6,
-    cooldownYears: 7, tags: ['career', 'business'],
+    cooldownYears: 7, tags: ['career', 'business'], when: c.isWorking,
     weightFor: (life) => 1 + Math.max(0, modifier(life, 'career-network')) / 18,
     effects: { knowledge: 2, relationships: 2 },
     text: '오랫동안 쌓은 거래처와 동료 관계가 새로운 사업 기회를 연결했습니다.',
