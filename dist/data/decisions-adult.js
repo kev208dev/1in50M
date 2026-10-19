@@ -96,7 +96,7 @@ export const ADULT_DECISIONS = [
     ],
   },
   {
-    id: 'housing-path', ageRange: [30, 38], weight: 2,
+    id: 'housing-path', ageRange: [31, 38], weight: 2,
     title: '다음 집의 계약서',
     prompt: '대출 이자, 보증금 안전, 월 고정비와 생활권을 함께 검토합니다.',
     sourceKey: 'onePerson2022',

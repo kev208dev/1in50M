@@ -5,15 +5,35 @@ import { WORK_FAMILIES } from './families-work.js';
 import { FAVOR_DILEMMAS } from './dilemmas-favors.js';
 import { FAMILY_FAMILIES } from './families-family.js';
 import { FAMILY_DILEMMAS } from './dilemmas-family.js';
+import { WELLBEING_FAMILIES } from './families-wellbeing.js';
+import { WELLBEING_DILEMMAS } from './dilemmas-wellbeing.js';
+import { LIVELIHOOD_FAMILIES } from './families-livelihood.js';
+import { LIVELIHOOD_DILEMMAS } from './dilemmas-livelihood.js';
+import { YOUTH_FAMILIES } from './families-youth.js';
+import { YOUTH_DILEMMAS } from './dilemmas-youth.js';
+import { CHILDHOOD_FAMILIES } from './families-childhood.js';
+import { CHILDHOOD_DILEMMAS } from './dilemmas-childhood.js';
+import { ERA_FAMILIES } from './families-era.js';
+import { ERA_DILEMMAS } from './dilemmas-era.js';
 
 export const SCENE_FAMILIES = [
   ...WORK_FAMILIES,
   ...FAMILY_FAMILIES,
+  ...WELLBEING_FAMILIES,
+  ...LIVELIHOOD_FAMILIES,
+  ...YOUTH_FAMILIES,
+  ...CHILDHOOD_FAMILIES,
+  ...ERA_FAMILIES,
 ];
 
 export const DILEMMA_FAMILIES = [
   ...FAVOR_DILEMMAS,
   ...FAMILY_DILEMMAS,
+  ...WELLBEING_DILEMMAS,
+  ...LIVELIHOOD_DILEMMAS,
+  ...YOUTH_DILEMMAS,
+  ...CHILDHOOD_DILEMMAS,
+  ...ERA_DILEMMAS,
 ];
 
 function assertUnique(items, label) {

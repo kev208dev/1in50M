@@ -35,7 +35,7 @@ export function mortalityProfile(life, age = life?.age) {
   const conditionCount = (life?.conditions?.chronic ?? []).length;
   const care = new Set(life?.conditions?.care ?? []);
   // 진단은 같아도 꾸준히 관리하는 쪽이 위험을 덜 키운다.
-  const managed = care.has('regular-treatment') ? 0.12 : care.has('lifestyle-care') ? 0.07 : 0;
+  const managed = care.has('regular-treatment') ? 0.12 : (care.has('lifestyle-care') || care.has('regular-checkup')) ? 0.07 : 0;
   const conditionLoad = Math.max(0, conditionCount * 0.18 - (conditionCount > 0 ? managed : 0));
   const healthScale = Math.max(0.35, 1 + ((50 - health) / 55) + conditionLoad);
   const specific = causeSpecificRisks(life, normalizedAge);

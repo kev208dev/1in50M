@@ -282,15 +282,26 @@ export const PROFILE_EVENTS = [
     text: '진료와 운동, 식사를 무리 없이 이어갈 건강 관리 리듬을 만들었습니다.',
   },
   {
-    id: 'cardiovascular-diagnosis', stage: 'midlife', conditionStage: 'midlife', ageRange: [40, 74], weight: 0.55,
+    id: 'cardiovascular-diagnosis', stage: 'midlife', conditionStage: 'midlife', ageRange: [40, 80], weight: 0.3,
     cooldownYears: 40, tags: ['health', 'diagnosis'],
     when: (life) => !(life?.conditions?.chronic ?? []).includes('cardiovascular')
-      && (life?.stats?.health ?? 100) <= 72,
-    weightFor: (life) => 1 + Math.max(0, 65 - (life?.stats?.health ?? 65)) / 30,
+      && (life?.stats?.health ?? 100) <= 66,
+    weightFor: (life) => 1 + Math.max(0, 62 - (life?.stats?.health ?? 62)) / 25,
     effects: { health: -2, happiness: -1 },
     conditionEffects: { chronic: ['cardiovascular'], care: ['regular-checkup'] },
     milestone: true,
     text: '정기검진에서 심혈관 질환을 진단받아 약과 생활 관리를 시작했습니다.',
+  },
+  {
+    // 사망 원인 1위인 암도 진단 경로가 있어야 결과 화면의 사인과 삶의 기록이 이어진다.
+    id: 'cancer-diagnosis', stage: 'midlife', conditionStage: 'midlife', ageRange: [45, 86], weight: 0.32,
+    cooldownYears: 60, tags: ['health', 'diagnosis'],
+    when: (life) => !(life?.conditions?.chronic ?? []).includes('cancer'),
+    weightFor: (life) => 1 + Math.max(0, (life?.age ?? 45) - 45) / 20 + Math.max(0, 55 - (life?.stats?.health ?? 55)) / 40,
+    effects: { health: -4, happiness: -2 },
+    conditionEffects: { chronic: ['cancer'], care: ['cancer-treatment'] },
+    milestone: true,
+    text: '검진에서 암이 발견되어 수술과 항암 치료를 차례로 받기 시작했습니다.',
   },
   {
     id: 'respiratory-diagnosis', stage: 'senior', conditionStage: 'senior', ageRange: [60, 86], weight: 0.4,

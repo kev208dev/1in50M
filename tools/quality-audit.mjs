@@ -17,15 +17,16 @@ const YEARS = [1952, 1962, 1972, 1982, 1992, 2002, 2012, 2024, 2040, 2060];
 // 문장에 나온 사람·장소·물건이 그 해 그 캐릭터의 현실과 맞는지 보는 규칙.
 const CONTEXT_RULES = [
   { label: '일하지 않는데 직장 장면', test: /(출근|퇴근|팀장|사무실|회식|거래처|결재)/, ok: (l) => c.isWorking(l) || c.isRetired(l) },
-  { label: '동반자가 없는데 동반자 장면', test: /(배우자|동반자|남편|아내)/, ok: (l) => c.hasPartner(l) },
-  { label: '자녀가 없는데 자녀 장면', test: /(자녀|아이의 |아이가 |아이를 |아이와 |아이 )/, ok: (l) => c.hasChildren(l) || l.age < 19 },
+  { label: '동반자가 없는데 동반자 장면', test: /(배우자|동반자|남편|(?<![가-힣])아내)/, ok: (l) => c.hasPartner(l) },
+  { label: '자녀가 없는데 자녀 장면', test: /(?<!(친척|친구|이웃|조카|남의|옆집|동료) ?)(자녀|우리 아이|내 아이)/, ok: (l) => c.hasChildren(l) || l.age < 19 },
   { label: '형제자매가 없는데 형제 장면', test: /(형제|자매|남매|동생|언니|오빠|누나)/, ok: (l) => c.hasSiblings(l) || l.age >= 19 },
-  { label: '부모가 없는데 부모 장면', test: /(부모님|어머니|아버지)/, ok: (l) => c.hasLivingParents(l) || l.age < 19 },
+  { label: '부모가 없는데 부모 장면', test: /(?<!(조|친구의 |친구 |이웃 |동료의 |시|처|장인|장모))(부모님|어머니|아버지)/, ok: (l) => c.hasLivingParents(l) || l.age < 19 },
   { label: '시대보다 이른 스마트폰', test: /(스마트폰|앱으로|단체 대화방|카톡|영상통화)/, ok: (l) => l.year >= 2010 },
   { label: '시대보다 이른 휴대폰·인터넷', test: /(휴대폰|인터넷|이메일|PC방)/, ok: (l) => l.year >= 1995 },
   { label: '1996년 이후의 국민학교', test: /국민학교/, ok: (l) => l.year <= 1996 },
   { label: '1996년 이전의 초등학교', test: /초등학교/, ok: (l) => l.year >= 1996 },
   { label: '1994년 이전의 수능', test: /수능/, ok: (l) => l.year >= 1993 },
+  { label: '이동 장애가 있는데 등산·달리기 장면', test: /(등산|산행|달리기|조깅|계주|이단 뛰기|줄넘기)/, ok: (l) => !c.hasMobilityDisability(l) },
   { label: '미성년의 돈벌이', test: /(월급|연봉|대출)/, ok: (l) => l.age >= 17 },
 ];
 
@@ -198,6 +199,13 @@ for (const life of lives) causes[life.state.endedReason ?? '?'] = (causes[life.s
 console.log(`장면 사건 ${SCENE_EVENTS.length.toLocaleString()}종 · 딜레마 ${DILEMMA_DECISIONS.length.toLocaleString()}종`);
 console.log(`삶 ${N}개 · 사망 나이 중앙값 ${ages[N >> 1]} · 사인 ${JSON.stringify(causes)}${lives.some((life) => life.stuck) ? ' · 멈춘 삶 있음!' : ''}`);
 console.log(`실제로 등장한 장면 계열 ${familySeen.size}개 · 서로 다른 사건 문장 ${textSeen.size.toLocaleString()}개 · 결과 톤 ${JSON.stringify(toneCount)}`);
+const diagnosed = { event: 0, screening: 0, any: 0 };
+for (const life of lives) {
+  if (life.state.history.some((entry) => entry.eventId === 'cardiovascular-diagnosis')) diagnosed.event += 1;
+  if (life.state.decisions?.['midlife-health-screening']) diagnosed.screening += 1;
+  if ((life.state.conditions?.chronic ?? []).includes('cardiovascular')) diagnosed.any += 1;
+}
+console.log(`심혈관 진단 경로 ${JSON.stringify(diagnosed)}`);
 console.log(`결정 팝업/삶 ${(decisionPopups / N).toFixed(1)} (딜레마 ${(dilemmaPopups / N).toFixed(1)})`);
 let failed = false;
 for (const [key, limit] of Object.entries(THRESHOLDS)) {

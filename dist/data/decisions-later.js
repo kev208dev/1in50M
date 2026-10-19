@@ -7,8 +7,10 @@ const isWorking = (life) => ['employed', 'part-time', 'self-employed'].includes(
 
 export const LATER_DECISIONS = [
   {
-    id: 'midlife-health-screening', ageRange: [50, 57], weight: 2,
+    id: 'midlife-health-screening', ageRange: [51, 57], weight: 2,
     title: '검진 결과를 받아 든 날',
+    // 모두가 같은 진단을 받지 않도록, 몸이 실제로 지쳐 있을 때만 위험 신호가 나온다.
+    when: (life) => (Number(life?.stats?.health) || 0) <= 58,
     prompt: '정기검진에서 혈압과 심혈관 위험을 꾸준히 살펴야 한다는 설명을 들었습니다.',
     sourceKey: 'olderAdults2024',
     choices: [
@@ -18,7 +20,7 @@ export const LATER_DECISIONS = [
     ],
   },
   {
-    id: 'restructure', ageRange: [50, 59], weight: 2,
+    id: 'restructure', ageRange: [51, 59], weight: 2,
     title: '회사의 구조조정 소식',
     prompt: '조직이 줄어들며 희망퇴직과 잔류, 재교육 가운데 결정을 요구받습니다.',
     sourceKey: 'socialTrends2025',
@@ -68,7 +70,7 @@ export const LATER_DECISIONS = [
     ],
   },
   {
-    id: 'solo-aging', ageRange: [70, 79],
+    id: 'solo-aging', ageRange: [71, 79],
     title: '혼자 사는 집의 안전망',
     prompt: '아플 때 연락할 사람과 집 안의 안전, 식사를 어떻게 준비할지 생각합니다.',
     sourceKey: 'olderAdults2024',
@@ -81,7 +83,7 @@ export const LATER_DECISIONS = [
     ],
   },
   {
-    id: 'digital-healthcare-access', ageRange: [70, 85],
+    id: 'digital-healthcare-access', ageRange: [71, 85],
     title: '예약과 진료가 화면 안으로',
     prompt: '병원 예약, 모바일 신분증과 금융 업무가 디지털 중심으로 바뀌었습니다.',
     sourceKey: 'olderAdults2024',

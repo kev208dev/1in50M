@@ -42,6 +42,15 @@ export function dilemmaId(familyId, whoId, detailId) {
 }
 
 /** 계열 하나를 who × detail 변형 결정들로 펼친다. */
+/** 계열·인물·상황의 연도 조건을 모두 만족하는 구간(겹치지 않으면 빈 구간). */
+function intersectYears(...ranges) {
+  const present = ranges.filter(Boolean);
+  if (present.length === 0) return null;
+  const from = Math.max(...present.map((range) => range[0] ?? 0));
+  const to = Math.min(...present.map((range) => range[1] ?? 9999));
+  return [from, to];
+}
+
 export function expandDilemma(family) {
   const decisions = [];
   for (const who of family.who) {
@@ -56,7 +65,7 @@ export function expandDilemma(family) {
         title: fill(family.title, values),
         prompt: fill(detail.text, values),
         ageRange: family.ageRange,
-        years: detail.years ?? who.years ?? family.years ?? null,
+        years: intersectYears(family.years, who.years, detail.years),
         whenWho: who.when ?? null,
         whenDetail: detail.when ?? null,
         when: family.when ?? null,
