@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="./styles.css?v=20261018-4">
   <link rel="stylesheet" href="./theme.css?v=20261019-2">
   <link rel="stylesheet" href="./profile.css?v=20261018-2">
+  <link rel="stylesheet" href="./life-dashboard.css?v=20261019-3">
 </head>
 <body>
   <div class="ambient-grid" aria-hidden="true"></div>
@@ -170,6 +171,7 @@
           <span id="year-display">2026</span>
           <small data-life="stage">영아</small>
           <small class="life-clock-location" data-life="location">대한민국</small>
+          <button id="life-home-button" type="button" aria-label="출생 화면으로 돌아가기">처음 ↗</button>
         </div>
         <dl id="money-hud" class="money-hud" aria-label="핵심 자산 현황">
           <div><dt>순자산</dt><dd data-life="net-worth">0원</dd></div>
@@ -185,7 +187,7 @@
       <p class="simulation-notice"><span>SIMULATION 02</span> 공개 통계 기반이며 일부 사건과 금액은 <strong>모델링 값</strong>입니다.</p>
 
       <nav id="life-panel-tabs" class="life-panel-tabs" aria-label="생애 정보 패널">
-        <button type="button" data-life-panel-target="story" aria-pressed="true">지금</button>
+        <button type="button" data-life-panel-target="story" aria-pressed="true">메시지</button>
         <button type="button" data-life-panel-target="status" aria-pressed="false">상태·돈</button>
         <button type="button" data-life-panel-target="details" aria-pressed="false">사람·기록</button>
         <button type="button" data-life-panel-target="records" aria-pressed="false">인생 기록</button>
@@ -266,6 +268,11 @@
           </section>
 
 
+          <section class="system-feed-shell" aria-label="연속 시스템 메시지">
+            <div class="message-window-heading"><div><h2>삶의 메시지</h2><span>사건과 선택의 결과가 시간순으로 쌓입니다.</span></div><button id="event-details-button" class="system-feed-heading" type="button" disabled><span class="status-dot"></span><strong>최근 사건 자세히</strong></button></div>
+            <div id="system-feed" class="system-feed" role="log" aria-label="시간순 생애 메시지" aria-live="polite" aria-relevant="additions" tabindex="0"></div>
+          </section>
+
           <section class="log-section" aria-labelledby="log-title">
             <div class="life-section-heading">
               <div><p class="eyebrow">RECENT MEMORY</p><h2 id="log-title">인생 기록</h2></div>
@@ -316,10 +323,6 @@
       </div>
 
       <footer class="life-timeline-bar">
-        <section class="system-feed-shell" aria-label="연속 시스템 메시지">
-          <button id="event-details-button" class="system-feed-heading" type="button" disabled><span class="status-dot"></span><strong>최근 사건 자세히</strong></button>
-          <div id="system-feed" class="system-feed" role="log" aria-live="polite" aria-relevant="additions"></div>
-        </section>
         <div class="playback-controls" aria-label="시간 진행">
           <button id="play-button" class="play-button" type="button" aria-label="삶 재생">▶</button>
           <div id="speed-controls" class="speed-controls" role="group" aria-label="진행 속도">
@@ -591,6 +594,6 @@
 
   <p id="live-region" class="sr-only" aria-live="polite"></p>
   <script src="./config.js"></script>
-  <script type="module" src="./app.js?v=20261019-2"></script>
+  <script type="module" src="./app.js?v=20261019-3"></script>
 </body>
 </html>

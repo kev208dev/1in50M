@@ -4,7 +4,7 @@ import { createBirthSlotResult, profileFromSlotResult } from './engine/birth-slo
 import { normalizeRuntimeSettings, resolveBirthYear } from './data/runtime-settings.js';
 import { createKoreaMap, regionLabel } from './ui/korea-map.js?v=20261018-6';
 import { createEventNotice, renderBigEvent } from './ui/big-event.js?v=20261019-1';
-import { renderSystemFeed } from './ui/system-feed.js?v=20261019-1';
+import { renderSystemFeed } from './ui/system-feed.js?v=20261019-3';
 import { financeMenuState } from './ui/finance-menu.js';
 import { renderMomentContext } from './ui/moment-context.js?v=20261019-2';
 import { createCohortPeers, advanceCohort } from './engine/cohort.js';
@@ -713,6 +713,7 @@ document.querySelector('#life-panel-tabs').addEventListener('click', (event) => 
   if (!button) return;
   const mobilePanel = button.dataset.lifePanelTarget;
   views.life.dataset.mobilePanel = mobilePanel;
+  renderSystemFeed(document.querySelector('#system-feed'), controller?.getState());
   document.querySelectorAll('[data-life-panel-target]').forEach((item) => {
     item.setAttribute('aria-pressed', String(item === button));
   });
@@ -1065,12 +1066,14 @@ document.querySelector('#system-feed').addEventListener('click', (event) => {
   liveRegion.textContent = `${entry.year}년 · ${entry.age}세. ${entry.text}`;
 });
 
-document.querySelector('.brand').addEventListener('click', (event) => {
+function returnToBirth(event) {
   event.preventDefault();
   controller?.pause();
   updatePlayback();
   startBirthRoulette();
-});
+}
+document.querySelector('.brand').addEventListener('click', returnToBirth);
+document.querySelector('#life-home-button').addEventListener('click', returnToBirth);
 
 document.addEventListener('visibilitychange', () => controller?.setVisible(!document.hidden));
 window.addEventListener('resize', () => {

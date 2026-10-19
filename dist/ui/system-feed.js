@@ -46,10 +46,10 @@ export function renderSystemFeed(root, life, limit = 50) {
   const signature = JSON.stringify([life?.seed, items]);
   const previous = renderedFeeds.get(root);
   if (previous?.signature === signature) return;
-  const followLatest = !previous || previous.seed !== life?.seed || !root.children.length || root.scrollWidth - root.clientWidth - root.scrollLeft < 24;
-  const previousLeft = root.scrollLeft;
-  const anchor = !followLatest && [...root.children].find((row) => row.offsetLeft + row.offsetWidth > previousLeft);
-  const anchorOffset = anchor ? previousLeft - anchor.offsetLeft : 0;
+  const followLatest = !previous || previous.seed !== life?.seed || !root.children.length || root.scrollHeight - root.clientHeight - root.scrollTop < 24;
+  const previousTop = root.scrollTop;
+  const anchor = !followLatest && [...root.children].find((row) => row.offsetTop + row.offsetHeight > previousTop);
+  const anchorOffset = anchor ? previousTop - anchor.offsetTop : 0;
   const documentRef = root.ownerDocument ?? document;
   root.replaceChildren(...items.map((item) => {
     const row = documentRef.createElement('button');
@@ -68,8 +68,8 @@ export function renderSystemFeed(root, life, limit = 50) {
     return row;
   }));
   const retained = anchor && [...root.children].find((row) => row.dataset.messageId === anchor.dataset.messageId);
-  root.scrollLeft = followLatest
-    ? Math.max(0, root.scrollWidth - root.clientWidth)
-    : retained ? Math.max(0, retained.offsetLeft + anchorOffset) : 0;
+  root.scrollTop = followLatest
+    ? Math.max(0, root.scrollHeight - root.clientHeight)
+    : retained ? Math.max(0, retained.offsetTop + anchorOffset) : 0;
   renderedFeeds.set(root, { signature, seed: life?.seed });
 }
