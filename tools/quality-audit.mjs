@@ -54,7 +54,7 @@ function run(seed, year) {
   const onDecision = (decision, life) => {
     const all = getChoices(life, decision.id);
     const enabled = all.filter((item) => item.enabled);
-    interruptions.push({ age: life.age, kind: 'decision', id: decision.id, dilemma: Boolean(decision.dilemma), total: all.length, enabled: enabled.length });
+    if (!interruptions.some((item) => item.kind === 'decision' && item.age === life.age && item.id === decision.id)) interruptions.push({ age: life.age, kind: 'decision', id: decision.id, dilemma: Boolean(decision.dilemma), total: all.length, enabled: enabled.length });
     const pick = enabled[Math.floor(rng.next() * enabled.length)];
     queueMicrotask(() => { controller.answerDecision(pick.id); controller.acknowledgeInterruption?.(); controller.play(); });
   };
@@ -134,6 +134,7 @@ const toneCount = { good: 0, mixed: 0, bad: 0 };
 const familySeen = new Set();
 const textSeen = new Set();
 const dupExamples = new Map();
+const clusterKinds = new Map();
 for (const life of lives) {
   const texts = life.state.history.filter((entry) => entry.type === 'event').map((entry) => entry.text);
   const unique = new Set(texts);
@@ -155,6 +156,12 @@ for (const life of lives) {
   const byAge = {};
   for (const item of shown) byAge[item.age] = (byAge[item.age] ?? 0) + 1;
   multiYears += Object.values(byAge).filter((value) => value >= 2).length;
+  const kindsByAge = {};
+  for (const item of shown) (kindsByAge[item.age] ??= []).push(item.kind === 'decision' ? (item.dilemma ? 'dilemma' : item.id) : item.kind);
+  for (const kinds of Object.values(kindsByAge)) if (kinds.length >= 2) {
+    const key = kinds.sort().join('+');
+    clusterKinds.set(key, (clusterKinds.get(key) ?? 0) + 1);
+  }
   for (const item of shown.filter((entry) => entry.kind === 'decision')) {
     decisionPopups += 1;
     if (item.dilemma) dilemmaPopups += 1;
@@ -212,4 +219,6 @@ if (allViolations.length) {
 if (artifacts.length) console.log('\n조사 오류', [...new Set(artifacts)].slice(0, 10));
 const topDup = [...dupExamples.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
 if (topDup.length) console.log('\n자주 반복되는 문장', topDup.map(([text, count]) => `${count}× ${text}`));
+const topClusters = [...clusterKinds.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
+if (topClusters.length) console.log('\n한 해에 겹친 팝업', topClusters.map(([key, count]) => `${count}× ${key}`));
 process.exit(failed ? 1 : 0);

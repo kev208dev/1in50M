@@ -3,13 +3,17 @@ import { sceneId, sceneText } from './define.js';
 import { expandDilemma } from './define-dilemma.js';
 import { WORK_FAMILIES } from './families-work.js';
 import { FAVOR_DILEMMAS } from './dilemmas-favors.js';
+import { FAMILY_FAMILIES } from './families-family.js';
+import { FAMILY_DILEMMAS } from './dilemmas-family.js';
 
 export const SCENE_FAMILIES = [
   ...WORK_FAMILIES,
+  ...FAMILY_FAMILIES,
 ];
 
 export const DILEMMA_FAMILIES = [
   ...FAVOR_DILEMMAS,
+  ...FAMILY_DILEMMAS,
 ];
 
 function assertUnique(items, label) {
