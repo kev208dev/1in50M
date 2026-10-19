@@ -91,8 +91,8 @@ test('성인기 금융 장면은 예금·채권·주식·가상자산·복권·�
 test('금융 선택은 일반 결정 흐름에서도 자산과 기록에 반영된다', () => {
   const life = makeLifeAtAge(30, { economy: { cash: 20000000 } });
   const next = applyDecision(life, 'asset-allocation', 'buy-bonds');
-  assert.equal(next.economy.assets.bonds, 5000000);
-  assert.equal(next.economy.cash, 15000000);
+  assert.equal(next.economy.assets.bonds, 2000000);
+  assert.equal(next.economy.cash, 18000000);
   assert.equal(next.economy.transactions.at(-1).asset, 'bonds');
 });
 
@@ -175,7 +175,7 @@ test('가상자산 거래는 도파민을 올리고 자동차는 자산과 유�
   assert.ok(car.economy.otherDebt >= 8000000);
   assert.equal(car.economy.recurringCosts, 350000);
   const afterYear = calculateAnnualEconomy(car);
-  assert.equal(afterYear.economy.fixedCosts, 1850000);
+  assert.equal(afterYear.economy.fixedCosts, 1150000);
 });
 
 test('현금 지출형 선택은 필요한 자금이 없으면 잠긴다', () => {

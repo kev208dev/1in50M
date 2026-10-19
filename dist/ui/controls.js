@@ -125,7 +125,7 @@ export function createSimulationController({
 
   function processYear() {
     if (life.status !== 'living' || life.pendingDecisionId) return;
-    if (autoDecision && life.age >= 25 && !life.career.careerId) {
+    if (autoDecision && life.age >= 25 && life.age < 65 && life.career.status === 'none') {
       const offer = getCareerOffers(life, 100).find((item) => item.eligible);
       if (offer) life = acceptCareer(life, offer.career.id);
     }

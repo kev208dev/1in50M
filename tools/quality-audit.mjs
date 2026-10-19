@@ -6,7 +6,7 @@ import { createLife } from '../dist/engine/life.js';
 import { getChoices, getDecision } from '../dist/engine/decisions.js';
 import { createBirthSlotResult, profileFromSlotResult } from '../dist/engine/birth-slot.js';
 import { createRng } from '../dist/engine/random.js';
-import { detectBigEvents } from '../dist/ui/big-event.js';
+import { createEventNotice } from '../dist/ui/big-event.js';
 import * as c from '../dist/data/scenes/context.js';
 import { PARTICLE_ARTIFACTS, particleMismatch } from '../dist/data/scenes/josa.js';
 import { SCENE_EVENTS, DILEMMA_DECISIONS } from '../dist/data/scenes/index.js';
@@ -48,6 +48,8 @@ function run(seed, year) {
   const queue = [];
   const clock = { now: () => 0, schedule: (callback) => { queue.push(callback); return queue.length; }, cancel: () => {} };
   const interruptions = [];
+  // Match the app: automatic notices update the feed; only an explicit open interrupts.
+  const notices = createEventNotice((item) => interruptions.push({ age: item.age, kind: 'big', id: item.id ?? item.type }));
   const violations = [];
   let controller;
   let previous = null;
@@ -71,8 +73,7 @@ function run(seed, year) {
     clock,
     initialLife: createLife(profile, seed),
     onState: (state) => {
-      const big = detectBigEvents(previous, state);
-      for (const item of big) interruptions.push({ age: state.age, kind: 'big', id: item.id ?? item.type });
+      notices.update(previous, state);
       previous = state;
       const fresh = state.history.slice(seenHistory);
       seenHistory = state.history.length;

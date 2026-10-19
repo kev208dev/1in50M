@@ -14,9 +14,9 @@ export const ADULT_DECISIONS = [
     title: '첫 일자리의 조건',
     prompt: '공고 속 연봉뿐 아니라 계약 기간, 통근, 배울 수 있는 일을 함께 비교합니다.',
     sourceKey: 'socialTrends2025',
-    when: (life) => !life.career.careerId,
+    when: (life) => life.career.status === 'none',
     choices: [
-      choice('small-company', '중소기업에서 경력을 시작한다', '빠르게 실무를 배우며 다음 기회를 준비합니다.', { knowledge: 3, happiness: -1 }, ['빠른 취업'], { focusId: 'career' }),
+      choice('small-company', '중소기업에서 경력을 시작한다', '월 250만원으로 실무를 배우며 다음 기회를 준비합니다.', { knowledge: 3, happiness: -1 }, ['빠른 취업'], { focusId: 'career', careerTransition: { status: 'employed', title: '중소기업 초급 실무자', annualIncome: 30000000 } }),
       choice('contract', '계약직으로 경험을 만든다', '고용은 불안정하지만 이력에 남을 경험을 쌓습니다.', { knowledge: 2, happiness: -2 }, ['계약직'], { careerTransition: { status: 'part-time', title: '계약직 일자리', annualIncome: 24000000 } }),
       choice('train', '직업훈련을 더 받는다', '소득 시작을 늦추고 필요한 기술을 익힙니다.', { knowledge: 4, happiness: 1 }, ['훈련'], { focusId: 'growth' }),
       choice('family-work', '가족의 일을 돕는다', '익숙한 환경에서 일하지만 역할 경계가 흐려질 수 있습니다.', { relationships: 2, knowledge: 1 }, ['가족 일'], { careerTransition: { status: 'self-employed', title: '가족 사업 종사', annualIncome: 28000000 } }),
@@ -27,7 +27,7 @@ export const ADULT_DECISIONS = [
     title: '시험 준비와 현장 경험',
     prompt: '안정적인 채용을 기다릴지, 지금 가능한 일을 시작할지 결정할 때입니다.',
     sourceKey: 'socialTrends2025',
-    when: (life) => !life.career.careerId,
+    when: (life) => life.career.status === 'none',
     choices: [
       choice('public-exam', '공무원·공공기관 시험을 준비한다', '생활비를 줄이며 긴 준비 기간을 감수합니다.', { knowledge: 4, happiness: -2 }, ['시험 준비'], { economyEffects: { cash: -2400000 } }),
       choice('internship', '인턴과 프로젝트를 찾는다', '불확실하지만 일하는 사람과 결과물을 만듭니다.', { knowledge: 3, relationships: 2 }, ['경험']),

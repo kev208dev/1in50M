@@ -130,9 +130,7 @@ test('긴 직업·금융·결과 내용은 스크롤 대신 페이지 전환으�
   assert.match(themeCss, /result-page-tabs[\s\S]*repeat\(5,/);
 });
 
-test('모바일에서 잘릴 수 있는 선택·자산·기록은 스크롤 대신 페이지로 접근한다', () => {
-  assert.match(html, /data-decision=["']pager["']/);
-  assert.match(appSource, /setDecisionChoicePage/);
+test('모바일에서 잘릴 수 있는 자산·기록은 스크롤 대신 페이지로 접근한다', () => {
   for (const page of ['flow', 'assets']) assert.match(html, new RegExp(`data-money-page=["']${page}["']`));
   assert.match(appSource, /dataNetworkPage|dataset\.networkPage/);
   assert.match(appSource, /dataPastPage|dataset\.pastPage/);

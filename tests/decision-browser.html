@@ -1,0 +1,37 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>선택 화면 회귀 검증</title>
+<link rel="stylesheet" href="../dist/styles.css"><link rel="stylesheet" href="../dist/theme.css"><link rel="stylesheet" href="../dist/decision-board.css">
+<body><main><label>검증할 결정 <select id="scenario"></select></label>
+<button id="open">선택 화면 열기</button><button id="save">이 상태로 실제 게임 열기</button><output id="result"></output></main>
+<script type="module">
+import { makeLifeAtAge } from './support/life-fixtures.mjs';
+import { DECISION_BY_ID } from '../dist/data/decisions.js';
+import { getChoices, applyDecision } from '../dist/engine/decisions.js';
+import { renderDecision } from '../dist/ui/render.js';
+import { saveCurrentLife } from '../dist/storage.js';
+const cases = ['asset-allocation', 'choose-high-school', 'after-graduation', 'income-recovery', 'care-return', 'major-purchase', 'training-next-step'];
+for (const id of cases) document.querySelector('#scenario').add(new Option(DECISION_BY_ID[id].title, id));
+const source = new DOMParser().parseFromString(await (await fetch('../dist/index.html')).text(), 'text/html');
+const dialog = document.importNode(source.querySelector('#decision-dialog'), true);
+document.body.append(dialog);
+let life;
+function fixture() {
+ const id = document.querySelector('#scenario').value;
+ return makeLifeAtAge(id === 'choose-high-school' ? 15 : id === 'after-graduation' ? 18 : 25, {
+   economy: { cash: id === 'income-recovery' ? -12000000 : 1000000, householdSupport: 5000000 },
+   pendingDecisionId: id, pendingReflectionId: null, reflections: { 'reflection-25': 'people' },
+   stats: { knowledge: 70 }, service: { completed: true },
+ });
+}
+document.querySelector('#open').onclick = () => {
+ life = fixture();
+ renderDecision(dialog, DECISION_BY_ID[life.pendingDecisionId], getChoices(life, life.pendingDecisionId), life.age);
+ dialog.showModal();
+};
+dialog.querySelector('[data-decision="confirm"]').onclick = (event) => {
+ life = applyDecision(life, life.pendingDecisionId, event.currentTarget.dataset.choiceId);
+ dialog.close();
+ document.querySelector('#result').textContent = `선택 완료: 현금 ${life.economy.cash} / 월 소득 ${life.economy.income} / 빚 ${life.economy.debt}`;
+};
+document.querySelector('#save').onclick = () => { saveCurrentLife(localStorage, fixture()); location.href = '../dist/index.html'; };
+</script></body></html>

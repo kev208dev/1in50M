@@ -11,7 +11,21 @@ import { applyRiskEffects } from './wellbeing.js';
 import { applyDiminishingEffects, describeAppliedChanges } from './stat-effects.js';
 import { isAvailableInYear } from './historical-context.js';
 
-const visibleChoices = (life, decision) => decision.choices.filter((choice) => isAvailableInYear(choice, life.year));
+function resolveChoice(life, choice) {
+  if (choice.educationFunding) {
+    const family = Math.min(choice.cost, life.economy.householdSupport);
+    const cash = Math.min(choice.cost - family, Math.max(0, life.economy.cash));
+    return { ...choice, educationFunding: { family, cash, loan: choice.cost - family - cash } };
+  }
+  if (!choice.flexibleInvestment) return choice;
+  // Invest at most a tenth of liquid cash; never borrow or consume the whole buffer.
+  const amount = Math.max(10000, Math.min(choice.financialAction.amount, Math.floor(Math.max(0, life.economy.cash) / 100000) * 10000));
+  return { ...choice, minimumCash: amount * 10, financialAction: { ...choice.financialAction, amount } };
+}
+
+const visibleChoices = (life, decision) => decision.choices
+  .filter((choice) => isAvailableInYear(choice, life.year))
+  .map((choice) => resolveChoice(life, choice));
 
 function availability(life, choice) {
   if (Number.isFinite(choice.maximumAge) && life.age > choice.maximumAge) {
@@ -36,12 +50,12 @@ function availability(life, choice) {
     return { enabled: false, reason: `${financialModel.availableFromYear}년부터 선택할 수 있습니다.` };
   }
   const immediateSpend = Math.max(0, -(Number(choice.economyEffects?.cash) || 0));
-  const requiredCash = Math.max(choice.minimumCash ?? 0, choice.cost ?? 0, immediateSpend);
+  const requiredCash = Math.max(choice.minimumCash ?? 0, choice.educationFunding ? choice.educationFunding.cash : choice.cost ?? 0, immediateSpend);
   const availableMoney = choice.payer === 'household' && life.age < 18
     ? life.economy.householdSupport
     : life.economy.cash;
   if (requiredCash > 0 && requiredCash > availableMoney) {
-    return { enabled: false, reason: `${requiredCash.toLocaleString('ko-KR')}원의 여유 자금이 필요합니다.` };
+    return { enabled: false, reason: choice.flexibleInvestment ? '생활비를 남기려면 현금 10만원 이상이 필요합니다.' : `${requiredCash.toLocaleString('ko-KR')}원의 여유 자금이 필요합니다.` };
   }
   return { enabled: true, reason: '' };
 }
@@ -164,7 +178,12 @@ export function applyDecision(life, decisionId, choiceId) {
   const stats = applyDiminishingEffects(current, selected.effects).stats;
   const changes = Object.fromEntries(Object.keys(stats).map((key) => [key, stats[key] - current.stats[key]]));
   const economy = { ...current.economy };
-  if (selected.cost && !selected.housingType) {
+  if (selected.educationFunding) {
+    economy.householdSupport -= selected.educationFunding.family;
+    economy.cash -= selected.educationFunding.cash;
+    economy.otherDebt += selected.educationFunding.loan;
+    economy.debt = economy.housingDebt + economy.otherDebt;
+  } else if (selected.cost && !selected.housingType) {
     if (selected.payer === 'household' && current.age < 18) economy.householdSupport -= selected.cost;
     else economy.cash -= selected.cost;
   }

@@ -3,6 +3,7 @@ import { ADULT_DECISIONS } from './decisions-adult.js';
 import { LATER_DECISIONS } from './decisions-later.js';
 import { FINANCE_DECISIONS } from './decisions-finance.js';
 import { DILEMMA_DECISIONS } from './scenes/index.js';
+import { OPPORTUNITY_DECISIONS } from './decisions-opportunities.js';
 
 export const choice = (id, label, description, effects = {}, tags = [], extra = {}) => ({
   id, label, description, effects, tags, ...extra,
@@ -65,6 +66,7 @@ export const DECISIONS = [
   ...ADULT_DECISIONS,
   ...FINANCE_DECISIONS,
   ...LATER_DECISIONS,
+  ...OPPORTUNITY_DECISIONS,
 ].map(enrichDecision);
 
 /** 누가 × 무슨 일로 펼쳐지는 작은 딜레마. 핵심 결정이 없는 해에만 가끔 등장한다. */

@@ -7,6 +7,21 @@ import { makeLifeAtAge, makeLifeAtYear, makeMaleLifeAtAge, fakeClock } from './s
 
 const completedDecisions = Object.fromEntries(DECISIONS.map((decision) => [decision.id, 'fixture-choice']));
 
+test('자동 진행은 선택한 유급 훈련·자영업·은퇴를 임의 취업으로 덮어쓰지 않는다', () => {
+  for (const status of ['part-time', 'self-employed', 'retired']) {
+    const clock = fakeClock();
+    const controller = createSimulationController({ clock, initialLife: makeLifeAtAge(26, {
+      decisions: completedDecisions,
+      career: { careerId: null, title: '내가 선택한 일', status, annualIncome: 18000000 },
+      service: { completed: true },
+    }) });
+    controller.setAutoDecision(true);
+    controller.play();
+    clock.advance(8000);
+    assert.equal(controller.getState().career.title, '내가 선택한 일');
+  }
+});
+
 test('1배속은 8초마다 한 해만 진행한다', () => {
   const clock = fakeClock();
   const controller = createSimulationController({ clock, initialLife: makeLifeAtAge(0) });
@@ -214,7 +229,8 @@ test('컨트롤러는 한 해의 경력과 경제를 정확히 한 번만 반영
   clock.advance(8000);
   const next = controller.getState();
   assert.equal(next.career.years, 1);
-  assert.ok(next.economy.cash > 15000000 && next.economy.cash < 22000000);
+  assert.ok(next.economy.cash > 24000000 && next.economy.cash < 31000000);
+  assert.equal(next.history.filter((entry) => entry.type === 'economy').length, 1);
 });
 
 test('컨트롤러는 경제 계산 뒤 같은 역사 사건을 한 번만 반영한다', () => {

@@ -419,7 +419,7 @@ export function simulateAutomatically(profile, seed = profile?.id) {
     const decision = getDecision(life);
     if (decision) life = chooseAutomatically(life, decision.id);
 
-    if (life.age >= 25 && !life.career.careerId) {
+    if (life.age >= 25 && life.age < 65 && life.career.status === 'none') {
       const offer = getCareerOffers(life).find((item) => item.eligible);
       if (offer) life = acceptCareer(life, offer.career.id);
     }

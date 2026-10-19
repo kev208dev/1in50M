@@ -13,7 +13,7 @@ export const POST_SECONDARY_PATHS = [
   { id: 'university', label: '4년제 대학', level: 'university', minimumKnowledge: 58, cost: 28000000, effects: { knowledge: 12, happiness: -2 }, tags: ['지식 필요', '비용이 큼'] },
   { id: 'college', label: '전문대학', level: 'college', minimumKnowledge: 42, cost: 14000000, effects: { knowledge: 8, happiness: 0 }, tags: ['실무 학습', '비용 발생'] },
   { id: 'training', label: '직업훈련·자격증', level: 'training', minimumKnowledge: 0, cost: 3000000, effects: { knowledge: 7, happiness: 1 }, tags: ['기술', '빠른 준비'] },
-  { id: 'employment', label: '바로 취업', level: 'high-school', minimumKnowledge: 0, cost: 0, effects: { knowledge: 2, happiness: 1 }, tags: ['소득 시작', '현장 경험'] },
+  { id: 'employment', label: '바로 취업', description: '지역 일자리에서 급여를 받으며 경력을 시작합니다. 게임 기준 월 220만원.', level: 'high-school', minimumKnowledge: 0, cost: 0, effects: { knowledge: 2, happiness: 1 }, tags: ['소득 시작', '현장 경험'], careerTransition: { status: 'employed', title: '지역 초급 일자리', annualIncome: 26400000 } },
   { id: 'startup-prep', label: '창업 준비', level: 'high-school', minimumKnowledge: 45, cost: 8000000, effects: { knowledge: 5, happiness: 0 }, tags: ['도전', '비용이 큼'] },
   { id: 'rest', label: '재도전·휴식', level: 'high-school', minimumKnowledge: 0, cost: 1000000, effects: { health: 3, happiness: 5 }, tags: ['회복', '다시 탐색'] },
 ];

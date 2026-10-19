@@ -88,7 +88,6 @@ let selectedPropertyRegion = null;
 let resumeAfterFinance = false;
 let resumeAfterSource = false;
 let careerGroupPage = 0;
-let decisionChoicePage = 0;
 let pastLivesPage = 0;
 let sourcePage = 0;
 let lifeLogPage = 0;
@@ -393,19 +392,6 @@ function setMoneyPage(page = 'flow') {
   });
 }
 
-function setDecisionChoicePage(page = 0) {
-  const choices = [...decisionDialog.querySelectorAll('[data-choice-index]')];
-  const pageSize = 2;
-  const pageCount = Math.max(1, Math.ceil(choices.length / pageSize));
-  decisionChoicePage = Math.max(0, Math.min(page, pageCount - 1));
-  choices.forEach((choice, index) => { choice.hidden = Math.floor(index / pageSize) !== decisionChoicePage; });
-  const pager = decisionDialog.querySelector('[data-decision="pager"]');
-  pager.hidden = pageCount <= 1;
-  pager.querySelector('[data-decision="page-status"]').textContent = `${decisionChoicePage + 1} / ${pageCount}`;
-  pager.querySelector('[data-decision-page="previous"]').disabled = decisionChoicePage === 0;
-  pager.querySelector('[data-decision-page="next"]').disabled = decisionChoicePage === pageCount - 1;
-}
-
 function setSourcePage(page = 0) {
   const items = [...sourceDialog.querySelectorAll('[data-source-item]')];
   const pageCount = Math.ceil(items.length / 2);
@@ -464,7 +450,6 @@ function openDecision(decision, life) {
   if (!decision || decisionDialog.open) return;
   lastFocused = document.activeElement;
   renderDecision(decisionDialog, decision, getChoices(life, decision.id), life.age);
-  setDecisionChoicePage(0);
   main.inert = true;
   decisionDialog.showModal();
   document.querySelector('#decision-title').focus();
@@ -743,8 +728,8 @@ document.querySelectorAll('[data-focus]').forEach((button) => {
 });
 
 decisionDialog.addEventListener('cancel', (event) => event.preventDefault());
-decisionDialog.querySelector('[data-decision="choices"]').addEventListener('click', (event) => {
-  const button = event.target.closest('[data-choice-id]');
+decisionDialog.querySelector('[data-decision="confirm"]').addEventListener('click', (event) => {
+  const button = event.currentTarget;
   if (!button || button.disabled || !controller) return;
   controller.answerDecision(button.dataset.choiceId);
   const resolution = pendingAgencyResolution;
@@ -752,11 +737,6 @@ decisionDialog.querySelector('[data-decision="choices"]').addEventListener('clic
   unlockBackground(decisionDialog, !resolution);
   if (resolution) openAgencyOverride(resolution);
   updatePlayback();
-});
-decisionDialog.querySelector('[data-decision="pager"]').addEventListener('click', (event) => {
-  const button = event.target.closest('[data-decision-page]');
-  if (!button || button.disabled) return;
-  setDecisionChoicePage(decisionChoicePage + (button.dataset.decisionPage === 'next' ? 1 : -1));
 });
 
 agencyDialog.addEventListener('cancel', (event) => event.preventDefault());

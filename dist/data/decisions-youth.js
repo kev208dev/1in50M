@@ -89,7 +89,14 @@ export const YOUTH_DECISIONS = [
     title: '졸업 뒤의 길',
     prompt: '간판보다 비용, 적성, 준비 기간과 취업 가능성을 함께 살펴봅니다.',
     sourceKey: 'socialTrends2025',
-    choices: POST_SECONDARY_PATHS.map((path) => ({ ...path, postSecondaryPath: path.id })),
+    overridePolicy: 'forbidden',
+    choices: POST_SECONDARY_PATHS.map((path) => ({
+      ...path, postSecondaryPath: path.id,
+      educationFunding: ['university', 'college', 'training'].includes(path.id),
+      description: path.description ?? (['university', 'college', 'training'].includes(path.id)
+        ? '과정 전체 학비를 가정 지원 → 개인 현금 → 학자금 빚 순서로 마련합니다. 아래 분담액을 확인하세요.'
+        : '현재의 비용과 준비 시간을 고려해 이 경로를 시작합니다.'),
+    })),
   },
   {
     id: 'tuition-and-work', ageRange: [19, 23],

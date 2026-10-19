@@ -332,8 +332,9 @@ export function renderLife(root, life) {
 /** 선택지의 비용·위험·예상 영향을 사람이 읽을 수 있는 짧은 문구로 만든다. */
 export function choiceMeta(choice) {
   const cashEffect = Number(choice.economyEffects?.cash) || 0;
+  const housing = HOUSING_BY_ID[choice.housingType];
   const cost = Math.max(
-    Number(choice.cost ?? choice.financialAction?.amount ?? choice.businessPlan?.capital ?? 0) || 0,
+    Number(housing?.requiredCash ?? choice.cost ?? choice.financialAction?.amount ?? choice.businessPlan?.capital ?? 0) || 0,
     cashEffect < 0 ? -cashEffect : 0,
   );
   const effects = describeEffectDirections(choice.effects);
@@ -341,12 +342,22 @@ export function choiceMeta(choice) {
   const negative = Object.values(choice.effects ?? {}).reduce((sum, value) => sum + Math.min(0, Number(value) || 0), 0);
   const actionType = choice.financialAction?.type;
   let risk = '낮음';
-  if (actionType === 'gamble' || tags.includes('대출') || negative <= -5 || (tags.includes('위험') && (tags.includes('충동') || tags.includes('창업')))) risk = '높음';
+  if (housing?.debt > 0 || choice.educationFunding?.loan > 0 || actionType === 'gamble' || tags.includes('대출') || negative <= -5 || (tags.includes('위험') && (tags.includes('충동') || tags.includes('창업')))) risk = '높음';
   else if (tags.includes('위험') || tags.includes('도전') || tags.includes('충동') || negative <= -2 || actionType === 'lottery') risk = '보통';
+  const money = [];
+  if (housing) money.push(`월 주거비 ${formatWon(housing.monthlyCost)} · 주택 빚 ${formatWon(housing.debt ?? 0)}`);
+  if (choice.educationFunding) money.push(`가정 ${formatWon(choice.educationFunding.family)} · 내 돈 ${formatWon(choice.educationFunding.cash)} · 학자금 빚 +${formatWon(choice.educationFunding.loan)}`);
+  if (choice.careerTransition) money.push(`월 소득 ${formatWon(Math.round(choice.careerTransition.annualIncome / 12))}`);
+  if (choice.incomeScale !== undefined) money.push(`소득 ${Math.round(choice.incomeScale * 100)}%로 변경`);
+  const monthlyCost = choice.economyEffects?.fixedCosts ?? choice.financialAction?.monthlyCost;
+  if (monthlyCost) money.push(`월 지출 ${monthlyCost > 0 ? '+' : ''}${formatWon(monthlyCost)}`);
+  const newDebt = choice.economyEffects?.debt ?? choice.financialAction?.debt ?? choice.financialAction?.borrowed;
+  if (newDebt) money.push(`빚 ${newDebt > 0 ? '+' : ''}${formatWon(newDebt)}`);
   return {
     cost: cost > 0 ? formatWon(cost) : cashEffect > 0 ? `없음 · ${formatWon(cashEffect)} 받음` : '없음',
     risk,
     effect: effects.slice(0, 3).join(' · ') || '방향을 알 수 없음',
+    ...(money.length ? { money: money.join(' · ') } : {}),
   };
 }
 
@@ -362,31 +373,41 @@ export function renderDecision(
   const list = dialog.querySelector('[data-decision="choices"]');
   if (!list) return;
   list.dataset.count = String(choices.length);
+  const preview = (choice) => {
+    const meta = choiceMeta(choice);
+    list.querySelectorAll('[data-choice-id]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.choiceId === choice.id)));
+    renderTextFields(dialog, '[data-decision="detail-title"]', choice.label);
+    renderTextFields(dialog, '[data-decision="detail-copy"]', choice.description || '이 경로로 삶을 이어갑니다.');
+    renderTextFields(dialog, '[data-decision="detail-money"]', `비용 ${meta.cost}${meta.money ? ` · ${meta.money}` : ''}`);
+    renderTextFields(dialog, '[data-decision="detail-effect"]', `위험 ${meta.risk} · ${meta.effect}`);
+    renderTextFields(dialog, '[data-decision="detail-reason"]', choice.enabled ? '현재 선택할 수 있습니다.' : choice.reason);
+    const confirm = dialog.querySelector('[data-decision="confirm"]');
+    if (confirm) {
+      confirm.disabled = !choice.enabled;
+      confirm.dataset.choiceId = choice.id;
+      confirm.textContent = choice.enabled ? '이 선택으로 살아가기 →' : '조건을 확인해 주세요';
+    }
+  };
   list.replaceChildren(...choices.map((choice, index) => {
     const button = makeNode(dialog, 'button', 'decision-choice');
     button.type = 'button';
     button.dataset.choiceId = choice.id;
     button.dataset.choiceIndex = String(index);
-    button.disabled = !choice.enabled;
+    button.setAttribute('aria-pressed', 'false');
     if (!choice.enabled) button.dataset.state = 'locked';
     const top = makeNode(dialog, 'span', 'choice-top');
     top.append(makeNode(dialog, 'span', 'decision-number', String.fromCharCode(65 + index)));
-    if (!choice.enabled) top.append(makeNode(dialog, 'span', 'choice-lock', '잠김'));
+    top.append(makeNode(dialog, 'span', 'choice-status', choice.enabled ? '선택 가능' : '조건 확인'));
     const copy = makeNode(dialog, 'span', 'decision-copy');
-    copy.append(makeNode(dialog, 'strong', '', choice.label), makeNode(dialog, 'small', '', choice.description));
+    copy.append(makeNode(dialog, 'strong', '', choice.label));
     const meta = choiceMeta(choice);
-    const metaList = makeNode(dialog, 'span', 'choice-meta');
-    for (const [label, value, className] of [['비용', meta.cost, ''], ['위험', meta.risk, `risk-${meta.risk}`], ['예상 영향', meta.effect, 'is-effect']]) {
-      const row = makeNode(dialog, 'span', 'choice-meta-row');
-      row.append(makeNode(dialog, 'i', '', label), makeNode(dialog, 'b', className, value));
-      metaList.append(row);
-    }
-    const tags = makeNode(dialog, 'span', 'decision-tags');
-    for (const tag of choice.tags ?? []) tags.append(makeNode(dialog, 'i', '', tag));
-    button.append(top, copy, metaList, tags);
-    if (!choice.enabled) button.append(makeNode(dialog, 'span', 'choice-note', `조건 부족 · ${choice.reason}`));
+    const summary = makeNode(dialog, 'span', 'choice-summary', meta.money || `비용 ${meta.cost}`);
+    button.append(top, copy, summary);
+    button.addEventListener('click', () => preview(choice));
+    button.addEventListener('focus', () => preview(choice));
     return button;
   }));
+  if (choices.length) preview(choices.find((choice) => choice.enabled) ?? choices[0]);
 
   const sourceLine = dialog.querySelector('[data-decision="source"]');
   if (sourceLine) {
